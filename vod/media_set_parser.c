@@ -121,14 +121,14 @@ static json_parser_union_type_def_t media_clip_union_params[] = {
 };
 
 static json_object_value_def_t media_clip_source_params[] = {
-	{ vod_string("id"),			VOD_JSON_STRING,	offsetof(media_clip_source_t, id), media_set_parse_null_term_string },
-	{ vod_string("path"),			VOD_JSON_STRING,	offsetof(media_clip_source_t, mapped_uri), media_set_parse_null_term_string },
-	{ vod_string("tracks"),			VOD_JSON_STRING,	offsetof(media_clip_source_t, tracks_mask), media_set_parse_tracks_spec },
-	{ vod_string("clipFrom"),		VOD_JSON_INT,		offsetof(media_clip_source_t, clip_from), media_set_parse_int64 },
-	{ vod_string("encryptionScheme"), VOD_JSON_STRING,	offsetof(media_clip_source_t, encryption.scheme), media_set_parse_encryption_scheme },
-	{ vod_string("encryptionKey"),	VOD_JSON_STRING,	offsetof(media_clip_source_t, encryption.key), media_set_parse_base64_string },
-	{ vod_string("encryptionIv"),	VOD_JSON_STRING,	offsetof(media_clip_source_t, encryption.iv), media_set_parse_base64_string },
-	{ vod_string("sourceType"),		VOD_JSON_STRING,	offsetof(media_clip_source_t, source_type), media_set_parse_source_type },
+	{ vod_string("id"),					VOD_JSON_STRING,	offsetof(media_clip_source_t, id), media_set_parse_null_term_string },
+	{ vod_string("path"),				VOD_JSON_STRING,	offsetof(media_clip_source_t, mapped_uri), media_set_parse_null_term_string },
+	{ vod_string("tracks"),				VOD_JSON_STRING,	offsetof(media_clip_source_t, tracks_mask), media_set_parse_tracks_spec },
+	{ vod_string("clipFrom"),			VOD_JSON_INT,		offsetof(media_clip_source_t, clip_from), media_set_parse_int64 },
+	{ vod_string("encryptionScheme"),	VOD_JSON_STRING,	offsetof(media_clip_source_t, encryption.scheme), media_set_parse_encryption_scheme },
+	{ vod_string("encryptionKey"),		VOD_JSON_STRING,	offsetof(media_clip_source_t, encryption.key), media_set_parse_base64_string },
+	{ vod_string("encryptionIv"),		VOD_JSON_STRING,	offsetof(media_clip_source_t, encryption.iv), media_set_parse_base64_string },
+	{ vod_string("sourceType"),			VOD_JSON_STRING,	offsetof(media_clip_source_t, source_type), media_set_parse_source_type },
 	{ vod_null_string, 0, 0, NULL }
 };
 
@@ -144,49 +144,49 @@ static json_object_value_def_t media_sequence_params[] = {
 };
 
 static json_object_key_def_t media_notification_params[] = {
-	{ vod_string("id"),								VOD_JSON_STRING,MEDIA_NOTIFICATION_PARAM_ID },
-	{ vod_string("offset"),							VOD_JSON_INT,	MEDIA_NOTIFICATION_PARAM_OFFSET },
+	{ vod_string("id"),		VOD_JSON_STRING,	MEDIA_NOTIFICATION_PARAM_ID },
+	{ vod_string("offset"),	VOD_JSON_INT,		MEDIA_NOTIFICATION_PARAM_OFFSET },
 	{ vod_null_string, 0, 0 }
 };
 
 static json_object_key_def_t media_closed_captions_params[] = {
-	{ vod_string("id"),								VOD_JSON_STRING, MEDIA_CLOSED_CAPTIONS_PARAM_ID },
-	{ vod_string("language"),						VOD_JSON_STRING, MEDIA_CLOSED_CAPTIONS_PARAM_LANGUAGE },
-	{ vod_string("label"),							VOD_JSON_STRING, MEDIA_CLOSED_CAPTIONS_PARAM_LABEL },
-	{ vod_string("default"),						VOD_JSON_BOOL,   MEDIA_CLOSED_CAPTIONS_PARAM_DEFAULT },
+	{ vod_string("id"),			VOD_JSON_STRING,	MEDIA_CLOSED_CAPTIONS_PARAM_ID },
+	{ vod_string("language"),	VOD_JSON_STRING,	MEDIA_CLOSED_CAPTIONS_PARAM_LANGUAGE },
+	{ vod_string("label"),		VOD_JSON_STRING,	MEDIA_CLOSED_CAPTIONS_PARAM_LABEL },
+	{ vod_string("default"),	VOD_JSON_BOOL,		MEDIA_CLOSED_CAPTIONS_PARAM_DEFAULT },
 	{ vod_null_string, 0, 0 }
 };
 
 static json_object_key_def_t media_clip_params[] = {
-	{ vod_string("firstKeyFrameOffset"),			VOD_JSON_INT,	MEDIA_CLIP_PARAM_FIRST_KEY_FRAME_OFFSET },
-	{ vod_string("keyFrameDurations"),				VOD_JSON_ARRAY, MEDIA_CLIP_PARAM_KEY_FRAME_DURATIONS },
+	{ vod_string("firstKeyFrameOffset"),	VOD_JSON_INT,	MEDIA_CLIP_PARAM_FIRST_KEY_FRAME_OFFSET },
+	{ vod_string("keyFrameDurations"),		VOD_JSON_ARRAY,	MEDIA_CLIP_PARAM_KEY_FRAME_DURATIONS },
 	{ vod_null_string, 0, 0 }
 };
 
 static json_object_key_def_t media_set_params[] = {
-	{ vod_string("id"),								VOD_JSON_STRING,MEDIA_SET_PARAM_ID },
-	{ vod_string("discontinuity"),					VOD_JSON_BOOL,	MEDIA_SET_PARAM_DISCONTINUITY },
-	{ vod_string("segmentDuration"),				VOD_JSON_INT,	MEDIA_SET_PARAM_SEGMENT_DURATION },
-	{ vod_string("consistentSequenceMediaInfo"),	VOD_JSON_BOOL,	MEDIA_SET_PARAM_CONSISTENT_SEQUENCE_MEDIA_INFO },
-	{ vod_string("durations"),						VOD_JSON_ARRAY, MEDIA_SET_PARAM_DURATIONS },
-	{ vod_string("sequences"),						VOD_JSON_ARRAY,	MEDIA_SET_PARAM_SEQUENCES },
-	{ vod_string("timeOffset"),						VOD_JSON_INT,	MEDIA_SET_PARAM_TIME_OFFSET },
-	{ vod_string("initialSegmentIndex"),			VOD_JSON_INT,	MEDIA_SET_PARAM_INITIAL_SEGMENT_INDEX },
-	{ vod_string("initialClipIndex"),				VOD_JSON_INT,	MEDIA_SET_PARAM_INITIAL_CLIP_INDEX },
-	{ vod_string("firstClipTime"),					VOD_JSON_INT,	MEDIA_SET_PARAM_FIRST_CLIP_TIME },
-	{ vod_string("clipTimes"),						VOD_JSON_ARRAY,	MEDIA_SET_PARAM_CLIP_TIMES },
-	{ vod_string("segmentBaseTime"),				VOD_JSON_INT,	MEDIA_SET_PARAM_SEGMENT_BASE_TIME },
-	{ vod_string("firstClipStartOffset"),			VOD_JSON_INT,	MEDIA_SET_PARAM_FIRST_CLIP_START_OFFSET },
-	{ vod_string("playlistType"),					VOD_JSON_STRING,MEDIA_SET_PARAM_PLAYLIST_TYPE },
-	{ vod_string("referenceClipIndex"),				VOD_JSON_INT,	MEDIA_SET_PARAM_REFERENCE_CLIP_INDEX },
-	{ vod_string("presentationEndTime"),			VOD_JSON_INT,	MEDIA_SET_PARAM_PRESENTATION_END_TIME },
-	{ vod_string("expirationTime"),					VOD_JSON_INT,	MEDIA_SET_PARAM_EXPIRATION_TIME },
-	{ vod_string("liveWindowDuration"),				VOD_JSON_INT,	MEDIA_SET_PARAM_LIVE_WINDOW_DURATION },
-	{ vod_string("notifications"),					VOD_JSON_ARRAY,	MEDIA_SET_PARAM_NOTIFICATIONS },
-	{ vod_string("clipFrom"),						VOD_JSON_INT,	MEDIA_SET_PARAM_CLIP_FROM },
-	{ vod_string("clipTo"),							VOD_JSON_INT,	MEDIA_SET_PARAM_CLIP_TO },
-	{ vod_string("cache"),							VOD_JSON_BOOL,	MEDIA_SET_PARAM_CACHE },
-	{ vod_string("closedCaptions"), 				VOD_JSON_ARRAY, MEDIA_SET_PARAM_CLOSED_CAPTIONS },
+	{ vod_string("id"),								VOD_JSON_STRING,	MEDIA_SET_PARAM_ID },
+	{ vod_string("discontinuity"),					VOD_JSON_BOOL,		MEDIA_SET_PARAM_DISCONTINUITY },
+	{ vod_string("segmentDuration"),				VOD_JSON_INT,		MEDIA_SET_PARAM_SEGMENT_DURATION },
+	{ vod_string("consistentSequenceMediaInfo"),	VOD_JSON_BOOL,		MEDIA_SET_PARAM_CONSISTENT_SEQUENCE_MEDIA_INFO },
+	{ vod_string("durations"),						VOD_JSON_ARRAY,		MEDIA_SET_PARAM_DURATIONS },
+	{ vod_string("sequences"),						VOD_JSON_ARRAY,		MEDIA_SET_PARAM_SEQUENCES },
+	{ vod_string("timeOffset"),						VOD_JSON_INT,		MEDIA_SET_PARAM_TIME_OFFSET },
+	{ vod_string("initialSegmentIndex"),			VOD_JSON_INT,		MEDIA_SET_PARAM_INITIAL_SEGMENT_INDEX },
+	{ vod_string("initialClipIndex"),				VOD_JSON_INT,		MEDIA_SET_PARAM_INITIAL_CLIP_INDEX },
+	{ vod_string("firstClipTime"),					VOD_JSON_INT,		MEDIA_SET_PARAM_FIRST_CLIP_TIME },
+	{ vod_string("clipTimes"),						VOD_JSON_ARRAY,		MEDIA_SET_PARAM_CLIP_TIMES },
+	{ vod_string("segmentBaseTime"),				VOD_JSON_INT,		MEDIA_SET_PARAM_SEGMENT_BASE_TIME },
+	{ vod_string("firstClipStartOffset"),			VOD_JSON_INT,		MEDIA_SET_PARAM_FIRST_CLIP_START_OFFSET },
+	{ vod_string("playlistType"),					VOD_JSON_STRING,	MEDIA_SET_PARAM_PLAYLIST_TYPE },
+	{ vod_string("referenceClipIndex"),				VOD_JSON_INT,		MEDIA_SET_PARAM_REFERENCE_CLIP_INDEX },
+	{ vod_string("presentationEndTime"),			VOD_JSON_INT,		MEDIA_SET_PARAM_PRESENTATION_END_TIME },
+	{ vod_string("expirationTime"),					VOD_JSON_INT,		MEDIA_SET_PARAM_EXPIRATION_TIME },
+	{ vod_string("liveWindowDuration"),				VOD_JSON_INT,		MEDIA_SET_PARAM_LIVE_WINDOW_DURATION },
+	{ vod_string("notifications"),					VOD_JSON_ARRAY,		MEDIA_SET_PARAM_NOTIFICATIONS },
+	{ vod_string("clipFrom"),						VOD_JSON_INT,		MEDIA_SET_PARAM_CLIP_FROM },
+	{ vod_string("clipTo"),							VOD_JSON_INT,		MEDIA_SET_PARAM_CLIP_TO },
+	{ vod_string("cache"),							VOD_JSON_BOOL,		MEDIA_SET_PARAM_CACHE },
+	{ vod_string("closedCaptions"), 				VOD_JSON_ARRAY, 	MEDIA_SET_PARAM_CLOSED_CAPTIONS },
 	{ vod_null_string, 0, 0 }
 };
 
