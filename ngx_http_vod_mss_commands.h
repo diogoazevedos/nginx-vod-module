@@ -13,5 +13,5 @@
 	NGX_HTTP_LOC_CONF_OFFSET,
 	BASE_OFFSET + offsetof(ngx_http_vod_mss_loc_conf_t, manifest_conf.duplicate_bitrate_threshold),
 	NULL },
-	
+
 #undef BASE_OFFSET

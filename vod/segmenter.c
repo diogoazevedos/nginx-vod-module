@@ -41,7 +41,7 @@ segmenter_init_config(segmenter_conf_t* conf, vod_pool_t* pool)
 	uint32_t i;
 	int32_t cur_duration;
 
-	if (conf->segment_duration < MIN_SEGMENT_DURATION || 
+	if (conf->segment_duration < MIN_SEGMENT_DURATION ||
 		conf->segment_duration > MAX_SEGMENT_DURATION)
 	{
 		return VOD_BAD_DATA;
@@ -89,13 +89,13 @@ segmenter_init_config(segmenter_conf_t* conf, vod_pool_t* pool)
 	for (i = 0; i < conf->bootstrap_segments_count; i++)
 	{
 		cur_str = (vod_str_t*)conf->bootstrap_segments->elts + i;
-		
+
 		cur_duration = vod_atoi(cur_str->data, cur_str->len);
 		if (cur_duration < MIN_SEGMENT_DURATION)
 		{
 			return VOD_BAD_DATA;
 		}
-		
+
 		conf->bootstrap_segments_durations[i] = cur_duration;
 		conf->bootstrap_segments_start[i] = cur_pos;
 		conf->bootstrap_segments_mid[i] = cur_pos + conf->bootstrap_segments_durations[i] / 2;
@@ -108,7 +108,7 @@ segmenter_init_config(segmenter_conf_t* conf, vod_pool_t* pool)
 		}
 	}
 
-	conf->max_segment_duration = vod_max(conf->segment_duration, 
+	conf->max_segment_duration = vod_max(conf->segment_duration,
 		conf->max_bootstrap_segment_duration);
 
 	conf->bootstrap_segments_total_duration = cur_pos;
@@ -220,7 +220,7 @@ segmenter_get_start_offset(segmenter_conf_t* conf, uint32_t segment_index, uint6
 	}
 	else
 	{
-		*start = conf->bootstrap_segments_total_duration + 
+		*start = conf->bootstrap_segments_total_duration +
 			(segment_index - conf->bootstrap_segments_count) * conf->segment_duration;
 	}
 }
@@ -234,7 +234,7 @@ segmenter_get_end_offset(segmenter_conf_t* conf, uint32_t segment_index, uint64_
 	}
 	else
 	{
-		*end = conf->bootstrap_segments_total_duration + 
+		*end = conf->bootstrap_segments_total_duration +
 			(segment_index - conf->bootstrap_segments_count + 1) * conf->segment_duration;
 	}
 }
@@ -249,16 +249,16 @@ segmenter_get_start_end_offsets(segmenter_conf_t* conf, uint32_t segment_index, 
 	}
 	else
 	{
-		*start = conf->bootstrap_segments_total_duration + 
+		*start = conf->bootstrap_segments_total_duration +
 			(segment_index - conf->bootstrap_segments_count) * conf->segment_duration;
 		*end = *start + conf->segment_duration;
 	}
 }
 
-int64_t 
+int64_t
 segmenter_align_to_key_frames(
-	align_to_key_frames_context_t* context, 
-	int64_t offset, 
+	align_to_key_frames_context_t* context,
+	int64_t offset,
 	int64_t limit)
 {
 	int64_t cur_duration;
@@ -315,10 +315,10 @@ segmenter_get_segment_index_no_discontinuity(
 vod_status_t
 segmenter_get_segment_index_discontinuity(
 	request_context_t* request_context,
-	segmenter_conf_t* conf, 
+	segmenter_conf_t* conf,
 	uint32_t initial_segment_index,
 	media_clip_timing_t* timing,
-	uint64_t time_millis, 
+	uint64_t time_millis,
 	uint32_t* result)
 {
 	uint64_t clip_start_offset;
@@ -604,7 +604,7 @@ segmenter_get_start_end_ranges_no_discontinuity(
 	result->max_clip_index = params->timing.total_count - 1;
 
 	for (cur_duration = clip_durations, clip_start_offset = start_time;
-		cur_duration < end_duration; 
+		cur_duration < end_duration;
 		cur_duration++, clip_start_offset = next_start_offset)
 	{
 		next_start_offset = clip_start_offset + *cur_duration;
@@ -672,7 +672,7 @@ segmenter_get_start_end_ranges_no_discontinuity(
 		params->conf,
 		cur_clip_range->original_clip_time - segment_base_time);
 	result->clip_relative_segment_index = params->segment_index - clip_initial_segment_index;
-	
+
 	return VOD_OK;
 }
 
@@ -772,7 +772,7 @@ segmenter_get_start_end_ranges_discontinuity(
 
 		// find the clip that intersects start-end
 		for (cur_duration = params->timing.durations, cur_clip_time = params->timing.times;
-			; 
+			;
 			cur_duration++, cur_clip_time++)
 		{
 			if (cur_duration >= end_duration)
@@ -818,8 +818,8 @@ segmenter_get_start_end_ranges_discontinuity(
 
 	if (segment_index + 1 >= cur_segment_limit)
 	{
-		if (end > clip_start_offset + clip_duration && 
-			clip_index + 1 >= params->timing.total_count && 
+		if (end > clip_start_offset + clip_duration &&
+			clip_index + 1 >= params->timing.total_count &&
 			!params->allow_last_segment)
 		{
 			vod_log_error(VOD_LOG_ERR, request_context->log, 0,
@@ -891,7 +891,7 @@ static vod_status_t
 segmenter_get_live_window_start_end(
 	request_context_t* request_context,
 	segmenter_conf_t* conf,
-	media_set_t* media_set, 
+	media_set_t* media_set,
 	media_clip_timing_t* timing,
 	live_window_start_end_t* result)
 {
@@ -1075,7 +1075,7 @@ segmenter_get_live_window_start_end(
 	}
 
 	if (!media_set->original_use_discontinuity ||
-		start_clip_offset > 0 || 
+		start_clip_offset > 0 ||
 		(start_clip_index <= 0 && timing->first_clip_start_offset > 0))
 	{
 		// snap start to segment boundary
@@ -1130,7 +1130,7 @@ segmenter_get_live_window_start_end(
 			"segmenter_get_live_window_start_end: empty window (3)");
 		return VOD_BAD_MAPPING;
 	}
-	
+
 	result->end_time = end_time;
 	result->start_time = start_time;
 	result->end_clip_offset = end_clip_offset;
@@ -1239,7 +1239,7 @@ segmenter_get_live_window(
 		}
 
 		media_set->initial_segment_clip_relative_index = segmenter_get_segment_index_no_discontinuity(
-			conf, 
+			conf,
 			window.start_time - timing->segment_base_time);
 	}
 
@@ -1328,8 +1328,8 @@ segmenter_get_segment_durations_add(
 	if (context->align.part != NULL)
 	{
 		next_aligned_time = segmenter_align_to_key_frames(
-			&context->align, 
-			context->cur_time, 
+			&context->align,
+			context->cur_time,
 			context->clip_end_time);
 		cur_time = context->aligned_time;
 		segment_duration = next_aligned_time - cur_time;
@@ -1338,8 +1338,8 @@ segmenter_get_segment_durations_add(
 
 	// add the duration
 	cur_item = context->cur_item;
-	if (cur_item < context->result->items || 
-		segment_duration != cur_item->duration || 
+	if (cur_item < context->result->items ||
+		segment_duration != cur_item->duration ||
 		context->discontinuity)
 	{
 		cur_item++;
@@ -1656,7 +1656,7 @@ segmenter_get_total_duration(
 					continue;
 				}
 
-				if (ref_track[cur_media_type]->media_info.duration_millis > 0 && 
+				if (ref_track[cur_media_type]->media_info.duration_millis > 0 &&
 					(result == 0 || ref_track[cur_media_type]->media_info.duration_millis < result))
 				{
 					result = ref_track[cur_media_type]->media_info.duration_millis;
@@ -1699,7 +1699,7 @@ segmenter_get_segment_durations_estimate(
 		if (media_set->use_discontinuity)
 		{
 			result->start_time = media_set->timing.first_time;
-			result->end_time = 
+			result->end_time =
 				media_set->timing.times[media_set->timing.total_count - 1] +
 				media_set->timing.durations[media_set->timing.total_count - 1];
 			result->duration = duration_millis;
@@ -1791,7 +1791,7 @@ segmenter_boundary_iterator_skip(segmenter_boundary_iterator_context_t* context,
 	}
 }
 
-vod_status_t 
+vod_status_t
 segmenter_get_segment_durations_accurate(
 	request_context_t* request_context,
 	segmenter_conf_t* conf,
@@ -1855,7 +1855,7 @@ segmenter_get_segment_durations_accurate(
 				continue;
 			}
 
-			if (main_track == NULL || 
+			if (main_track == NULL ||
 				(cur_track->media_info.media_type < main_track->media_info.media_type))
 			{
 				main_track = cur_track;
@@ -2017,9 +2017,9 @@ post_bootstrap:
 		}
 		accum_duration += cur_frame->duration;
 	}
-	
+
 	// in case the main video track is shorter than the audio track, add the estimated durations of the remaining audio-only segments
-	if (main_track->media_info.duration_millis < duration_millis && 
+	if (main_track->media_info.duration_millis < duration_millis &&
 		!align_to_key_frames)
 	{
 		segmenter_boundary_iterator_init(&boundary_iterator, conf, result->segment_count);
@@ -2027,7 +2027,7 @@ post_bootstrap:
 
 		total_duration = rescale_time(ref_track->media_info.duration, ref_track->media_info.timescale, result->timescale);
 
-		while (accum_duration < total_duration && 
+		while (accum_duration < total_duration &&
 			segment_index + 1 < result->segment_count)
 		{
 			segment_limit_millis = segmenter_boundary_iterator_next(&boundary_iterator);
@@ -2047,7 +2047,7 @@ post_bootstrap:
 				cur_item->discontinuity = FALSE;
 			}
 			cur_item->repeat_count++;
-			
+
 			// move to the next segment
 			segment_index++;
 			segment_start = accum_duration;

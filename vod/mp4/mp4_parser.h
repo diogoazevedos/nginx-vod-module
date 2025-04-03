@@ -13,10 +13,10 @@ vod_status_t mp4_parser_get_ftyp_atom_into(
 	size_t* size);
 
 vod_status_t mp4_parser_get_moov_atom_info(
-	request_context_t* request_context, 
-	const u_char* buffer, 
-	size_t buffer_size, 
-	off_t* offset, 
+	request_context_t* request_context,
+	const u_char* buffer,
+	size_t buffer_size,
+	off_t* offset,
 	size_t* size);
 
 vod_status_t mp4_parser_uncompress_moov(

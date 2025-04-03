@@ -51,20 +51,20 @@ enum {
 	STATE_DIRECT,
 };
 
-static vod_status_t 
+static vod_status_t
 buffer_filter_start_frame(media_filter_context_t* context, output_frame_t* frame)
 {
 	buffer_filter_t* state = get_context(context);
-	
+
 	switch (state->cur_state)
 	{
 	case STATE_INITIAL:
 		state->cur_frame = *frame;
 		break;
-		
+
 	case STATE_FRAME_FLUSHED:
 		break;
-		
+
 	default:
 		vod_log_error(VOD_LOG_ERR, context->request_context->log, 0,
 			"buffer_filter_start_frame: invalid state %d", state->cur_state);
@@ -77,7 +77,7 @@ buffer_filter_start_frame(media_filter_context_t* context, output_frame_t* frame
 	return VOD_OK;
 }
 
-vod_status_t 
+vod_status_t
 buffer_filter_force_flush(media_filter_context_t* context, bool_t last_stream_frame)
 {
 	buffer_filter_t* state = get_context(context);
@@ -90,9 +90,9 @@ buffer_filter_force_flush(media_filter_context_t* context, bool_t last_stream_fr
 	{
 		return VOD_OK;
 	}
-	
+
 	// Note: at this point state can only be either STATE_FRAME_STARTED or STATE_FRAME_FLUSHED
-		
+
 	// write all buffered data up to the last frame flush position
 	rc = state->next_filter.start_frame(context, &state->cur_frame);
 	if (rc != VOD_OK)
@@ -154,13 +154,13 @@ buffer_filter_force_flush(media_filter_context_t* context, bool_t last_stream_fr
 			return rc;
 		}
 	}
-	
+
 	rc = state->next_filter.flush_frame(context, last_stream_frame);
 	if (rc != VOD_OK)
 	{
 		return rc;
 	}
-	
+
 	// move back any remaining data
 	vod_memmove(state->start_pos, state->last_flush_pos, state->cur_pos - state->last_flush_pos);
 	state->cur_pos -= (state->last_flush_pos - state->start_pos);
@@ -171,16 +171,16 @@ buffer_filter_force_flush(media_filter_context_t* context, bool_t last_stream_fr
 	case STATE_FRAME_STARTED:
 		state->cur_frame = state->last_frame;
 		break;
-		
+
 	case STATE_FRAME_FLUSHED:
 		state->cur_state = STATE_INITIAL;
 		break;
 	}
-	
+
 	return VOD_OK;
 }
 
-static vod_status_t 
+static vod_status_t
 buffer_filter_write(media_filter_context_t* context, const u_char* buffer, uint32_t size)
 {
 	buffer_filter_t* state = get_context(context);
@@ -191,16 +191,16 @@ buffer_filter_write(media_filter_context_t* context, const u_char* buffer, uint3
 	case STATE_DIRECT:
 		// in direct mode just pass the write to the next filter
 		return state->next_filter.write(context, buffer, size);
-		
+
 	case STATE_FRAME_STARTED:
 		break;				// handled outside the switch
-		
+
 	default:
 		vod_log_error(VOD_LOG_ERR, context->request_context->log, 0,
 			"buffer_filter_write: invalid state %d", state->cur_state);
 		return VOD_UNEXPECTED;		// unexpected
 	}
-	
+
 	// if there is not enough room try flushing the buffer
 	if (state->cur_pos + size > state->end_pos)
 	{
@@ -210,23 +210,23 @@ buffer_filter_write(media_filter_context_t* context, const u_char* buffer, uint3
 			return rc;
 		}
 	}
-	
+
 	// if there is enough room in the buffer, copy the input data
 	if (state->cur_pos + size <= state->end_pos)
 	{
 		state->cur_pos = vod_copy(state->cur_pos, buffer, size);
 		return VOD_OK;
 	}
-	
+
 	// still not enough room after flushing - write directly to the next filter
 	state->cur_state = STATE_DIRECT;
-	
+
 	rc = state->next_filter.start_frame(context, &state->cur_frame);
 	if (rc != VOD_OK)
 	{
 		return rc;
 	}
-	
+
 	if (state->cur_pos > state->start_pos)
 	{
 		rc = state->next_filter.write(context, state->start_pos, state->cur_pos - state->start_pos);
@@ -236,17 +236,17 @@ buffer_filter_write(media_filter_context_t* context, const u_char* buffer, uint3
 		}
 		state->cur_pos = state->start_pos;
 	}
-	
+
 	rc = state->next_filter.write(context, buffer, size);
 	if (rc != VOD_OK)
 	{
 		return rc;
 	}
-	
+
 	return VOD_OK;
 }
 
-static vod_status_t 
+static vod_status_t
 buffer_filter_flush_frame(media_filter_context_t* context, bool_t last_stream_frame)
 {
 	buffer_filter_t* state = get_context(context);
@@ -286,7 +286,7 @@ buffer_filter_flush_frame(media_filter_context_t* context, bool_t last_stream_fr
 			}
 		}
 		break;
-	
+
 	case STATE_DIRECT:
 		// pass the frame flush to the next filter
 		rc = state->next_filter.flush_frame(context, last_stream_frame);
@@ -296,14 +296,14 @@ buffer_filter_flush_frame(media_filter_context_t* context, bool_t last_stream_fr
 		}
 		state->cur_state = STATE_INITIAL;
 		break;
-		
+
 		// Note: nothing to do for the other states
 	}
-	
+
 	return VOD_OK;
 }
 
-bool_t 
+bool_t
 buffer_filter_get_dts(media_filter_context_t* context, uint64_t* dts)
 {
 	buffer_filter_t* state = get_context(context);
@@ -312,7 +312,7 @@ buffer_filter_get_dts(media_filter_context_t* context, uint64_t* dts)
 	{
 		return FALSE;
 	}
-	
+
 	*dts = state->cur_frame.dts;
 	return TRUE;
 }
@@ -327,11 +327,11 @@ buffer_filter_simulated_force_flush(media_filter_context_t* context, bool_t last
 	{
 		return;
 	}
-	
+
 	state->next_filter.simulated_start_frame(context, &state->cur_frame);
 	state->next_filter.simulated_write(context, state->last_flush_size);
 	state->next_filter.simulated_flush_frame(context, last_stream_frame);
-	
+
 	state->used_size -= state->last_flush_size;
 	state->last_flush_size = 0;
 
@@ -340,24 +340,24 @@ buffer_filter_simulated_force_flush(media_filter_context_t* context, bool_t last
 	case STATE_FRAME_STARTED:
 		state->cur_frame = state->last_frame;
 		break;
-		
+
 	case STATE_FRAME_FLUSHED:
 		state->cur_state = STATE_INITIAL;
 		break;
 	}
 }
 
-static void 
+static void
 buffer_filter_simulated_start_frame(media_filter_context_t* context, output_frame_t* frame)
 {
 	buffer_filter_t* state = get_context(context);
-	
+
 	switch (state->cur_state)
 	{
 	case STATE_INITIAL:
 		state->cur_frame = *frame;
 		break;
-		
+
 	case STATE_FRAME_FLUSHED:
 		break;
 	}
@@ -366,7 +366,7 @@ buffer_filter_simulated_start_frame(media_filter_context_t* context, output_fram
 	state->cur_state = STATE_FRAME_STARTED;
 }
 
-static void 
+static void
 buffer_filter_simulated_write(media_filter_context_t* context, uint32_t size)
 {
 	buffer_filter_t* state = get_context(context);
@@ -376,32 +376,32 @@ buffer_filter_simulated_write(media_filter_context_t* context, uint32_t size)
 	case STATE_DIRECT:
 		state->next_filter.simulated_write(context, size);
 		return;
-		
+
 	case STATE_FRAME_STARTED:
 		break;				// handled outside the switch
 	}
-	
+
 	if (state->used_size + size > state->size)
 	{
 		buffer_filter_simulated_force_flush(context, FALSE);
 	}
-	
+
 	if (state->used_size + size <= state->size)
 	{
 		state->used_size += size;
 		return;
 	}
-	
+
 	state->cur_state = STATE_DIRECT;
-	
+
 	state->next_filter.simulated_start_frame(context, &state->cur_frame);
-	
+
 	state->next_filter.simulated_write(context, state->used_size + size);
 
 	state->used_size = 0;
 }
 
-static void 
+static void
 buffer_filter_simulated_flush_frame(media_filter_context_t* context, bool_t last_stream_frame)
 {
 	buffer_filter_t* state = get_context(context);
@@ -418,7 +418,7 @@ buffer_filter_simulated_flush_frame(media_filter_context_t* context, bool_t last
 			buffer_filter_simulated_force_flush(context, TRUE);
 		}
 		break;
-	
+
 	case STATE_DIRECT:
 		// pass the frame flush to the next filter
 		state->next_filter.simulated_flush_frame(context, last_stream_frame);

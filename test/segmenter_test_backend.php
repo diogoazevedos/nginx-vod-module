@@ -1,11 +1,11 @@
 <?php
 
 // pseudo random generator (must generate consistent results)
-class Random 
+class Random
 {
 	private $RSeed = 0;
 
-	public function __construct($s = 0) 
+	public function __construct($s = 0)
 	{
 		$this->RSeed = abs(intval($s)) % 9999999 + 1;
 		$this->num(0, 1);
@@ -50,7 +50,7 @@ function getSourceClips($filePaths, $durations, $generateKfs)
 			"type" => "source",
 			"path" => $filePaths[$i]
 		);
-		
+
 		if ($generateKfs)
 		{
 			$r = new Random();
@@ -70,10 +70,10 @@ function getSourceClips($filePaths, $durations, $generateKfs)
 			}
 			$clip["keyFrameDurations"] = $kfDurations;
 		}
-		
+
 		$result[] = $clip;
 	}
-	
+
 	return $result;
 }
 
@@ -108,7 +108,7 @@ $paramValues = array(
 $params = getRequestParams();
 foreach ($paramValues as $paramName => $values)
 {
-	if (!in_array($params[$paramName], $values)) 
+	if (!in_array($params[$paramName], $values))
 	{
 		die("invalid value for '{$paramName}', must be one of [".implode(',', $values)."]\n");
 	}
@@ -136,11 +136,11 @@ case 'vod':
 		"sequences" => array($sequence)
 	));
 	die(json_encode($mediaSet));
-	
+
 case 'playlist':
 	$playlistType = 'vod';		// playlist needs to be returned as vod
 	break;
-	
+
 case 'live':
 	$firstClipTime = $time * 1000 - floor($sumDurations / 2);
 	$roundTo = floor($sumDurations / 4);
@@ -158,21 +158,21 @@ case 'live':
 	}
 
 	$mediaSet["firstClipTime"] = $firstClipTime;
-	
+
 	if ($discontinuity)
-	{	
+	{
 		if ($params['ici'] == 'yes')
 		{
 			$mediaSet["initialClipIndex"] = 123;
 		}
 		$mediaSet["initialSegmentIndex"] = 234;
 	}
-	
+
 	if ($params['sbt'] == 'yes')
 	{
 		$mediaSet["segmentBaseTime"] = 733038085;
 	}
-	
+
 	$mediaSet["liveWindowDuration"] = intval($params['window']) * 1000;
 	$mediaSet["presentationEndTime"] = $time * 1000 + ($params['pet'] == 'past' ? -1000000 : 1000000);
 	break;

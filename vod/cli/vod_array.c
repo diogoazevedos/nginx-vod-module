@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include "common.h"
 
-int 
+int
 vod_array_init_impl(vod_array_t *array, unsigned n, size_t size)
 {
     array->nelts = 0;
@@ -9,7 +9,7 @@ vod_array_init_impl(vod_array_t *array, unsigned n, size_t size)
     array->nalloc = n;
 
     array->elts = malloc(n * size);
-    if (array->elts == NULL) 
+    if (array->elts == NULL)
 	{
         return VOD_ERROR;
     }
@@ -32,14 +32,14 @@ vod_array_push(vod_array_t *a)
 		a->elts = new_elts;
 		a->nalloc *= 2;
 	}
-	
+
     elt = (u_char *) a->elts + a->size * a->nelts;
     a->nelts++;
 
     return elt;
 }
 
-void 
+void
 vod_array_destroy(vod_array_t *a)
 {
 	free(a->elts);

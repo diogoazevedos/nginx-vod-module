@@ -154,13 +154,13 @@ mss_write_manifest_chunks_live(u_char* p, segment_durations_t* segment_durations
 		// output the timestamp in the first chunk
 		if (first_time)
 		{
-			p = vod_sprintf(p, MSS_CHUNK_TAG_LIVE_FIRST, 
-				mss_rescale_millis(segment_durations->start_time), 
+			p = vod_sprintf(p, MSS_CHUNK_TAG_LIVE_FIRST,
+				mss_rescale_millis(segment_durations->start_time),
 				rescale_time(cur_item->duration, segment_durations->timescale, MSS_TIMESCALE));
 			repeat_count--;
 			first_time = FALSE;
 		}
-		
+
 		// output only the duration in subsequent chunks
 		for (; repeat_count > 0; repeat_count--)
 		{
@@ -171,7 +171,7 @@ mss_write_manifest_chunks_live(u_char* p, segment_durations_t* segment_durations
 	return p;
 }
 
-static bool_t 
+static bool_t
 mss_packager_compare_tracks(uintptr_t bitrate_threshold, const media_info_t* mi1, const media_info_t* mi2)
 {
 	if (mi1->bitrate == 0 ||
@@ -196,7 +196,7 @@ mss_packager_compare_tracks(uintptr_t bitrate_threshold, const media_info_t* mi1
 	return vod_str_equals(mi1->tags.label, mi2->tags.label);
 }
 
-static void 
+static void
 mss_packager_remove_redundant_tracks(
 	vod_uint_t duplicate_bitrate_threshold,
 	media_set_t* media_set)
@@ -253,7 +253,7 @@ mss_packager_remove_redundant_tracks(
 				continue;
 			}
 
-			// prefer to remove a track that doesn't have a label, so that we won't lose a language 
+			// prefer to remove a track that doesn't have a label, so that we won't lose a language
 			//	in case of multi language manifest
 			if (track1->media_info.tags.label.len == 0 || track2->media_info.tags.label.len != 0)
 			{
@@ -304,9 +304,9 @@ mss_packager_remove_segment_durations(segment_durations_t* segment_durations, ui
 	// Note: not updating segment_durations->end_time / segment_durations->duration since they are not needed here
 }
 
-vod_status_t 
+vod_status_t
 mss_packager_build_manifest(
-	request_context_t* request_context, 
+	request_context_t* request_context,
 	mss_manifest_config_t* conf,
 	media_set_t* media_set,
 	size_t extra_tags_size,
@@ -344,9 +344,9 @@ mss_packager_build_manifest(
 
 	// get the adaptation sets
 	rc = manifest_utils_get_adaptation_sets(
-		request_context, 
-		media_set, 
-		ADAPTATION_SETS_FLAG_DEFAULT_LANG_LAST, 
+		request_context,
+		media_set,
+		ADAPTATION_SETS_FLAG_DEFAULT_LANG_LAST,
 		&adaptation_sets);
 	if (rc != VOD_OK)
 	{
@@ -396,7 +396,7 @@ mss_packager_build_manifest(
 				if (segment_durations[media_type].segment_count <= MAX_LOOK_AHEAD_SEGMENTS)
 				{
 					vod_log_error(VOD_LOG_ERR, request_context->log, 0,
-						"mss_packager_build_manifest: segment count %uD smaller than look ahead segment count", 
+						"mss_packager_build_manifest: segment count %uD smaller than look ahead segment count",
 						segment_durations[media_type].segment_count);
 					return VOD_BAD_REQUEST;
 				}
@@ -424,9 +424,9 @@ mss_packager_build_manifest(
 
 	result_size +=
 		(sizeof(MSS_STREAM_INDEX_HEADER) - 1 + 2 * sizeof(MSS_STREAM_TYPE_VIDEO) + 2 * VOD_INT32_LEN +
-		sizeof(MSS_STREAM_INDEX_FOOTER)) * adaptation_sets.count[ADAPTATION_TYPE_VIDEO] + 
+		sizeof(MSS_STREAM_INDEX_FOOTER)) * adaptation_sets.count[ADAPTATION_TYPE_VIDEO] +
 		(sizeof(MSS_STREAM_INDEX_HEADER_LABEL) - 1 + 2 * sizeof(MSS_STREAM_TYPE_AUDIO) + 2 * VOD_INT32_LEN +
-		sizeof(MSS_STREAM_INDEX_FOOTER)) * adaptation_sets.count[ADAPTATION_TYPE_AUDIO] + 
+		sizeof(MSS_STREAM_INDEX_FOOTER)) * adaptation_sets.count[ADAPTATION_TYPE_AUDIO] +
 		(sizeof(MSS_STREAM_INDEX_HEADER_SUBTITLE) - 1 + 2 * VOD_INT32_LEN +
 		sizeof(MSS_STREAM_INDEX_FOOTER)) * adaptation_sets.count[ADAPTATION_TYPE_SUBTITLE];
 
@@ -438,12 +438,12 @@ mss_packager_build_manifest(
 		result_size += cur_track->media_info.extra_data.len * 2;
 	}
 
-	result_size += 
-		(sizeof(MSS_VIDEO_QUALITY_LEVEL_HEADER) - 1 + 4 * VOD_INT32_LEN + 
-		sizeof(MSS_QUALITY_LEVEL_FOOTER) - 1) * media_set->track_count[MEDIA_TYPE_VIDEO] + 
-		(sizeof(MSS_AUDIO_QUALITY_LEVEL_HEADER) - 1 + 7 * VOD_INT32_LEN + mss_fourcc_aac.len + 
-		sizeof(MSS_QUALITY_LEVEL_FOOTER) - 1) * media_set->track_count[MEDIA_TYPE_AUDIO] + 
-		(sizeof(MSS_SUBTITLE_QUALITY_LEVEL) - 1 + 2 * VOD_INT32_LEN) * 
+	result_size +=
+		(sizeof(MSS_VIDEO_QUALITY_LEVEL_HEADER) - 1 + 4 * VOD_INT32_LEN +
+		sizeof(MSS_QUALITY_LEVEL_FOOTER) - 1) * media_set->track_count[MEDIA_TYPE_VIDEO] +
+		(sizeof(MSS_AUDIO_QUALITY_LEVEL_HEADER) - 1 + 7 * VOD_INT32_LEN + mss_fourcc_aac.len +
+		sizeof(MSS_QUALITY_LEVEL_FOOTER) - 1) * media_set->track_count[MEDIA_TYPE_AUDIO] +
+		(sizeof(MSS_SUBTITLE_QUALITY_LEVEL) - 1 + 2 * VOD_INT32_LEN) *
 		media_set->track_count[MEDIA_TYPE_SUBTITLE];
 
 	// allocate the result
@@ -469,7 +469,7 @@ mss_packager_build_manifest(
 	if (media_set->type == MEDIA_SET_LIVE)
 	{
 		media_type = media_set->track_count[MEDIA_TYPE_VIDEO] != 0 ? MEDIA_TYPE_VIDEO : MEDIA_TYPE_AUDIO;
-		p = vod_sprintf(p, MSS_MANIFEST_HEADER_LIVE_ATTRIBUTES, 
+		p = vod_sprintf(p, MSS_MANIFEST_HEADER_LIVE_ATTRIBUTES,
 			mss_rescale_millis(segment_durations[media_type].segment_count * segmenter_conf->segment_duration),
 			MAX_LOOK_AHEAD_SEGMENTS);
 	}
@@ -603,7 +603,7 @@ mss_packager_build_manifest(
 	p = vod_copy(p, MSS_MANIFEST_FOOTER, sizeof(MSS_MANIFEST_FOOTER) - 1);
 
 	result->len = p - result->data;
-	
+
 	if (result->len > result_size)
 	{
 		vod_log_error(VOD_LOG_ERR, request_context->log, 0,
@@ -611,7 +611,7 @@ mss_packager_build_manifest(
 			result->len, result_size);
 		return VOD_UNEXPECTED;
 	}
-	
+
 	return VOD_OK;
 }
 
@@ -627,7 +627,7 @@ mss_write_tfhd_atom(u_char* p, uint32_t track_id, uint32_t flags)
 	return p;
 }
 
-static void 
+static void
 mss_get_segment_timing_info(media_sequence_t* sequence, segment_timing_info_t* result)
 {
 	media_clip_filtered_t* cur_clip;
@@ -716,7 +716,7 @@ mss_packager_build_fragment_header(
 		ATOM_HEADER_SIZE +
 		ATOM_HEADER_SIZE + sizeof(mss_tfhd_atom_t) +
 		trun_atom_size +
-		ATOM_HEADER_SIZE + sizeof(uuid_tfxd_atom_t) + 
+		ATOM_HEADER_SIZE + sizeof(uuid_tfxd_atom_t) +
 		extra_traf_atoms_size;
 
 	if (media_set->look_ahead_segment_count > 0)

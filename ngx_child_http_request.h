@@ -24,7 +24,7 @@ typedef struct {
 //	1. callback is optional, if it is not supplied, the module will finalize the request
 //		when the upstream request completes.
 //	2. response_buffer is optional, if it is not supplied, the upstream response gets written
-//		to the parent request. when a response buffer is supplied, the response is written to it, 
+//		to the parent request. when a response buffer is supplied, the response is written to it,
 //		the buffer should be large enough to contain both the response body and the response headers.
 ngx_int_t ngx_child_request_start(
 	ngx_http_request_t *r,

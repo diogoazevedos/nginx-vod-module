@@ -40,10 +40,10 @@ class TestThreadBase(Thread):
 			index += 1
 		self.writeOutput('Info: done')
 		self.cleanup()
-		
+
 	def writeOutput(self, msg):
 		writeOutput(msg, 'TID%s' % self.curIndex)
-		
+
 	def cleanup(self):
 		pass
 
@@ -53,25 +53,25 @@ class ParentThread(Thread):
 		self.serverName, self.curIndex = threadContext
 		self.inputFile, self.threadCount, self.totalCount, self.outputFile = sharedContext
 
-	def run(self):		
+	def run(self):
 		splittedOutputFile = os.path.splitext(self.outputFile)
 		outputFile = '%s-%s-%s%s' % (splittedOutputFile[0], self.serverName, self.curIndex, splittedOutputFile[1])
 		errorFile = '%s-%s-%s.err%s' % (splittedOutputFile[0], self.serverName, self.curIndex, splittedOutputFile[1])
 		cmdLine = 'python2 %s %s %s %s child %s %s' % (os.path.realpath(sys.argv[0]), self.inputFile, self.threadCount, self.outputFile, self.curIndex, self.totalCount)
-				
+
 		if self.serverName != '-':
 			cmdLine = 'ssh %s %s < /dev/null' % (self.serverName, cmdLine)
-			
+
 		cmdLine += ' > %s 2> %s' % (outputFile, errorFile)
-		
+
 		self.writeOutput('Info: running %s' % cmdLine)
-		os.system(cmdLine)		
+		os.system(cmdLine)
 		self.writeOutput('Info: done')
-		
-	
+
+
 	def writeOutput(self, msg):
 		writeOutput(msg, self.serverName)
-			
+
 
 def runWorkerThreads(workerThread, threadContexts, sharedContext):
 	# create the threads
@@ -98,16 +98,16 @@ def runWorkerThreads(workerThread, threadContexts, sharedContext):
 
 	writeOutput('Info: done !')
 
-		
+
 def main(testThread, stopFile):
 	# parse the command line
 	if len(sys.argv) < 4:
 		writeOutput('Usage:\n\tpython %s <input file> <thread count> <output file> [<server1> <server2> .. ]' % os.path.basename(__file__))
 		return 1
-	
+
 	(_, inputFile, threadCount, outputFile) = sys.argv[:4]
-	threadCount = int(threadCount)	
-	
+	threadCount = int(threadCount)
+
 	if len(sys.argv) == 7 and sys.argv[4] == 'child':
 		curIndex = int(sys.argv[5])
 		totalCount = int(sys.argv[6])
@@ -116,12 +116,12 @@ def main(testThread, stopFile):
 		curIndex = 0
 		totalCount = 1
 		serverList = sys.argv[4:]
-		
+
 	# the following line makes use of worker processes on each server instead of threads
 	if len(serverList) == 0 and threadCount > 1:
 		serverList = ['-'] * threadCount
 		threadCount = 1
-	
+
 	# parent
 	if len(serverList) > 0:
 		indexes = [curIndex + x * totalCount for x in range(len(serverList))]
@@ -136,7 +136,7 @@ def main(testThread, stopFile):
 		os.remove(stopFile)
 	except OSError:
 		pass
-		
+
 	writeOutput('Info: started')
 
 	# run the worker threads

@@ -39,7 +39,7 @@ ngx_array_push(ngx_array_t *a)
 		a->elts = new_elts;
 		a->nalloc *= 2;
 	}
-	
+
     elt = (u_char *) a->elts + a->size * a->nelts;
     a->nelts++;
 
@@ -73,7 +73,7 @@ void sanity_tests()
 	assert(rc == VOD_JSON_OK);
 	assert(result.type == VOD_JSON_STRING);
 	assert_string(result.v.str, "test");
-	
+
 	rc = vod_json_parse(pool, (u_char*)" \"fsdaf\\\"fsaf\nfdasf\\fdfas\" ", &result, error, sizeof(error));
 	assert(rc == VOD_JSON_OK);
 	assert(result.type == VOD_JSON_STRING);
@@ -133,7 +133,7 @@ void sanity_tests()
 	assert(pairs[2].value.type == VOD_JSON_BOOL && !pairs[2].value.v.boolean);
 	assert(pairs[3].value.type == VOD_JSON_STRING);
 	assert_string(pairs[3].value.v.str, "value");
-	
+
 	rc = vod_json_parse(pool, (u_char*)" { \"key\" : { \"subkey\": \"value\" } } ", &result, error, sizeof(error));
 	assert(rc == VOD_JSON_OK);
 	assert(result.type == VOD_JSON_OBJECT);
@@ -146,7 +146,7 @@ void sanity_tests()
 	assert_string(pairs[0].key, "subkey");
 	assert(pairs[0].value.type == VOD_JSON_STRING);
 	assert_string(pairs[0].value.v.str, "value");
-	
+
 	rc = vod_json_parse(pool, (u_char*)" { \"key1\" : { \"subkey\": \"value\" } , \"key2\" : null } ", &result, error, sizeof(error));
 	assert(rc == VOD_JSON_OK);
 	assert(result.type == VOD_JSON_OBJECT);
@@ -177,7 +177,7 @@ void sanity_tests()
 	assert(result.type == VOD_JSON_ARRAY);
 	assert(result.v.arr.nelts == 1);
 	elements = (vod_json_value_t*)result.v.arr.elts;
-	assert(elements[0].type == VOD_JSON_OBJECT);	
+	assert(elements[0].type == VOD_JSON_OBJECT);
 	pairs = (vod_json_key_value_t*)elements[0].v.arr.elts;
 	assert_string(pairs[0].key, "key");
 	assert(pairs[0].value.type == VOD_JSON_NULL);
@@ -245,8 +245,8 @@ void get_element_guid_tests()
 void get_fixed_string_tests()
 {
 	static ngx_str_t tests[] = {
-		ngx_string("123"), 
-		ngx_string("12345==="), 
+		ngx_string("123"),
+		ngx_string("12345==="),
 		ngx_string("123456=="),
 		ngx_string("2xF1CWaBQs21ihR4NI-AwQ=="),
 		ngx_string("2xF1CWaBQs21ihR4NI=AwQ=="),
@@ -255,7 +255,7 @@ void get_fixed_string_tests()
 	ngx_str_t* cur_test;
 	u_char str[16];
 	ngx_int_t rc;
-	
+
 	for (cur_test = tests; cur_test->len; cur_test++)
 	{
 		rc = parse_utils_parse_fixed_base64_string(cur_test, str, sizeof(str));
@@ -275,9 +275,9 @@ void get_binary_string_tests()
 	ngx_str_t* cur_test;
 	ngx_str_t str;
 	ngx_int_t rc;
-	
+
 	for (cur_test = tests; cur_test->len; cur_test++)
-	{		
+	{
 		rc = parse_utils_parse_variable_base64_string(pool, cur_test, &str);
 		if (rc != VOD_BAD_DATA)
 		{
@@ -289,7 +289,7 @@ void get_binary_string_tests()
 int main()
 {
 	pool = ngx_create_pool(1024 * 1024, &ngx_log);
-	
+
 	sanity_tests();
 	bad_jsons_test();
 	get_element_guid_tests();

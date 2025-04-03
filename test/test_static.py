@@ -5,7 +5,7 @@ import re
 import os
 
 IGNORE_LIST = set([
-	'vod_array_init_impl', 
+	'vod_array_init_impl',
 	'vod_array_destroy',
 	'hls_encryption_methods',
 	'dash_manifest_formats',

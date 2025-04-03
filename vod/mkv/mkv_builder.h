@@ -23,7 +23,7 @@ vod_status_t  mkv_builder_frame_writer_init(
 	request_context_t* request_context,
 	media_sequence_t* sequence,
 	write_callback_t write_callback,
-	void* write_context, 
+	void* write_context,
 	bool_t reuse_buffers,
 	mkv_encryption_type_t encryption_type,
 	u_char* iv,

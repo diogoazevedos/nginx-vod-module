@@ -4,7 +4,7 @@
 	This script builds JSON playlist definitions for nginx-vod-module.
 	When playlist type is set to live, it will play the MP4 files one after the other in a loop.
 	When playlist type is vod, it will play each MP4 file once.
-	The discontinuity parameter is true by default, set it to false only when all MP4's have 
+	The discontinuity parameter is true by default, set it to false only when all MP4's have
 	exactly the same encoding parameters (in the case of h264, the SPS/PPS have to be the same).
 */
 

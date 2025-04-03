@@ -58,17 +58,17 @@ def stripSequenceHeaders(mdatAtom):
 	curPos = 0
 	while curPos + ADOBE_MUX_PACKET_SIZE <= len(mdatAtom):
 		(tagType, dataSize, timestamp, streamId) = unpackAdobeMuxPacket(mdatAtom[curPos:(curPos + ADOBE_MUX_PACKET_SIZE)])
-		
+
 		isSequenceHeader = False
 		if tagType == TAG_TYPE_VIDEO and ord(mdatAtom[curPos + ADOBE_MUX_PACKET_SIZE + 1]) == AVC_PACKET_TYPE_SEQUENCE_HEADER:
 			isSequenceHeader = True
 		elif tagType == TAG_TYPE_AUDIO and ord(mdatAtom[curPos + ADOBE_MUX_PACKET_SIZE + 1]) == AAC_PACKET_TYPE_SEQUENCE_HEADER:
 			isSequenceHeader = True
-		
+
 		packetSize = ADOBE_MUX_PACKET_SIZE + dataSize + 4
 		packetData = mdatAtom[curPos:(curPos + packetSize)]
 		curPos += ADOBE_MUX_PACKET_SIZE + dataSize + 4
-		
+
 		packetDataNoTimestamp = packetData[:4] + '\0' * 4 + packetData[8:]
 		if isSequenceHeader:
 			seqHeaders.setdefault(tagType, packetDataNoTimestamp)
@@ -83,7 +83,7 @@ def stripSequenceHeaders(mdatAtom):
 
 def formatBinaryString(info):
 	return commands.getoutput('echo %s | base64 --decode | xxd' % base64.b64encode(info))
-	
+
 
 BOOTSTRAP_INFO_FORMAT1 = [
 	'0000 008b 6162 7374 0000 0000 0000 0001 0000 0003 e8',
@@ -134,7 +134,7 @@ def parseBootstrapInfo(info):
 	if result == False:
 		result = parseFormat(info, BOOTSTRAP_INFO_FORMAT2)
 	return result
-	
+
 class ManifestMedia:
 	def __init__(self, xml, bootstrapInfos):
 		self.bitrate = int(xml.attributes['bitrate'].nodeValue)
@@ -147,17 +147,17 @@ class ManifestMedia:
 		else:
 			self.index = int(bootstrapId[len('bootstrap'):])
 		self.bootstrapInfo = bootstrapInfos[bootstrapId]
-		
+
 		metadata = str(xml.getElementsByTagName('metadata')[0].firstChild.nodeValue)
 		decoder = pyamf.decode(base64.b64decode(metadata), encoding=pyamf.AMF0)
 		if str(decoder.next()) == 'onMetaData':
 			self.metadata = decoder.next()
-		
+
 class Manifest:
 	def __init__(self, xml):
 		manifestNode = xml.getElementsByTagName('manifest')[0]
 		self.duration = float(manifestNode.getElementsByTagName('duration')[0].firstChild.nodeValue)
-		
+
 		bootstrapInfos = {}
 		for bootstrap in manifestNode.getElementsByTagName('bootstrapInfo'):
 			id = bootstrap.attributes['id'].nodeValue
@@ -169,7 +169,7 @@ class Manifest:
 			mediaObject = ManifestMedia(media, bootstrapInfos)
 			self.medias.append(mediaObject)
 		self.medias.sort(key=operator.attrgetter('index'))
-		
+
 class TestThread(stress_base.TestThreadBase):
 	def __init__(self, index, increment, stopFile):
 		stress_base.TestThreadBase.__init__(self, index, increment, stopFile)
@@ -195,16 +195,16 @@ class TestThread(stress_base.TestThreadBase):
 				self.writeOutput('Error: bootstrap field value mismatch %s %s %s %s %s' % (key, value1, value2, parsedInfo1, parsedInfo2))
 				return False
 		return True
-		
+
 	def compareManifests(self, manifest1, manifest2):
 		if abs(manifest1.duration - manifest2.duration) > DURATION_THRESHOLD:
 			self.writeOutput('Error: duration mismatch %s %s' % (manifest1.duration, manifest2.duration))
 			return False
-			
+
 		if len(manifest1.medias) != len(manifest2.medias):
 			self.writeOutput('Error: media count mismatch %s %s' % (len(manifest1.medias), len(manifest2.medias)))
 			return False
-			
+
 		for index in xrange(len(manifest1.medias)):
 			media1 = manifest1.medias[index]
 			media2 = manifest2.medias[index]
@@ -212,16 +212,16 @@ class TestThread(stress_base.TestThreadBase):
 				media2.bitrate < (media1.bitrate * (100 - BITRATE_THRESHOLD)) / 100.0:
 				self.writeOutput('Error: bitrate mismatch %s %s' % (media1.bitrate, media2.bitrate))
 				return False
-				
+
 			if not self.compareBootstrapInfos(media1.bootstrapInfo, media2.bootstrapInfo):
 				return False
-			
+
 			keys1 = sorted(media1.metadata.keys())
 			keys2 = sorted(media2.metadata.keys())
 			if keys1 != keys2:
 				self.writeOutput('Error: metadata has different keys %s %s' % (keys1, keys2))
 				return False
-			
+
 			for key in keys1:
 				value1 = media1.metadata[key]
 				value2 = media2.metadata[key]
@@ -274,7 +274,7 @@ class TestThread(stress_base.TestThreadBase):
 					self.writeOutput('Error: %s fragment test failed %s %s len1=%s len2=%s diff=%s' % (streamName, url1, url2, len(stream1), len(stream2), abs(len(stream1) - len(stream2))))
 				return False
 		return True
-		
+
 	def compareFragments(self, manifestUrl1, manifest1, manifestUrl2, manifest2):
 		baseUrl1 = manifestUrl1.rsplit('/', 1)[0] + '/'
 		baseUrl2 = manifestUrl2.rsplit('/', 1)[0] + '/'
@@ -312,7 +312,7 @@ class TestThread(stress_base.TestThreadBase):
 				if seqHeaders1 != seqHeaders2:
 					self.writeOutput('Error: non matching sequence headers %s %s' % (repr(seqHeaders1), repr(seqHeaders2)))
 					return False
-				
+
 				if not self.compareStream(url1, url2, 'video', video1, video2, False):
 					if not self.compareStream(url1, url2, 'video-ignore-ts', videoNoTS1, videoNoTS2, True):
 						return False
@@ -329,13 +329,13 @@ class TestThread(stress_base.TestThreadBase):
 		else:
 			manifestUrl1 = BASE_URL1 % uri
 			manifestUrl2 = BASE_URL2 % uri
-		
+
 		self.writeOutput('Info: comparing %s %s' % (manifestUrl1, manifestUrl2))
 
 		# avoid billing real partners
 		manifestUrl1 = re.sub('/p/\d+/sp/\d+/', '/p/%s/sp/%s00/' % (TEST_PARTNER_ID, TEST_PARTNER_ID), manifestUrl1)
 		manifestUrl2 = re.sub('/p/\d+/sp/\d+/', '/p/%s/sp/%s00/' % (TEST_PARTNER_ID, TEST_PARTNER_ID), manifestUrl2)
-		
+
 		code1, manifest1 = self.getUrl(manifestUrl1)
 		code2, manifest2 = self.getUrl(manifestUrl2)
 		if code1 != code2:
@@ -349,7 +349,7 @@ class TestThread(stress_base.TestThreadBase):
 			manifest1 = minidom.parseString(manifest1)
 		except ExpatError:
 			manifest1 = False
-			
+
 		try:
 			manifest2 = minidom.parseString(manifest2)
 		except ExpatError:
@@ -364,10 +364,10 @@ class TestThread(stress_base.TestThreadBase):
 		elif manifest1 != False and manifest2 == False:
 			self.writeOutput('Error: failed to parse second manifest')
 			return False
-		
+
 		manifest1 = Manifest(manifest1)
 		manifest2 = Manifest(manifest2)
-			
+
 		if not self.compareManifests(manifest1, manifest2):
 			return False
 		if not self.compareFragments(manifestUrl1, manifest1, manifestUrl2, manifest2):

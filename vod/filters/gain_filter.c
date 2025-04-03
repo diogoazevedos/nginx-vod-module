@@ -101,7 +101,7 @@ gain_filter_parse(
 	if (gain->v.num.num <= 0 || gain->v.num.denom > 100)
 	{
 		vod_log_error(VOD_LOG_ERR, context->request_context->log, 0,
-			"gain_filter_parse: invalid gain %L/%uL, expecting a positive number with up to 2 decimal points", 
+			"gain_filter_parse: invalid gain %L/%uL, expecting a positive number with up to 2 decimal points",
 			gain->v.num.num, gain->v.num.denom);
 		return VOD_BAD_MAPPING;
 	}

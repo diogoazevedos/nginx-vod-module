@@ -69,7 +69,7 @@ filter_get_clip_track_count(media_clip_t* clip, uint32_t* track_count)
 
 static media_track_t*
 filter_copy_track_to_clip(
-	filters_init_state_t* state, 
+	filters_init_state_t* state,
 	media_track_t* track)
 {
 	media_track_t* output_track = state->output_track;
@@ -80,7 +80,7 @@ filter_copy_track_to_clip(
 
 	media_type = output_track->media_info.media_type;
 	if (ref_track[media_type] == NULL)
-	{ 
+	{
 		ref_track[media_type] = output_track;
 	}
 	else
@@ -95,7 +95,7 @@ filter_copy_track_to_clip(
 			break;
 
 		case MDP_MIN:
-			if (output_track->media_info.duration_millis > 0 && 
+			if (output_track->media_info.duration_millis > 0 &&
 				(ref_track[media_type]->media_info.duration_millis == 0 ||
 				output_track->media_info.duration_millis < ref_track[media_type]->media_info.duration_millis))
 			{
@@ -120,7 +120,7 @@ filter_copy_track_to_clip(
 
 static void
 filter_init_filtered_clip_from_source(
-	filters_init_state_t* state, 
+	filters_init_state_t* state,
 	media_clip_source_t* source)
 {
 	uint32_t media_type;
@@ -226,7 +226,7 @@ filter_scale_video_tracks(filters_init_state_t* state, media_clip_t* clip, uint3
 static vod_status_t
 filter_validate_consistent_codecs(
 	request_context_t* request_context,
-	media_clip_filtered_t* first_clip, 
+	media_clip_filtered_t* first_clip,
 	media_clip_filtered_t* cur_clip)
 {
 	media_track_t* first_clip_track;
@@ -469,7 +469,7 @@ filter_init_filtered_clips(
 	return VOD_OK;
 }
 
-vod_status_t 
+vod_status_t
 filter_init_state(
 	request_context_t* request_context,
 	read_cache_state_t* read_cache_state,
@@ -487,7 +487,7 @@ filter_init_state(
 			"filter_init_state: vod_alloc failed");
 		return VOD_ALLOC_FAILED;
 	}
-		
+
 	state->request_context = request_context;
 	state->read_cache_state = read_cache_state;
 	state->media_set = media_set;
@@ -526,7 +526,7 @@ filter_run_state_machine(void* context)
 
 			state->cur_track++;
 		}
-		
+
 		if (state->cur_track >= state->output_clip->last_track)
 		{
 			// move to the next track

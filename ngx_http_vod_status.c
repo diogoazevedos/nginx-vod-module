@@ -37,7 +37,7 @@ typedef struct {
 } ngx_http_vod_stat_def_t;
 
 // constants
-static const u_char status_prefix[] = 
+static const u_char status_prefix[] =
 	"<?xml version=\"1.0\" encoding=\"utf-8\" ?>\r\n"
 	"<vod>\r\n"
 	"<version>" NGINX_VOD_VERSION "</version>\r\n";
@@ -242,11 +242,11 @@ ngx_http_vod_status_xml_handler(ngx_http_request_t *r)
 		for (i = 0; i < PC_COUNT; i++)
 		{
 			p = ngx_copy(p, perf_counters_open_tags[i].data, perf_counters_open_tags[i].len);
-			p = ngx_sprintf(p, PERF_COUNTER_FORMAT, 
-				perf_counters->counters[i].sum, 
-				perf_counters->counters[i].count, 
-				perf_counters->counters[i].max, 
-				perf_counters->counters[i].max_time, 
+			p = ngx_sprintf(p, PERF_COUNTER_FORMAT,
+				perf_counters->counters[i].sum,
+				perf_counters->counters[i].count,
+				perf_counters->counters[i].max,
+				perf_counters->counters[i].max_time,
 				perf_counters->counters[i].max_pid);
 			p = ngx_copy(p, perf_counters_close_tags[i].data, perf_counters_close_tags[i].len);
 		}
@@ -254,9 +254,9 @@ ngx_http_vod_status_xml_handler(ngx_http_request_t *r)
 	}
 
 	p = ngx_copy(p, status_postfix, sizeof(status_postfix) - 1);
-	
+
 	response.len = p - response.data;
-	
+
 	if (response.len > result_size)
 	{
 		ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,

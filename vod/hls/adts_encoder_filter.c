@@ -45,7 +45,7 @@ adts_encoder_set_media_info(
 	return VOD_OK;
 }
 
-static vod_status_t 
+static vod_status_t
 adts_encoder_start_frame(media_filter_context_t* context, output_frame_t* frame)
 {
 	adts_encoder_state_t* state = get_context(context);
@@ -53,20 +53,20 @@ adts_encoder_start_frame(media_filter_context_t* context, output_frame_t* frame)
 
 	frame->size += sizeof(state->header);
 	frame->header_size += 1;
-	
+
 	rc = state->start_frame(context, frame);
 	if (rc != VOD_OK)
 	{
 		return rc;
 	}
-	
+
 	adts_frame_header_set_aac_frame_length(state->header, frame->size);
-	
+
 	return state->write(context, state->header, sizeof(state->header));
 }
 
 
-static void 
+static void
 adts_encoder_simulated_start_frame(media_filter_context_t* context, output_frame_t* frame)
 {
 	adts_encoder_state_t* state = get_context(context);

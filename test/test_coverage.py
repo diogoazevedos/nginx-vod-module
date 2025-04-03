@@ -76,11 +76,11 @@ for root, dirs, files in os.walk(nginxVodRoot):
                 logFunction = logFunction[1:]
             if realFunction != logFunction:
                 print('log function mismatch %s' % logMessage)
-            
+
 
 if errorLog == None:
     sys.exit(0)
-            
+
 errorLogData = open(errorLog, 'rb').read()
 foundPrefixes = {}
 for logPrefix in logPrefixes:

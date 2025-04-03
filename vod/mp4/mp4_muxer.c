@@ -151,10 +151,10 @@ mp4_muxer_write_video_trun_atoms(
 				{
 					// close current trun atom
 					mp4_muxer_write_trun_header(
-						trun_header, 
-						base_offset + start_offset, 
-						frame_count, 
-						sizeof(trun_video_frame_t), 
+						trun_header,
+						base_offset + start_offset,
+						frame_count,
+						sizeof(trun_video_frame_t),
 						(1 << 24) | TRUN_VIDEO_FLAGS);		// version = 1
 				}
 
@@ -295,8 +295,8 @@ mp4_muxer_init_track(
 	cur_stream->cur_frame = cur_track->frames.first_frame;
 	cur_stream->source = get_frame_part_source_clip(cur_stream->cur_frame_part);
 
-	cur_stream->first_frame_time_offset = 
-		mp4_rescale_millis(cur_track->clip_start_time, cur_track->media_info.timescale) + 
+	cur_stream->first_frame_time_offset =
+		mp4_rescale_millis(cur_track->clip_start_time, cur_track->media_info.timescale) +
 		cur_track->first_frame_time_offset;
 	cur_stream->next_frame_time_offset = cur_stream->first_frame_time_offset;
 
@@ -347,7 +347,7 @@ mp4_muxer_choose_stream(mp4_muxer_state_t* state)
 				state->first_time = TRUE;
 			}
 
-			if (min_dts == NULL || 
+			if (min_dts == NULL ||
 				cur_stream->next_frame_time_offset < min_time_offset)
 			{
 				min_dts = cur_stream;
@@ -379,7 +379,7 @@ mp4_muxer_choose_stream(mp4_muxer_state_t* state)
 
 static vod_status_t
 mp4_calculate_output_offsets(
-	mp4_muxer_state_t* state, 
+	mp4_muxer_state_t* state,
 	size_t* frames_size,
 	uint32_t* trun_atom_count)
 {
@@ -479,7 +479,7 @@ mp4_muxer_init_state(
 	}
 
 	state->first_stream = vod_alloc(
-		request_context->pool, 
+		request_context->pool,
 		sizeof(state->first_stream[0]) * media_set->total_track_count);
 	if (state->first_stream == NULL)
 	{
@@ -548,7 +548,7 @@ mp4_muxer_get_earliest_pres_time(media_set_t* media_set, uint32_t index)
 	uint32_t clip_index;
 
 	for (clip_index = 0, track = media_set->filtered_tracks + index;
-		clip_index < media_set->clip_count; 
+		clip_index < media_set->clip_count;
 		clip_index++, track += media_set->total_track_count)
 	{
 		result = mp4_rescale_millis(track->clip_start_time, track->media_info.timescale) +
@@ -580,7 +580,7 @@ mp4_muxer_init_fragment(
 	bool_t per_stream_writer,
 	bool_t reuse_buffers,
 	bool_t size_only,
-	vod_str_t* header, 
+	vod_str_t* header,
 	size_t* total_fragment_size,
 	mp4_muxer_state_t** processor_state)
 {
@@ -598,9 +598,9 @@ mp4_muxer_init_fragment(
 
 	// initialize the muxer state
 	rc = mp4_muxer_init_state(
-		request_context, 
+		request_context,
 		media_set,
-		track_writers, 
+		track_writers,
 		per_stream_writer,
 		reuse_buffers,
 		&state);
@@ -622,10 +622,10 @@ mp4_muxer_init_fragment(
 	// get the moof size
 	moof_atom_size =
 		ATOM_HEADER_SIZE +		// moof
-		ATOM_HEADER_SIZE + sizeof(mfhd_atom_t) + 
+		ATOM_HEADER_SIZE + sizeof(mfhd_atom_t) +
 		(ATOM_HEADER_SIZE +		// traf
 		ATOM_HEADER_SIZE + sizeof(tfhd_atom_t) +
-		ATOM_HEADER_SIZE + sizeof(tfdt64_atom_t)) * media_set->total_track_count + 
+		ATOM_HEADER_SIZE + sizeof(tfdt64_atom_t)) * media_set->total_track_count +
 		(ATOM_HEADER_SIZE + sizeof(trun_atom_t)) * trun_atom_count;
 
 	for (cur_stream = state->first_stream; cur_stream < state->last_stream; cur_stream++)
@@ -640,7 +640,7 @@ mp4_muxer_init_fragment(
 			break;
 		}
 	}
-	
+
 	*total_fragment_size =
 		moof_atom_size +
 		mdat_atom_size;
@@ -683,7 +683,7 @@ mp4_muxer_init_fragment(
 
 		// moof.traf.tfdt
 		earliest_pres_time = mp4_muxer_get_earliest_pres_time(
-			media_set, 
+			media_set,
 			cur_stream->index);
 		p = mp4_fragment_write_tfdt64_atom(p, earliest_pres_time);
 

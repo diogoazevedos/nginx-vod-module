@@ -34,7 +34,7 @@ def getPmtPidFromPat(curPacket, curPos):
 		if curEntry.programNumber == 1:
 			return curEntry.programPID
 	return None
-	
+
 def getVideoPidsFromPmt(curPacket, curPos):
 	thePmt = pmt.parse(curPacket[curPos:])
 	curPos += pmt.sizeof()
@@ -47,30 +47,30 @@ def getVideoPidsFromPmt(curPacket, curPos):
 			result.append(curEntry.elementaryPID)
 		curPos += pmtEntry.sizeof() + curEntry.esInfoLength
 	return result
-			
+
 def getKeyFramesInfo(inputData, initialPts):
-	
+
 	programPID = None
 	videoPids = []
-		
+
 	packetStartBuffer = []
 	markerBuffer = ''
 	state = WAIT_MARKER
 	lastPesPos = None
 	curStartPos = None
 	keyFrame = None
-	
+
 	result = []
 	for packetStart in xrange(0, len(inputData), TS_PACKET_LENGTH):
 		curPacket = buffer(inputData, packetStart, TS_PACKET_LENGTH)
-		
+
 		# skip the TS header
 		curPos = 4	# sizeof ts header
-		
+
 		# skip the adaptation field
 		if ord(curPacket[3]) & 0x20: # adaptationFieldExist
 			curPos += 1 + ord(curPacket[curPos])
-			
+
 		pid = ((ord(curPacket[1]) & 0x1f) << 8) | ord(curPacket[2])
 		if pid == PAT_PID:
 			programPID = getPmtPidFromPat(curPacket, curPos)
@@ -90,10 +90,10 @@ def getKeyFramesInfo(inputData, initialPts):
 					curPos += pts.sizeof()
 					if thePesOptHeader.dtsFlag:
 						curPos += pts.sizeof()
-				
+
 			if len(curPacket[curPos:]) == 0:
 				continue
-					
+
 			# process the video stream
 			curBuffer = markerBuffer + curPacket[curPos:]
 			splittedBuffer = curBuffer.split('\x00\x00\x01')
@@ -116,7 +116,7 @@ def getKeyFramesInfo(inputData, initialPts):
 					curStartPos = lastPesPos
 					curPts = lastPtsValue
 					keyFrame = False
-					
+
 			markerBuffer = curBuffer[-3:]
 			packetStartBuffer = packetStartBuffer + [packetStart] * min(len(curPacket[curPos:]), 4)
 			packetStartBuffer = packetStartBuffer[-4:]
@@ -127,7 +127,7 @@ def getKeyFramesInfo(inputData, initialPts):
 		if initialPts == None:
 			initialPts = curPts
 		result.append((curPts - initialPts, curStartPos, curEndPos - curStartPos))
-				
+
 	return (initialPts, result)
 
 ## Test thread
@@ -157,13 +157,13 @@ class TestThread(stress_base.TestThreadBase):
 				result.setdefault(curLine, [])
 				result[curLine].append((int(startOffset * MPEGTS_TIMESCALE), range[0], range[1]))
 		return result
-		
+
 	@staticmethod
 	def compareIframes(reportedIframes, actualIframes, initialPts):
 		actualIframesDict = {}
 		for pts, pos, size in actualIframes:
 			actualIframesDict[(pos, size)] = pts
-		
+
 		for pts1, pos, size in reportedIframes:
 			if not (pos, size) in actualIframesDict:
 				return False
@@ -171,7 +171,7 @@ class TestThread(stress_base.TestThreadBase):
 			if abs(pts1 - pts2) > 2000:
 				return False
 		return True
-		
+
 	def getUrl(self, url):
 		startTime = time.time()
 		code, headers, body = http_utils.getUrl(url)
@@ -179,36 +179,36 @@ class TestThread(stress_base.TestThreadBase):
 			self.writeOutput(body)
 		self.writeOutput('Info: get %s took %s' % (url, time.time() - startTime))
 		return (code, body)
-		
+
 	def runTest(self, serveFlavorUri):
 		iframesUrl = '%s%s%s' % (SERVER_URL, serveFlavorUri, IFRAMES_URI)
 
 		(code, iframes) = self.getUrl(iframesUrl)
 		if code == 0:
 			return False
-			
+
 		if code != 200:
 			self.writeOutput('Notice: %s returned status %s' % (iframesUrl, code))
 			return True
 
 		segIframeRanges = self.parseIframesM3u8(iframesUrl, iframes)
-		
+
 		result = True
 		initialPts = None
 		for curSegmentFile in sorted(segIframeRanges.keys()):
 			reportedIframes = segIframeRanges[curSegmentFile]
 			segmentUrl = '%s%s/%s' % (SERVER_URL, serveFlavorUri, curSegmentFile)
-			
+
 			(code, segmentData) = self.getUrl(segmentUrl)
 			if code == 0:
 				return False
-				
+
 			if code != 200:
 				self.writeOutput('Notice: %s returned status %s' % (segmentUrl, code))
 				continue
-			
+
 			initialPts, actualIframes = getKeyFramesInfo(segmentData, initialPts)
-			
+
 			self.writeOutput('Info: reported ranges: %s' % reportedIframes)
 			self.writeOutput('Info: actual ranges: %s' % actualIframes)
 
@@ -216,7 +216,7 @@ class TestThread(stress_base.TestThreadBase):
 				self.writeOutput('Error: %s' % segmentUrl)
 				result = False
 		return result
-		
+
 if __name__ == '__main__':
 	stress_base.main(TestThread, STOP_FILE)
 

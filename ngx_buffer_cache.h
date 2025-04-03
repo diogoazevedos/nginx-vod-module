@@ -59,10 +59,10 @@ void ngx_buffer_cache_get_stats(
 void ngx_buffer_cache_reset_stats(ngx_buffer_cache_t* cache);
 
 ngx_buffer_cache_t* ngx_buffer_cache_create(
-	ngx_conf_t *cf, 
-	ngx_str_t *name, 
-	size_t size, 
-	time_t expiration, 
+	ngx_conf_t *cf,
+	ngx_str_t *name,
+	size_t size,
+	time_t expiration,
 	void *tag);
 
 #endif // _NGX_BUFFER_CACHE_H_INCLUDED_

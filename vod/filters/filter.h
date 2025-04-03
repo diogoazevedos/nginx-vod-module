@@ -14,7 +14,7 @@ vod_status_t filter_init_filtered_clips(
 vod_status_t filter_init_state(
 	request_context_t* request_context,
 	read_cache_state_t* read_cache_state,
-	media_set_t* media_set, 
+	media_set_t* media_set,
 	uint32_t max_frame_count,
 	uint32_t output_codec_id,
 	void** context);

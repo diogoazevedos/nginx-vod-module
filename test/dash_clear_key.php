@@ -9,7 +9,7 @@
 			proxy_pass http://apache/;		# assumes an apache/php backend
 			proxy_set_header Host $http_host;
 		}
-		
+
 		location /edash/ {
 			vod dash;
 			vod_mode local;
@@ -29,7 +29,7 @@
 			add_header 'Access-Control-Allow-Methods' 'GET, HEAD, OPTIONS';
 			add_header 'Access-Control-Allow-Origin' '*';
 		}
-	
+
 	test urls:
 		manifest:	http://domain/edash/test.mp4/manifest.mpd
 		license:	http://domain/php_proxy/dash_clear_key.php
@@ -38,11 +38,11 @@
 
 if (!function_exists('hex2bin'))
 {
-	function hex2bin($str) 
+	function hex2bin($str)
 	{
 		$sbin = '';
 		$len = strlen($str);
-		for ($i = 0; $i < $len; $i += 2) 
+		for ($i = 0; $i < $len; $i += 2)
 		{
 			$sbin .= pack('H*', substr($str, $i, 2));
 		}

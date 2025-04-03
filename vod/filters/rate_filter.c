@@ -132,7 +132,7 @@ rate_filter_parse(
 		"rate_filter_parse: started");
 
 	vod_memzero(params, sizeof(params));
-		
+
 	vod_json_get_object_values(
 		element,
 		&rate_filter_hash,
@@ -154,7 +154,7 @@ rate_filter_parse(
 			"rate_filter_parse: invalid rate, only 2 decimal points are allowed");
 		return VOD_BAD_MAPPING;
 	}
-	
+
 	if (rate->v.num.num < 0 ||
 		rate->v.num.denom > (uint64_t)rate->v.num.num * 2 || (uint64_t)rate->v.num.num > rate->v.num.denom * 2)
 	{
@@ -203,8 +203,8 @@ rate_filter_parse(
 	context->clip_from = ((uint64_t)old_clip_from * filter->rate.num) / filter->rate.denom;
 
 	rc = media_set_parse_clip(
-		context, 
-		&source->v.obj, 
+		context,
+		&source->v.obj,
 		&filter->base,
 		&filter->base.sources[0]);
 	if (rc != VOD_JSON_OK)
@@ -226,9 +226,9 @@ rate_filter_parse(
 
 vod_status_t
 rate_filter_create_from_string(
-	request_context_t* request_context, 
-	vod_str_t* str, 
-	media_clip_t* source, 
+	request_context_t* request_context,
+	vod_str_t* str,
+	media_clip_t* source,
 	media_clip_rate_filter_t** result)
 {
 	media_clip_rate_filter_t* filter;

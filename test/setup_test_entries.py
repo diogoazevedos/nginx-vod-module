@@ -174,7 +174,7 @@ TEST_CASES = [
         ('/hls', 'seg-1.ts', 404, 'is smaller than the buffer size'),
         ('', 'clipTo/10000/a.mp4', 404, 'is smaller than the buffer size'),
     ]),
-    
+
     # atom parsing
     ('MISSING_64BIT_ATOM_SIZE', lambda: StringReader(struct.pack('>L', 8) + 'ftyp' + struct.pack('>L', 1) + 'moov' + ('\0' * 7)), [
         ('/hls', 'index.m3u8', 404, 'is smaller than the buffer size'),
@@ -323,7 +323,7 @@ def uploadTestEntry(refId, generator):
     client.media.addContent(entryId=newEntry.id, resource=KalturaUploadedFileTokenResource(token=uploadToken.id))
     client.uploadToken.upload(uploadTokenId=uploadToken.id, fileData=generator())
     return newEntry.id
-    
+
 
 # get all existing entries
 referenceIds = ','.join(map(lambda x: REFERENCE_ID_PREFIX + x[0], TEST_CASES))

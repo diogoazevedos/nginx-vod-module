@@ -42,7 +42,7 @@ def getAbsoluteUrl(url, baseUrl = ''):
 		baseUrl = baseUrl[:baseUrl.rfind('/')]
 		url = baseUrl + '/' + url
 	return url
-	
+
 def getHlsMediaPlaylistUrls(baseUrl, urlContent):
 	result = []
 	for curLine in urlContent.split('\n'):
@@ -58,7 +58,7 @@ def getHlsMediaPlaylistUrls(baseUrl, urlContent):
 		result.append(getAbsoluteUrl(curLine, baseUrl))
 	result = filterChunkList(result)
 	return result
-	
+
 def getHlsMasterPlaylistUrls(baseUrl, urlContent, headers):
 	result = []
 	for curLine in urlContent.split('\n'):
@@ -74,7 +74,7 @@ def getHlsMasterPlaylistUrls(baseUrl, urlContent, headers):
 			curUrl = curLine
 		curUrl = getAbsoluteUrl(curUrl, baseUrl)
 		result.append(curUrl)
-		
+
 		# get the segments of the current url
 		code, _, mediaContent = http_utils.getUrl(curUrl, headers)
 		if code != 200 or len(mediaContent) == 0:
@@ -123,7 +123,7 @@ def getDashManifestUrls(baseUrl, urlContent, headers):
 			urls.add(atts['sourceURL'])
 	if len(urls) > 0:
 		return map(lambda x: getAbsoluteUrl(x, baseUrl), urls)
-	
+
 	# try SegmentTemplate - get media duration
 	mediaDuration = None
 	timeShiftBufferDepth = None
@@ -149,11 +149,11 @@ def getDashManifestUrls(baseUrl, urlContent, headers):
 		start = parseDashInterval(atts['start'])
 		id = atts['id']
 		periodTimes.append((id, start))
-	
+
 	# get the url templates and segment duration
 	result = []
 	for base in parsed.getElementsByTagName('AdaptationSet'):
-	
+
 		initUrls = set([])
 		mediaUrls = set([])
 
@@ -173,7 +173,7 @@ def getDashManifestUrls(baseUrl, urlContent, headers):
 		for node in base.getElementsByTagName('Representation'):
 			atts = getAttributesDict(node)
 			repIds.add((atts['id'], atts['bandwidth']))
-			
+
 		# get the segment count from SegmentTimeline
 		segmentCount = None
 		segmentTimes = []
@@ -232,7 +232,7 @@ def getDashManifestUrls(baseUrl, urlContent, headers):
 			# find the segment number / count
 			startNumber += (startTime - periodStartTime + segmentDuration - 1) / segmentDuration
 			segmentCount = (periodEndTime - periodStartTime) / segmentDuration - startNumber
-		
+
 		for url in initUrls:
 			for repId, bandwidth in repIds:
 				curUrl = url.replace('$RepresentationID$', repId)
@@ -274,13 +274,13 @@ def getHdsSegmentIndexes(data):
 		repeatCount = (mediaTime - prevTimestamp) / prevDuration
 		result += range(prevIndex, prevIndex + repeatCount)
 	return result
-	
+
 def getHdsManifestUrls(baseUrl, urlContent, headers):
 	result = []
-	
+
 	# parse the xml
 	parsed = parseString(urlContent)
-	
+
 	# get the bootstraps
 	segmentIndexes = {}
 	for node in parsed.getElementsByTagName('bootstrapInfo'):
@@ -288,7 +288,7 @@ def getHdsManifestUrls(baseUrl, urlContent, headers):
 		if atts.has_key('url'):
 			curUrl = getAbsoluteUrl(atts['url'], baseUrl)
 			result.append(curUrl)
-			
+
 			# get the bootstrap info
 			code, _, bootstrapInfo = http_utils.getUrl(curUrl, headers)
 			if code != 200 or len(bootstrapInfo) == 0:
@@ -297,14 +297,14 @@ def getHdsManifestUrls(baseUrl, urlContent, headers):
 			bootstrapInfo = base64.b64decode(node.firstChild.nodeValue)
 		bootstrapId = atts['id']
 		segmentIndexes[bootstrapId] = getHdsSegmentIndexes(bootstrapInfo)
-	
+
 	# add the media urls
 	for node in parsed.getElementsByTagName('media'):
 		atts = getAttributesDict(node)
 		bootstrapId = atts['bootstrapInfoId']
 		if not segmentIndexes.has_key(bootstrapId):
 			continue
-		
+
 		url = atts['url']
 		url = url.split('?')[0]
 		fragments = []
@@ -318,12 +318,12 @@ def getHdsManifestUrls(baseUrl, urlContent, headers):
 def getMssManifestUrls(baseUrl, urlContent, headers):
 	result = []
 	parsed = parseString(urlContent)
-	for node in parsed.getElementsByTagName('StreamIndex'):		
+	for node in parsed.getElementsByTagName('StreamIndex'):
 		# get the bitrates
 		bitrates = set([])
 		for childNode in node.getElementsByTagName('QualityLevel'):
 			bitrates.add(getAttributesDict(childNode)['Bitrate'])
-		
+
 		# get the timestamps
 		timestamps = []
 		curTimestamp = 0
@@ -334,7 +334,7 @@ def getMssManifestUrls(baseUrl, urlContent, headers):
 			duration = int(curAtts['d'])
 			timestamps.append('%s' % curTimestamp)
 			curTimestamp += duration
-			
+
 		# build the final urls
 		atts = getAttributesDict(node)
 		url = atts['Url']

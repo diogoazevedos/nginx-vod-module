@@ -29,7 +29,7 @@ buffer_pool_create(vod_pool_t* pool, vod_log_t* log, size_t buffer_size, size_t 
 	}
 
 	buffer_pool = vod_alloc(pool, sizeof(*buffer_pool));
-	if (buffer_pool == NULL) 
+	if (buffer_pool == NULL)
 	{
 		vod_log_debug0(VOD_LOG_DEBUG_LEVEL, log, 0,
 			"buffer_pool_create: vod_alloc failed (1)");

@@ -37,7 +37,7 @@ in ngx_http_mp4_handler replace
 
 with
 			start = ngx_atofp(value.data, value.len, 3);
-			
+
 in ngx_http_mp4_handler replace
             ngx_set_errno(0);
             end = (int) (strtod((char *) value.data, NULL) * 1000);
@@ -45,7 +45,7 @@ in ngx_http_mp4_handler replace
             if (ngx_errno != 0) {
                 end = -1;
             }
-			
+
 with
 			end = ngx_atofp(value.data, value.len, 3);
 
@@ -53,7 +53,7 @@ in ngx_http_mp4_update_mdat_atom replace
     atom_data_size = end_offset - start_offset;
     mp4->mdat_data.buf->file_pos = start_offset;
     mp4->mdat_data.buf->file_last = end_offset;
-	 
+
 with
     if (start_offset >= end_offset)
     {
@@ -83,7 +83,7 @@ in ngx_http_mp4_crop_stsc_data replace
 with
     uint32_t               start_sample, chunk, samples = 0, id, next_chunk, n,
                            prev_samples;
-						   
+
 in ngx_http_mp4_crop_stsc_data replace
     chunk = ngx_mp4_get_32value(entry->chunk);
     samples = ngx_mp4_get_32value(entry->samples);

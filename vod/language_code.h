@@ -16,7 +16,7 @@
 
 // typedefs
 enum {
-#define LANG(id, iso639_1, iso639_2b, iso639_3, name, native_name) VOD_LANG_##id, 
+#define LANG(id, iso639_1, iso639_2b, iso639_3, name, native_name) VOD_LANG_##id,
 #include "languages_x.h"
 #undef LANG
 
