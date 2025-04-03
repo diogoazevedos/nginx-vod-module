@@ -29,8 +29,8 @@ static json_object_key_def_t drm_info_keys_def[] = {
 };
 
 static json_object_key_def_t pssh_keys_def[] = {
-	{ vod_string("uuid"), VOD_JSON_STRING, PSSH_PARAM_SYSTEM_ID },
-	{ vod_string("data"), VOD_JSON_STRING, PSSH_PARAM_DATA },
+	{ vod_string("uuid"),	VOD_JSON_STRING,	PSSH_PARAM_SYSTEM_ID },
+	{ vod_string("data"),	VOD_JSON_STRING,	PSSH_PARAM_DATA },
 	{ vod_null_string, 0, 0 }
 };
 

@@ -21,8 +21,8 @@ typedef struct {
 
 // constants
 static json_object_key_def_t gain_filter_params[] = {
-	{ vod_string("gain"), VOD_JSON_FRAC, GAIN_FILTER_PARAM_GAIN },
-	{ vod_string("source"), VOD_JSON_OBJECT, GAIN_FILTER_PARAM_SOURCE },
+	{ vod_string("gain"),	VOD_JSON_FRAC,		GAIN_FILTER_PARAM_GAIN },
+	{ vod_string("source"),	VOD_JSON_OBJECT,	GAIN_FILTER_PARAM_SOURCE },
 	{ vod_null_string, 0, 0 }
 };
 
