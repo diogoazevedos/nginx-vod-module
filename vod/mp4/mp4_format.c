@@ -20,7 +20,7 @@ typedef struct {
 	vod_str_t parts[MP4_METADATA_PART_COUNT];
 } mp4_read_metadata_state_t;
 
-static vod_status_t 
+static vod_status_t
 mp4_reader_identify_callback(
 	void* context,
 	atom_info_t* atom_info)
@@ -39,8 +39,8 @@ mp4_reader_identify_callback(
 
 static vod_status_t
 mp4_metadata_reader_init(
-	request_context_t* request_context, 
-	vod_str_t* buffer, 
+	request_context_t* request_context,
+	vod_str_t* buffer,
 	size_t max_metadata_size,
 	void** ctx)
 {
@@ -98,7 +98,7 @@ mp4_metadata_reader_read(
 		if (buffer->len < moov_size)
 		{
 			vod_log_error(VOD_LOG_ERR, state->request_context->log, 0,
-				"mp4_metadata_reader_read: buffer size %uz is smaller than moov size %uz", 
+				"mp4_metadata_reader_read: buffer size %uz is smaller than moov size %uz",
 				buffer->len, moov_size);
 			return VOD_BAD_DATA;
 		}

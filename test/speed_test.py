@@ -10,7 +10,7 @@ def getUrl(url):
 	try:
 		f = urllib2.urlopen(request)
 	except urllib2.HTTPError as e:
-		return e.getcode()			
+		return e.getcode()
 	except urllib2.URLError as e:
 		return 0
 	return f.getcode()

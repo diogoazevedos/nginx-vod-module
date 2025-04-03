@@ -205,7 +205,7 @@ mp4_cenc_encrypt_video_snpf_build_auxiliary_data(mp4_cenc_encrypt_video_state_t*
 	state->saiz_sample_count = state->base.sequence->total_frame_count;
 
 	p = vod_alloc(
-		state->base.request_context->pool, 
+		state->base.request_context->pool,
 		state->default_auxiliary_sample_size * state->base.sequence->total_frame_count);
 	if (p == NULL)
 	{
@@ -339,7 +339,7 @@ mp4_cenc_encrypt_video_snpf_write_buffer(void* context, u_char* buffer, uint32_t
 
 			state->base.frame_size_left -= state->nal_packet_size_length;
 
-			if (state->packet_size_left != state->base.frame_size_left && 
+			if (state->packet_size_left != state->base.frame_size_left &&
 				!state->single_nalu_warning_printed)
 			{
 				vod_log_error(VOD_LOG_WARN, state->base.request_context->log, 0,
@@ -675,7 +675,7 @@ mp4_cenc_encrypt_video_write_buffer(void* context, u_char* buffer, uint32_t size
 		case STATE_ENCRYPT_DATA:
 			write_size = (uint32_t)(buffer_end - cur_pos);
 			write_size = vod_min(write_size, state->packet_size_left);
-			
+
 			if (state->cur_state == STATE_ENCRYPT_DATA)
 			{
 				rc = mp4_aes_ctr_write_encrypted(&state->base.cipher, &state->base.write_buffer, cur_pos, write_size);
@@ -771,8 +771,8 @@ mp4_cenc_encrypt_video_get_fragment_writer(
 	uint32_t segment_index,
 	bool_t single_nalu_per_frame,
 	mp4_cenc_encrypt_video_build_fragment_header_t build_fragment_header,
-	const u_char* iv, 
-	vod_str_t* fragment_header, 
+	const u_char* iv,
+	vod_str_t* fragment_header,
 	size_t* total_fragment_size)
 {
 	media_sequence_t* sequence = &media_set->sequences[0];
@@ -817,7 +817,7 @@ mp4_cenc_encrypt_video_get_fragment_writer(
 
 		return VOD_OK;
 	}
-	
+
 	if (single_nalu_per_frame)
 	{
 		// each frame is a single nal unit, can generate the auxiliary data and write the header now
@@ -949,7 +949,7 @@ mp4_cenc_encrypt_audio_write_buffer(void* context, u_char* buffer, uint32_t size
 
 		write_size = (uint32_t)(buffer_end - cur_pos);
 		write_size = vod_min(write_size, state->frame_size_left);
-		
+
 		rc = mp4_aes_ctr_write_encrypted(&state->cipher, &state->write_buffer, cur_pos, write_size);
 		if (rc != VOD_OK)
 		{

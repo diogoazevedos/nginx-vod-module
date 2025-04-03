@@ -3,10 +3,10 @@
 
 #define BUFFER_SIZE (188 * 16 * 32)		// chosen to be a multiple of mpegTS packet size and AES block size
 
-void 
+void
 write_buffer_queue_init(
-	write_buffer_queue_t* queue, 
-	request_context_t* request_context, 
+	write_buffer_queue_t* queue,
+	request_context_t* request_context,
 	write_callback_t write_callback,
 	void* write_context,
 	bool_t reuse_buffers)
@@ -143,7 +143,7 @@ write_buffer_queue_send(write_buffer_queue_t* queue, off_t max_offset)
 	return VOD_OK;
 }
 
-vod_status_t 
+vod_status_t
 write_buffer_queue_flush(write_buffer_queue_t* queue)
 {
 	buffer_header_t* cur_buffer;

@@ -108,9 +108,9 @@ ngx_http_vod_send_response(ngx_http_request_t *r, ngx_str_t *response, ngx_str_t
 	return NGX_OK;
 }
 
-ngx_int_t 
+ngx_int_t
 ngx_http_vod_status_to_ngx_error(
-	ngx_http_request_t* r, 
+	ngx_http_request_t* r,
 	vod_status_t rc)
 {
 	ngx_http_variable_value_t *vv;
@@ -120,7 +120,7 @@ ngx_http_vod_status_to_ngx_error(
 	{
 		return NGX_HTTP_INTERNAL_SERVER_ERROR;
 	}
-	
+
 	index = rc - VOD_ERROR_FIRST;
 
 	// update the status variable

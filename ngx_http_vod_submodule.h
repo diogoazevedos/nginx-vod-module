@@ -32,13 +32,13 @@ struct ngx_http_vod_loc_conf_s;
 typedef vod_status_t (*ngx_http_vod_frame_processor_t)(void* context);
 
 typedef void (*ngx_http_vod_create_loc_conf_t)(
-	ngx_conf_t *cf, 
+	ngx_conf_t *cf,
 	void *conf);
 
 typedef char* (*ngx_http_vod_merge_loc_conf_t)(
-	ngx_conf_t *cf, 
-	struct ngx_http_vod_loc_conf_s *base, 
-	void *conf, 
+	ngx_conf_t *cf,
+	struct ngx_http_vod_loc_conf_s *base,
+	void *conf,
 	void *prev);
 
 typedef struct {
@@ -56,14 +56,14 @@ struct ngx_http_vod_request_s {
 	int request_class;
 	int codecs_mask;
 	uint32_t timescale;
-	
+
 	ngx_int_t (*handle_metadata_request)(
 		// in
 		ngx_http_vod_submodule_context_t* submodule_context,
 		// out
 		ngx_str_t* response,
 		ngx_str_t* content_type);
-		
+
 	ngx_int_t (*init_frame_processor)(
 		// in
 		ngx_http_vod_submodule_context_t* submodule_context,

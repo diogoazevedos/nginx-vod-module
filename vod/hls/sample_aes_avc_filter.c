@@ -65,7 +65,7 @@ sample_aes_avc_filter_init(
 			"sample_aes_avc_filter_init: vod_pool_cleanup_add failed");
 		return VOD_ALLOC_FAILED;
 	}
-	
+
 	state->cipher = EVP_CIPHER_CTX_new();
 	if (state->cipher == NULL)
 	{
@@ -92,7 +92,7 @@ sample_aes_avc_filter_init(
 static vod_status_t
 sample_aes_avc_write_emulation_prevention(
 	media_filter_context_t* context,
-	const u_char* buffer, 
+	const u_char* buffer,
 	uint32_t size)
 {
 	sample_aes_avc_filter_state_t* state = get_context(context);
@@ -144,8 +144,8 @@ sample_aes_avc_write_emulation_prevention(
 
 vod_status_t
 sample_aes_avc_start_nal_unit(
-	media_filter_context_t* context, 
-	int unit_type, 
+	media_filter_context_t* context,
+	int unit_type,
 	uint32_t unit_size)
 {
 	sample_aes_avc_filter_state_t* state = get_context(context);
@@ -175,8 +175,8 @@ sample_aes_avc_start_nal_unit(
 
 vod_status_t
 sample_aes_avc_filter_write_nal_body(
-	media_filter_context_t* context, 
-	const u_char* buffer, 
+	media_filter_context_t* context,
+	const u_char* buffer,
 	uint32_t size)
 {
 	sample_aes_avc_filter_state_t* state = get_context(context);

@@ -33,7 +33,7 @@ mpegTsAdaptationField = BitStruct("mpegTsAdaptationField",
 	Flag("transportPrivateDataFlag"),
 	Flag("adaptationFieldExtensionFlag"),
 	)
-	
+
 # PES header
 pesHeader = Struct("pesHeader",
 	Range(3, 3, UBInt8("prefix")),
@@ -105,7 +105,7 @@ patEntry = BitStruct("patEntry",
 	BitField("reserved", 3),			# 111
 	BitField("programPID", 13),
 	)
-	
+
 pmt = BitStruct("pmt",
 	BitField("pointerField", 8),
 	BitField("tableId", 8),

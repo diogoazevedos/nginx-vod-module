@@ -288,9 +288,9 @@ mp4_clipper_write_tail(void* ctx, int index, void* buffer, uint32_t size)
 
 static vod_status_t
 mp4_clipper_clip_duration(
-	request_context_t* request_context, 
-	media_parse_params_t* parse_params, 
-	uint64_t* duration, 
+	request_context_t* request_context,
+	media_parse_params_t* parse_params,
+	uint64_t* duration,
 	uint32_t timescale)
 {
 	uint64_t clip_from;
@@ -316,7 +316,7 @@ mp4_clipper_clip_duration(
 	if (parse_params->clip_to != UINT_MAX)
 	{
 		length = (uint64_t)(parse_params->clip_to - parse_params->clip_from) * timescale / 1000;
-		if (*duration > length) 
+		if (*duration > length)
 		{
 			*duration = length;
 		}
@@ -330,7 +330,7 @@ static vod_status_t
 mp4_clipper_mvhd_clip_data(
 	process_moov_context_t* context,
 	atom_info_t* atom_info,
-	mvhd_clip_result_t* result, 
+	mvhd_clip_result_t* result,
 	uint32_t* timescale)
 {
 	const mvhd_atom_t* atom = (const mvhd_atom_t*)atom_info->ptr;
@@ -534,8 +534,8 @@ static vod_status_t
 mp4_clipper_stts_clip_data(
 	parse_trak_atom_context_t* context,
 	atom_info_t* atom_info,
-	stts_clip_result_t* result, 
-	uint32_t* first_frame, 
+	stts_clip_result_t* result,
+	uint32_t* first_frame,
 	uint32_t* last_frame)
 {
 	stts_iterator_state_t iterator;
@@ -582,7 +582,7 @@ mp4_clipper_stts_clip_data(
 
 	if (context->parse_params.clip_to != UINT_MAX)
 	{
-		// Note: the below was done to match nginx mp4, may be better to do 
+		// Note: the below was done to match nginx mp4, may be better to do
 		// clip_to = (((uint64_t)context->parse_params.clip_to * context->timescale) / 1000);
 		clip_to = iterator.accum_duration + (((uint64_t)(context->parse_params.clip_to - context->parse_params.clip_from) * context->timescale) / 1000);
 	}
@@ -803,7 +803,7 @@ mp4_clipper_ctts_clip_data(
 	result->first_entry = iterator.cur_entry;
 	result->first_count = iterator.sample_count;
 
-	if (context->parse_params.clip_to != UINT_MAX && 
+	if (context->parse_params.clip_to != UINT_MAX &&
 		mp4_parser_ctts_iterator(&iterator, context->last_frame))
 	{
 		result->last_entry = iterator.cur_entry + 1;
@@ -899,7 +899,7 @@ mp4_clipper_stsc_clip_data(
 		&iterator,
 		context->request_context,
 		(stsc_entry_t*)(atom_info->ptr + sizeof(stsc_atom_t)),
-		entries, 
+		entries,
 		context->chunks);
 	if (rc != VOD_OK)
 	{
@@ -964,7 +964,7 @@ mp4_clipper_stsc_clip_data(
 	}
 
 	// calculate last chunk and last entry samples
-	if (result->last_sample_count) 
+	if (result->last_sample_count)
 	{
 		result->last_chunk = target_chunk + 1;
 
@@ -979,7 +979,7 @@ mp4_clipper_stsc_clip_data(
 			result->last_sample_count -= result->first_sample_count;
 		}
 	}
-	else 
+	else
 	{
 		result->last_chunk = target_chunk;
 
@@ -1256,7 +1256,7 @@ mp4_clipper_stsz_write_atom(u_char* p, void* write_context, stsz_clip_result_t* 
 	return p;
 }
 
-static vod_status_t 
+static vod_status_t
 mp4_clipper_stco_init_chunk_count(
 	parse_trak_atom_context_t* context,
 	atom_info_t* atom_info)
@@ -1410,8 +1410,8 @@ mp4_clipper_stco_write_atom(u_char* p, void* write_context, stco_clip_result_t* 
 
 static vod_status_t
 mp4_clipper_get_media_type(
-	request_context_t* request_context, 
-	atom_info_t* hdlr_atom_info, 
+	request_context_t* request_context,
+	atom_info_t* hdlr_atom_info,
 	uint32_t* media_type)
 {
 	const hdlr_atom_t* atom = (const hdlr_atom_t*)hdlr_atom_info->ptr;
@@ -1526,9 +1526,9 @@ mp4_clipper_process_moov_atom_callback(void* ctx, atom_info_t* atom_info)
 	}
 
 	rc = mp4_clipper_mdhd_clip_data(
-		&parse_context, 
-		&parsed_trak->atoms[TRAK_ATOM_MDHD], 
-		&parsed_trak->mdhd, 
+		&parse_context,
+		&parsed_trak->atoms[TRAK_ATOM_MDHD],
+		&parsed_trak->mdhd,
 		&parse_context.timescale);
 	if (rc != VOD_OK)
 	{
@@ -1536,10 +1536,10 @@ mp4_clipper_process_moov_atom_callback(void* ctx, atom_info_t* atom_info)
 	}
 
 	rc = mp4_clipper_stts_clip_data(
-		&parse_context, 
-		&parsed_trak->atoms[TRAK_ATOM_STTS], 
-		&parsed_trak->stts, 
-		&parse_context.first_frame, 
+		&parse_context,
+		&parsed_trak->atoms[TRAK_ATOM_STTS],
+		&parsed_trak->stts,
+		&parse_context.first_frame,
 		&parse_context.last_frame);
 	if (rc != VOD_OK)
 	{
@@ -1568,12 +1568,12 @@ mp4_clipper_process_moov_atom_callback(void* ctx, atom_info_t* atom_info)
 	{
 		return rc;
 	}
-	
+
 	rc = mp4_clipper_stsc_clip_data(
-		&parse_context, 
-		&parsed_trak->atoms[TRAK_ATOM_STSC], 
-		&parsed_trak->stsc, 
-		&parse_context.first_chunk_frame_index, 
+		&parse_context,
+		&parsed_trak->atoms[TRAK_ATOM_STSC],
+		&parsed_trak->stsc,
+		&parse_context.first_chunk_frame_index,
 		&parse_context.last_chunk_frame_index);
 	if (rc != VOD_OK)
 	{
@@ -1584,8 +1584,8 @@ mp4_clipper_process_moov_atom_callback(void* ctx, atom_info_t* atom_info)
 	parse_context.last_chunk_index = parsed_trak->stsc.last_chunk;
 
 	rc = mp4_clipper_stsz_clip_data(
-		&parse_context, 
-		&parsed_trak->atoms[TRAK_ATOM_STSZ], 
+		&parse_context,
+		&parsed_trak->atoms[TRAK_ATOM_STSZ],
 		&parsed_trak->stsz,
 		&parse_context.first_frame_chunk_offset,
 		&parse_context.last_frame_chunk_offset);
@@ -1595,9 +1595,9 @@ mp4_clipper_process_moov_atom_callback(void* ctx, atom_info_t* atom_info)
 	}
 
 	rc = mp4_clipper_stco_clip_data(
-		&parse_context, 
-		&parsed_trak->atoms[TRAK_ATOM_STCO], 
-		&parsed_trak->stco, 
+		&parse_context,
+		&parsed_trak->atoms[TRAK_ATOM_STCO],
+		&parsed_trak->stco,
 		&first_offset,
 		&last_offset);
 	if (rc != VOD_OK)
@@ -1616,13 +1616,13 @@ mp4_clipper_process_moov_atom_callback(void* ctx, atom_info_t* atom_info)
 	}
 
 	parsed_trak->stbl_atom_size = parse_context.stbl_atom_size;
-	
+
 	parsed_trak->minf_atom_size = ATOM_HEADER_SIZE +
 		full_atom_size(parsed_trak->atoms[TRAK_ATOM_VMHD]) +
 		full_atom_size(parsed_trak->atoms[TRAK_ATOM_SMHD]) +
 		full_atom_size(parsed_trak->atoms[TRAK_ATOM_DINF]) +
 		parsed_trak->stbl_atom_size;
-	
+
 	parsed_trak->mdia_atom_size = ATOM_HEADER_SIZE +
 		full_atom_size(parsed_trak->atoms[TRAK_ATOM_MDHD]) +
 		full_atom_size(parsed_trak->atoms[TRAK_ATOM_HDLR]) +
@@ -1714,7 +1714,7 @@ mp4_clipper_trak_write_atom(u_char* p, void* write_context, parsed_trak_t* parse
 	return p;
 }
 
-vod_status_t 
+vod_status_t
 mp4_clipper_parse_moov(
 	request_context_t* request_context,
 	media_parse_params_t* parse_params,
@@ -1744,11 +1744,11 @@ mp4_clipper_parse_moov(
 	process_moov_context.result.base.first_offset = ULLONG_MAX;
 
 	rc = mp4_parser_parse_atoms(
-		request_context, 
-		metadata_parts[MP4_METADATA_PART_MOOV].data, 
+		request_context,
+		metadata_parts[MP4_METADATA_PART_MOOV].data,
 		metadata_parts[MP4_METADATA_PART_MOOV].len,
-		TRUE, 
-		&mp4_clipper_process_moov_atom_callback, 
+		TRUE,
+		&mp4_clipper_process_moov_atom_callback,
 		&process_moov_context);
 	if (rc != VOD_OK)
 	{

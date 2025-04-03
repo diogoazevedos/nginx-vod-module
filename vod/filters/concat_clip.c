@@ -124,7 +124,7 @@ concat_clip_parse(
 	if (paths->count != params[CONCAT_PARAM_DURATIONS]->v.arr.count)
 	{
 		vod_log_error(VOD_LOG_ERR, context->request_context->log, 0,
-			"concat_clip_parse: \"paths\" element count %uz different than \"durations\" element count %uz", 
+			"concat_clip_parse: \"paths\" element count %uz different than \"durations\" element count %uz",
 			paths->count,
 			params[CONCAT_PARAM_DURATIONS]->v.arr.count);
 		return VOD_BAD_MAPPING;
@@ -219,7 +219,7 @@ concat_clip_parse(
 		max_index = durations->count - 1;
 		part = &durations->part;
 		for (i = 0, cur_duration = part->first;
-			; 
+			;
 			i++, cur_duration++, offset = next_offset)
 		{
 			if ((void*)cur_duration >= part->last)
@@ -488,7 +488,7 @@ done:
 
 vod_status_t
 concat_clip_concat(
-	request_context_t* request_context, 
+	request_context_t* request_context,
 	media_clip_t* clip)
 {
 	media_clip_source_t* dest_clip;

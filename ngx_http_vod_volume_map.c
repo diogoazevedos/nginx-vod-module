@@ -74,7 +74,7 @@ ngx_http_vod_volume_map_merge_loc_conf(
 	return NGX_CONF_OK;
 }
 
-static int 
+static int
 ngx_http_vod_volume_map_get_file_path_components(ngx_str_t* uri)
 {
 	return 1;

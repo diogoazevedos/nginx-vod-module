@@ -11,7 +11,7 @@ mp4_aes_ctr_cleanup(mp4_aes_ctr_state_t* state)
 vod_status_t
 mp4_aes_ctr_init(
 	mp4_aes_ctr_state_t* state,
-	request_context_t* request_context, 
+	request_context_t* request_context,
 	u_char* key)
 {
 	vod_pool_cleanup_t *cln;
@@ -25,7 +25,7 @@ mp4_aes_ctr_init(
 			"mp4_aes_ctr_init: vod_pool_cleanup_add failed");
 		return VOD_ALLOC_FAILED;
 	}
-	
+
 	state->cipher = EVP_CIPHER_CTX_new();
 	if (state->cipher == NULL)
 	{
@@ -47,9 +47,9 @@ mp4_aes_ctr_init(
 	return VOD_OK;
 }
 
-void 
+void
 mp4_aes_ctr_set_iv(
-	mp4_aes_ctr_state_t* state, 
+	mp4_aes_ctr_state_t* state,
 	u_char* iv)
 {
 	vod_memcpy(state->counter, iv, MP4_AES_CTR_IV_SIZE);

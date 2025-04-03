@@ -3,7 +3,7 @@
 Note: the list of changes below does not include all changes, it includes mostly "breaking" changes.
 	Usually, these are changes that require some update to nginx.conf in order to retain the existing behavior.
 
-	
+
 ## 2017/08/13 - hls/fmp4 support
 
 The following configuration settings were renamed:
@@ -15,7 +15,7 @@ The following configuration settings were renamed:
 
 The following configuration settings were removed:
 * vod_live_segment_count - use vod_live_window_duration instead, multiply by vod_segment_duration.
-	
+
 ## 2016/05/08 - provide more control of the domain of returned URLs
 
 The following configuration settings were removed:
@@ -34,7 +34,7 @@ http {
 		if ($http_host != "") {
 			set $base_url "$protocol://$http_host";
 		}
-	
+
 		if ($http_host = "") {
 			set $base_url "";		# no host header - use relative urls
 		}
@@ -44,7 +44,7 @@ http {
 
 The behavior of the following configurations were changed:
 * vod_segments_base_url - when this variable is defined and evaluates to a non-empty string,
-	it is assumed to contain both the scheme and the host name. Before the change, when the 
+	it is assumed to contain both the scheme and the host name. Before the change, when the
 	url did not contain a scheme, a defualt scheme was added.
 
 ## 2016/03/06 - ad stitching supporting features
@@ -52,15 +52,15 @@ The behavior of the following configurations were changed:
 The following configuration settings were removed:
 * vod_path_mapping_cache - replaced by vod_mapping_cache
 * vod_live_path_mapping_cache - replaced by vod_live_mapping_cache
-	
+
 ## 2016/02/03 - added support for Matroska container
 
 The following configuration settings were removed:
 * vod_moov_cache - replaced by vod_metadata_cache
 * vod_max_moov_size - replaced by vod_max_metadata_size
-	
+
 ## 2015/12/15 - removed the upstream module implementation
-	
+
 nginx-vod is now built to make use of standard nginx upstream modules (e.g. proxy)
 The following configuration settings were removed:
 * vod_child_request - use proxy_pass instead

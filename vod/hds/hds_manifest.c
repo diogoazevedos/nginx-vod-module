@@ -295,7 +295,7 @@ hds_write_base64_abst_atom(u_char* p, u_char* temp_buffer, media_set_t* media_se
 {
 	vod_str_t binary;
 	vod_str_t base64;
-	
+
 	binary.data = temp_buffer;
 	binary.len = hds_write_abst_atom(binary.data, media_set, segment_durations) - binary.data;
 
@@ -388,11 +388,11 @@ hds_packager_build_manifest(
 
 	// get the adaptations sets
 	rc = manifest_utils_get_adaptation_sets(
-		request_context, 
-		media_set, 
-		ADAPTATION_SETS_FLAG_MUXED | 
+		request_context,
+		media_set,
+		ADAPTATION_SETS_FLAG_MUXED |
 		ADAPTATION_SETS_FLAG_EXCLUDE_MUXED_AUDIO |
-		ADAPTATION_SETS_FLAG_SINGLE_LANG_TRACK | 
+		ADAPTATION_SETS_FLAG_SINGLE_LANG_TRACK |
 		ADAPTATION_SETS_FLAG_AVOID_AUDIO_ONLY,
 		&adaptation_sets);
 	if (rc != VOD_OK)
@@ -411,8 +411,8 @@ hds_packager_build_manifest(
 	}
 
 	// calculate the result size
-	result_size = 
-		sizeof(HDS_MANIFEST_HEADER) - 1 + manifest_id->len + 
+	result_size =
+		sizeof(HDS_MANIFEST_HEADER) - 1 + manifest_id->len +
 		sizeof(HDS_MANIFEST_HEADER_BASE_URL) - 1 + base_url->len +
 		sizeof(HDS_MANIFEST_HEADER_LANG) - 1 +
 		sizeof(HDS_MANIFEST_FOOTER);
@@ -420,15 +420,15 @@ hds_packager_build_manifest(
 	switch (media_set->type)
 	{
 	case MEDIA_SET_VOD:
-		result_size += 
-			sizeof(HDS_MANIFEST_HEADER_VOD) - 1 + 2 * VOD_INT32_LEN + 
+		result_size +=
+			sizeof(HDS_MANIFEST_HEADER_VOD) - 1 + 2 * VOD_INT32_LEN +
 			(sizeof(HDS_BOOTSTRAP_VOD_HEADER) - 1 + VOD_INT32_LEN +
 			sizeof(HDS_BOOTSTRAP_VOD_FOOTER) - 1) * media_count;
 		break;
 
 	case MEDIA_SET_LIVE:
-		result_size += 
-			sizeof(HDS_MANIFEST_HEADER_LIVE) - 1 + 
+		result_size +=
+			sizeof(HDS_MANIFEST_HEADER_LIVE) - 1 +
 			(sizeof(HDS_BOOTSTRAP_LIVE_PREFIX) - 1 + VOD_INT32_LEN +
 			conf->bootstrap_file_name_prefix.len +
 			MANIFEST_UTILS_TRACKS_SPEC_MAX_SIZE +
@@ -438,13 +438,13 @@ hds_packager_build_manifest(
 
 	if (drm_enabled)
 	{
-		result_size += 
+		result_size +=
 			(sizeof(HDS_DRM_ADDITIONAL_HEADER_PREFIX) - 1 + VOD_INT32_LEN +
 			sizeof(HDS_DRM_ADDITIONAL_HEADER_SUFFIX) - 1) * media_count;
 	}
 
 	result_size +=
-		(vod_max(sizeof(HDS_MEDIA_HEADER_PREFIX_VIDEO) - 1 + 3 * VOD_INT32_LEN, 
+		(vod_max(sizeof(HDS_MEDIA_HEADER_PREFIX_VIDEO) - 1 + 3 * VOD_INT32_LEN,
 			sizeof(HDS_MEDIA_HEADER_PREFIX_AUDIO_LANG) - 1 + VOD_INT32_LEN) +
 		conf->fragment_file_name_prefix.len +
 		MANIFEST_UTILS_TRACKS_SPEC_MAX_SIZE + 1 +		// 1 = -
@@ -551,7 +551,7 @@ hds_packager_build_manifest(
 	switch (media_set->type)
 	{
 	case MEDIA_SET_VOD:
-		p = vod_sprintf(p, HDS_MANIFEST_HEADER_VOD, 
+		p = vod_sprintf(p, HDS_MANIFEST_HEADER_VOD,
 			(uint32_t)(media_set->timing.total_duration / 1000),
 			(uint32_t)(media_set->timing.total_duration % 1000));
 		break;
@@ -572,7 +572,7 @@ hds_packager_build_manifest(
 			track = adaptation_sets.first->first[0];
 		}
 
-		p = vod_sprintf(p, HDS_MANIFEST_HEADER_LANG, 
+		p = vod_sprintf(p, HDS_MANIFEST_HEADER_LANG,
 			&track->media_info.tags.label,
 			&track->media_info.tags.lang_str);
 	}
@@ -703,7 +703,7 @@ hds_packager_build_manifest(
 				if (adaptation_sets.multi_audio && adaptation_set > adaptation_sets.first)
 				{
 					p = vod_sprintf(p, HDS_MEDIA_HEADER_PREFIX_AUDIO_LANG,
-						bitrate / 1000, 
+						bitrate / 1000,
 						&tracks[MEDIA_TYPE_AUDIO]->media_info.tags.label,
 						&tracks[MEDIA_TYPE_AUDIO]->media_info.tags.lang_str);
 				}
@@ -742,7 +742,7 @@ hds_packager_build_manifest(
 	p = vod_copy(p, HDS_MANIFEST_FOOTER, sizeof(HDS_MANIFEST_FOOTER) - 1);
 
 	result->len = p - result->data;
-	
+
 	if (result->len > result_size)
 	{
 		vod_log_error(VOD_LOG_ERR, request_context->log, 0,

@@ -140,7 +140,7 @@ volume_map_encoder_write_frame(
 	volume_map_frame_t* data;
 	input_frame_t* cur_frame;
 	vod_status_t rc;
-	
+
 	rc = audio_filter_alloc_memory_frame(
 		state->request_context,
 		state->frames_array,
@@ -153,8 +153,8 @@ volume_map_encoder_write_frame(
 
 	data = (void*)(uintptr_t)cur_frame->offset;
 	rc = volume_map_calc_frame(
-		state->request_context, 
-		frame, 
+		state->request_context,
+		frame,
 		data);
 	if (rc != VOD_OK)
 	{
@@ -165,7 +165,7 @@ volume_map_encoder_write_frame(
 	cur_frame->pts_delay = 0;
 
 	// update the duration of the previous frame
-	if (state->frames_array->nelts > 1 && 
+	if (state->frames_array->nelts > 1 &&
 		frame->pts != AV_NOPTS_VALUE &&
 		state->last_pts != AV_NOPTS_VALUE)
 	{
@@ -174,7 +174,7 @@ volume_map_encoder_write_frame(
 	state->last_pts = frame->pts;
 
 	av_frame_unref(frame);
-	
+
 	return VOD_OK;
 }
 
@@ -243,7 +243,7 @@ volume_map_writer_init_track(volume_map_writer_state_t* state)
 	}
 
 	vod_memzero(state->decoder, sizeof(*state->decoder));
-	
+
 	cln = vod_pool_cleanup_add(state->request_context->pool, 0);
 	if (cln == NULL)
 	{
@@ -254,7 +254,7 @@ volume_map_writer_init_track(volume_map_writer_state_t* state)
 
 	cln->handler = (vod_pool_cleanup_pt)audio_decoder_free;
 	cln->data = state->decoder;
-	
+
 	rc = audio_decoder_init(
 		state->decoder,
 		state->request_context,
@@ -289,10 +289,10 @@ volume_map_writer_init(
 	}
 
 	write_buffer_init(
-		&state->write_buffer, 
-		request_context, 
-		write_callback, 
-		write_context, 
+		&state->write_buffer,
+		request_context,
+		write_callback,
+		write_context,
 		FALSE);
 
 	state->request_context = request_context;
@@ -417,7 +417,7 @@ volume_map_writer_process(void* context)
 		{
 			return rc;
 		}
-	
+
 		pts += state->cur_track->clip_start_time;
 
 		if (pts < state->flush_pts)

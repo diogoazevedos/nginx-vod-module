@@ -241,8 +241,8 @@ static const u_char fixed_stbl_atoms[] = {
 
 static void
 mp4_init_segment_get_track_sizes(
-	media_set_t* media_set, 
-	media_track_t* cur_track, 
+	media_set_t* media_set,
+	media_track_t* cur_track,
 	atom_writer_t* stsd_atom_writer,
 	track_sizes_t* result)
 {
@@ -264,7 +264,7 @@ mp4_init_segment_get_track_sizes(
 		result->stsd_size = cur_track->raw_atoms[RTA_STSD].size;
 	}
 
-	if (media_set->type != MEDIA_SET_LIVE && 
+	if (media_set->type != MEDIA_SET_LIVE &&
 		mp4_rescale_millis(media_set->timing.total_duration, timescale) > UINT_MAX)
 	{
 		tkhd_atom_size = ATOM_HEADER_SIZE + sizeof(tkhd64_atom_t);
@@ -312,7 +312,7 @@ mp4_init_segment_write_trex_atom(u_char* p, uint32_t track_id)
 	return p;
 }
 
-static u_char* 
+static u_char*
 mp4_init_segment_write_matrix(u_char* p, int16_t a, int16_t b, int16_t c,
 	int16_t d, int16_t tx, int16_t ty)
 {
@@ -380,9 +380,9 @@ mp4_init_segment_write_mvhd64_atom(u_char* p, uint32_t timescale, uint64_t durat
 
 static u_char*
 mp4_init_segment_write_tkhd_trailer(
-	u_char* p, 
-	uint32_t media_type, 
-	uint16_t width, 
+	u_char* p,
+	uint32_t media_type,
+	uint16_t width,
 	uint16_t height)
 {
 	write_be32(p, 0);				// reserved
@@ -406,11 +406,11 @@ mp4_init_segment_write_tkhd_trailer(
 
 static u_char*
 mp4_init_segment_write_tkhd_atom(
-	u_char* p, 
+	u_char* p,
 	uint32_t track_id,
-	uint32_t duration, 
-	uint32_t media_type, 
-	uint16_t width, 
+	uint32_t duration,
+	uint32_t media_type,
+	uint16_t width,
 	uint16_t height)
 {
 	size_t atom_size = ATOM_HEADER_SIZE + sizeof(tkhd_atom_t);
@@ -427,11 +427,11 @@ mp4_init_segment_write_tkhd_atom(
 
 static u_char*
 mp4_init_segment_write_tkhd64_atom(
-	u_char* p, 
+	u_char* p,
 	uint32_t track_id,
 	uint64_t duration,
-	uint32_t media_type, 
-	uint16_t width, 
+	uint32_t media_type,
+	uint16_t width,
 	uint16_t height)
 {
 	size_t atom_size = ATOM_HEADER_SIZE + sizeof(tkhd64_atom_t);
@@ -694,7 +694,7 @@ static void
 mp4_init_segment_calc_size(
 	media_set_t* media_set,
 	atom_writer_t* extra_moov_atoms_writer,
-	atom_writer_t* stsd_atom_writers, 
+	atom_writer_t* stsd_atom_writers,
 	init_mp4_sizes_t* result)
 {
 	media_track_t* first_track = media_set->filtered_tracks;
@@ -703,12 +703,12 @@ mp4_init_segment_calc_size(
 	uint32_t timescale = first_track->media_info.timescale;
 	uint32_t i;
 
-	result->mvex_atom_size = ATOM_HEADER_SIZE + 
+	result->mvex_atom_size = ATOM_HEADER_SIZE +
 		(ATOM_HEADER_SIZE + sizeof(trex_atom_t)) * media_set->total_track_count;
 
 	result->moov_atom_size = ATOM_HEADER_SIZE + result->mvex_atom_size;
 
-	if (media_set->type != MEDIA_SET_LIVE && 
+	if (media_set->type != MEDIA_SET_LIVE &&
 		mp4_rescale_millis(media_set->timing.total_duration, timescale) > UINT_MAX)
 	{
 		result->moov_atom_size += ATOM_HEADER_SIZE + sizeof(mvhd64_atom_t);
@@ -737,16 +737,16 @@ mp4_init_segment_calc_size(
 		}
 
 		mp4_init_segment_get_track_sizes(
-			media_set, 
-			&first_track[i], 
+			media_set,
+			&first_track[i],
 			stsd_atom_writer,
 			track_sizes);
 
 		result->moov_atom_size += track_sizes->trak_size;
 	}
 
-	result->total_size = 
-		(media_set->version >= 2 ? sizeof(ftyp_atom_v2) : sizeof(ftyp_atom)) + 
+	result->total_size =
+		(media_set->version >= 2 ? sizeof(ftyp_atom_v2) : sizeof(ftyp_atom)) +
 		result->moov_atom_size;
 }
 
@@ -938,7 +938,7 @@ mp4_init_segment_build_stsd_atom(
 	return VOD_OK;
 }
 
-vod_status_t 
+vod_status_t
 mp4_init_segment_build(
 	request_context_t* request_context,
 	media_set_t* media_set,
@@ -970,7 +970,7 @@ mp4_init_segment_build(
 	}
 
 	// get the result size
-	sizes = vod_alloc(request_context->pool, sizeof(*sizes) + 
+	sizes = vod_alloc(request_context->pool, sizeof(*sizes) +
 		sizeof(sizes->track_sizes[0]) * (media_set->total_track_count - 1));
 	if (sizes == NULL)
 	{
@@ -1059,7 +1059,7 @@ mp4_init_segment_init_encrypted_stsd_writer(
 	result->original_stsd_entry_format = parse_be32(result->original_stsd_entry->format);
 
 	if (result->original_stsd_entry_size < sizeof(stsd_entry_header_t) ||
-		result->original_stsd_entry_size > original_stsd->size - original_stsd->header_size - 
+		result->original_stsd_entry_size > original_stsd->size - original_stsd->header_size -
 			sizeof(stsd_atom_t))
 	{
 		vod_log_error(VOD_LOG_ERR, request_context->log, 0,

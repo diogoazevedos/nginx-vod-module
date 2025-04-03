@@ -45,7 +45,7 @@ mp4_cenc_decrypt_init(
 	frames_source_t* frames_source,
 	void* frames_source_context,
 	u_char* key,
-	media_encryption_t* encryption, 
+	media_encryption_t* encryption,
 	void** result)
 {
 	mp4_cenc_decrypt_state_t* state;
@@ -147,7 +147,7 @@ mp4_cenc_decrypt_start_frame(void* ctx, input_frame_t* frame, read_cache_hint_t*
 
 static vod_status_t
 mp4_cenc_decrypt_process(
-	mp4_cenc_decrypt_state_t* state, 
+	mp4_cenc_decrypt_state_t* state,
 	size_t size)
 {
 	u_char* dest = state->output_pos;
@@ -225,8 +225,8 @@ mp4_cenc_decrypt_read(void* ctx, u_char** buffer, uint32_t* size, bool_t* frame_
 		{
 			buffer_size = BUFFER_SIZE;
 			state->output_start = buffer_pool_alloc(
-				state->request_context, 
-				state->request_context->output_buffer_pool, 
+				state->request_context,
+				state->request_context->output_buffer_pool,
 				&buffer_size);
 			if (state->output_start == NULL)
 			{
@@ -244,9 +244,9 @@ mp4_cenc_decrypt_read(void* ctx, u_char** buffer, uint32_t* size, bool_t* frame_
 	if (state->input_size <= 0)
 	{
 		rc = state->frames_source->read(
-			state->frames_source_context, 
-			&state->input_pos, 
-			&state->input_size, 
+			state->frames_source_context,
+			&state->input_pos,
+			&state->input_size,
 			&state->frame_done);
 		if (rc != VOD_OK)
 		{
@@ -313,7 +313,7 @@ mp4_cenc_decrypt_disable_buffer_reuse(void* ctx)
 	state->reuse_buffers = FALSE;
 }
 
-u_char* 
+u_char*
 mp4_cenc_decrypt_get_key(void* ctx)
 {
 	mp4_cenc_decrypt_state_t* state = ctx;
@@ -321,7 +321,7 @@ mp4_cenc_decrypt_get_key(void* ctx)
 	return state->key;
 }
 
-void 
+void
 mp4_cenc_decrypt_get_original_source(
 	void* ctx,
 	frames_source_t** frames_source,

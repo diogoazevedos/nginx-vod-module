@@ -26,7 +26,7 @@ static const vod_str_t amf0_on_metadata = vod_string("onMetaData");
 #define AMF0_VIDEO_FIELDS_COUNT ((amf0_field_count >> 8) & 0xFF)
 #define AMF0_AUDIO_FIELDS_COUNT ((amf0_field_count >> 16) & 0xFF)
 
-#define AMF0_FIELD(group, name, type)    group + 
+#define AMF0_FIELD(group, name, type)    group +
 
 static const int amf0_field_count =
 #include "hds_amf0_fields_x.h"

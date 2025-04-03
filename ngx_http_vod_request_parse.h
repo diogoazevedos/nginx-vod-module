@@ -64,13 +64,13 @@ ngx_int_t ngx_http_vod_parse_uri_path(
 	media_set_t* media_set);
 
 ngx_int_t ngx_http_vod_init_uri_params_hash(
-	ngx_conf_t *cf, 
+	ngx_conf_t *cf,
 	struct ngx_http_vod_loc_conf_s* conf);
 
 // utility functions for submodules
 u_char* ngx_http_vod_extract_uint32_token_reverse(
-	u_char* start_pos, 
-	u_char* end_pos, 
+	u_char* start_pos,
+	u_char* end_pos,
 	uint32_t* result);
 
 bool_t ngx_http_vod_parse_string(

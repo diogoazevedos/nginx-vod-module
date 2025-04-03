@@ -47,4 +47,3 @@ vod_dynamic_buf_reserve(vod_dynamic_buf_t* buffer, size_t size)
 
 	return VOD_OK;
 }
-

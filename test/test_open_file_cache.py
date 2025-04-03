@@ -13,7 +13,7 @@ import os
 '''
 config:
 -------
-use the associated test_open_file_cache.conf, also recommended to run some tests (no need for the whole matrix) 
+use the associated test_open_file_cache.conf, also recommended to run some tests (no need for the whole matrix)
 with each of the following combinations:
 * comment out open_file_cache (no file caching)
 * change open_file_cache_min_uses to 2
@@ -33,7 +33,7 @@ static void
 ngx_thread_open_handler(void *data, ngx_log_t *log)
 {
 	ngx_async_open_file_ctx_t* ctx = data;
-	
+
 	int block_type = ctx->of->size;
 	char file_name[256];
 	int fail = (ctx->of->failed != NULL);
@@ -75,8 +75,8 @@ ngx_thread_open_handler(void *data, ngx_log_t *log)
 * in ngx_file_reader.c, before the call to ngx_async_open_cached_file add:
 
 	ngx_str_t value;
-	
-	if (ngx_http_arg(r, (u_char *) "block", 5, &value) == NGX_OK) 
+
+	if (ngx_http_arg(r, (u_char *) "block", 5, &value) == NGX_OK)
 	{
 		if (value.data[0] == '-')
 		{
@@ -88,7 +88,7 @@ ngx_thread_open_handler(void *data, ngx_log_t *log)
 		}
 	}
 
-	if (ngx_http_arg(r, (u_char *) "fail", 4, &value) == NGX_OK) 
+	if (ngx_http_arg(r, (u_char *) "fail", 4, &value) == NGX_OK)
 	{
 		open_context->of.failed = "fail";
 	}
@@ -98,7 +98,7 @@ debugging handle leak:
 ----------------------
 * in ngx_async_open_file_cache.c, add:
 
-int 
+int
 ngx_open_file_cache_get_handle_count(ngx_open_file_cache_t *cache)
 {
 	ngx_cached_open_file_t  *file;
@@ -134,7 +134,7 @@ int ngx_open_file_cache_get_handle_count(ngx_open_file_cache_t *cache);
 		clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
 
 		sprintf(count, "%d", ngx_open_file_cache_get_handle_count(clcf->open_file_cache));
-		
+
 		response.data = count;
 		response.len = strlen(count);
 
@@ -186,7 +186,7 @@ class AsyncHttpRequest(Thread):
 		self.response = None
 		self.status = None
 		self.start()
-		
+
 	def run(self):
 		try:
 			self.response = urllib2.urlopen(urllib2.Request(self.url)).read()
@@ -205,7 +205,7 @@ def changeDirToFile(fileName):
 	os.rmdir(BASE_PATH + fileName)
 	writeFile(BASE_PATH + fileName, FINAL_CONTENT)
 
-class TestThread(Thread):	
+class TestThread(Thread):
 	def __init__(self, id, count, tests):
 		Thread.__init__(self)
 		self.id = id + 1
@@ -242,12 +242,12 @@ class TestThread(Thread):
 			return
 		if not validate(response, status):
 			print('%s - %s %s %s' % (id, test, response, status))
-		
+
 	def runSyncTest(self, test):
 		if DEBUG_HANDLE_LEAK:
 			print('Running %s' % test['index'])
 		#print 'Running %s' % test
-		
+
 		testName, prepare, validateInitial, change, validateMidway, validateFinal, cleanup = test['test']
 
 		# clean up any previous unblock file
@@ -255,12 +255,12 @@ class TestThread(Thread):
 			os.remove(OPEN_UNBLOCK_FILE % self.id)
 		except OSError:
 			pass
-		
+
 		# prepare initial state
 		fileName = self.getUniqueFileName()
 		if prepare != None:
 			prepare(fileName)
-		
+
 		# feed into cache
 		if test['initialCacheLoad']:
 			response = self.issueRequest(BASE_URL + fileName)
@@ -268,7 +268,7 @@ class TestThread(Thread):
 				print('Error1 - %s %s' % (test, response))
 			# wait until it will expire
 			time.sleep(CACHE_INACTIVE_TIME)
-			
+
 		# enable block
 		url = BASE_URL + fileName
 		if test['blockType'] == 'pre':
@@ -277,7 +277,7 @@ class TestThread(Thread):
 			url += '?block=-%s' % self.id
 		elif test['blockType'] == 'fail':
 			url += '?block=%s&fail=1' % self.id
-		
+
 		lt = LogTracker()
 		# start the async request
 		ar = AsyncHttpRequest(url)
@@ -310,39 +310,39 @@ class TestThread(Thread):
 				url += '?block=-%s' % self.id
 			if test['secondBlockType'] == 'fail':
 				url += '?block=%s&fail=1' % self.id
-			
+
 			# start the async request
 			lt = LogTracker()
 			ar2 = AsyncHttpRequest(url)
-			
+
 			# wait until the thread gets blocked or the request completes
 			while True:
 				if lt.contains('waiting for %s\n' % self.id) or not ar2.isAlive():
 					break
 				time.sleep(.01)
-			
+
 			if not ar2.isAlive():
 				print('Unexpected, second request not locked, %s %s %s %s' % (ar.status, ar.response, ar2.status, ar2.response))
-		
+
 		# sleep before change
 		self.issueAndValidate('Error2', test, test['requestBeforeSleep1'], fileName, validateInitial)
-			
+
 		time.sleep(test['sleepTime1'])
 
 		self.issueAndValidate('Error3', test, test['requestAfterSleep1'], fileName, validateInitial)
-		
+
 		# make the change
 		if change != None:
 			change(fileName)
 		changeTime = time.time()
 
 		# sleep after change
-		self.issueAndValidate('Error4', test, test['requestBeforeSleep2'], fileName, 
+		self.issueAndValidate('Error4', test, test['requestBeforeSleep2'], fileName,
 			lambda response, status: self.doValidate((response, status), time.time() - changeTime, validateInitial, validateMidway, validateFinal))
 
 		time.sleep(test['sleepTime2'])
 
-		self.issueAndValidate('Error5', test, test['requestAfterSleep2'], fileName, 
+		self.issueAndValidate('Error5', test, test['requestAfterSleep2'], fileName,
 			lambda response, status: self.doValidate((response, status), time.time() - changeTime, validateInitial, validateMidway, validateFinal))
 
 		# unblock
@@ -355,14 +355,14 @@ class TestThread(Thread):
 			if not self.doValidate(response, time.time() - changeTime, validateInitial, validateMidway, validateFinal, 'post' in [test['blockType'], test['secondBlockType']]):
 				print('Error6 - %s %s' % (test, response))
 
-		if ar2 != None:	
+		if ar2 != None:
 			# final state
 			ar2.join()
 			response = (ar2.response, ar2.status)
 			if not (ar2.status == 500 and test['secondBlockType'] == 'fail'):
 				if not self.doValidate(response, time.time() - changeTime, validateInitial, validateMidway, validateFinal, 'post' in [test['blockType'], test['secondBlockType']]):
 					print('Error7 - %s %s' % (test, response))
-			
+
 		# cleanup
 		if cleanup != None:
 			cleanup(fileName)
@@ -373,18 +373,18 @@ class TestThread(Thread):
 		cacheFdCount = urllib2.urlopen(BASE_URL + 'a?fdcount=1').read()
 		totalFdCount = commands.getoutput('''ls /proc/`ps aux | grep sbin/ngin[x] | awk '{print $2}'`/fd | wc -l''')
 		return int(totalFdCount) - int(cacheFdCount)
-			
+
 	def run(self):
 		curPos = self.id - 1
 		while curPos < len(self.tests):
 			initialHandles = self.getUnrefHandles()
-			
+
 			self.runSyncTest(self.tests[curPos])
-			
+
 			currentHandles = self.getUnrefHandles()
 			if initialHandles != currentHandles:
 				print('handle leak %s != %s in test %s' % (initialHandles, currentHandles, self.tests[curPos]['index']))
-			
+
 			curPos += self.count
 			self.completeCount += 1
 
@@ -392,7 +392,7 @@ def generateAllOptions(testMatrix):
 	curState = {}
 	for curKey in testMatrix:
 		curState[curKey] = 0
-	
+
 	result = []
 	while True:
 		# append the current combination
@@ -401,7 +401,7 @@ def generateAllOptions(testMatrix):
 			curComb[curKey] = testMatrix[curKey][curState[curKey]]
 		curComb['index'] = len(result)
 		result.append(curComb)
-		
+
 		# increment the state
 		isDone = True
 		for curKey in testMatrix:
@@ -410,10 +410,10 @@ def generateAllOptions(testMatrix):
 				isDone = False
 				break
 			curState[curKey] = 0
-			
+
 		if isDone:
 			break
-			
+
 	return result
 
 TEST_SCENARIOS = [
@@ -553,12 +553,12 @@ while True:
 		completeCount += thread.completeCount
 	if not hasAlive:
 		break
-		
+
 	if completeCount >= lastCount + 100:
 		sys.stdout.write('.')
 		sys.stdout.flush()
 		lastCount = completeCount
-		
+
 	time.sleep(5)
 
 print('Done !')

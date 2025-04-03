@@ -292,7 +292,7 @@ cap_parse_frames(
 	u_char hours_base = 0;
 	bool_t first_time = TRUE;
 	size_t frame_size;
-	
+
 	vod_memzero(result, sizeof(*result));
 	result->first_track = track;
 	result->last_track = track + 1;
@@ -301,7 +301,7 @@ cap_parse_frames(
 
 	header->len = sizeof(WEBVTT_HEADER_NEWLINES) - 1;
 	header->data = (u_char*)WEBVTT_HEADER_NEWLINES;
-	
+
 	if ((parse_params->parse_type & PARSE_FLAG_FRAMES_ALL) == 0)
 	{
 		return VOD_OK;
@@ -341,7 +341,7 @@ cap_parse_frames(
 			}
 			break;
 		}
-		
+
 		next = cap_get_next_block(cur_pos + cur_pos[0], end_pos);
 
 		// get start / end
@@ -367,18 +367,18 @@ cap_parse_frames(
 				end_time = start_time + CAP_LAST_FRAME_DURATION;
 			}
 		}
-		
+
 		if (end_time < start)
 		{
 			track->first_frame_index++;
 			continue;
 		}
-		
+
 		if (start_time >= end_time)
 		{
 			continue;
 		}
-		
+
 		// apply clipping
 		if (start_time >= base_time)
 		{
@@ -423,7 +423,7 @@ cap_parse_frames(
 				"cap_parse_frames: vod_array_push failed");
 			return VOD_ALLOC_FAILED;
 		}
-		
+
 		// allocate the text
 		if ((cur_pos[1] & CAP_FLAG_HAS_END_TIME) != 0)
 		{
@@ -444,7 +444,7 @@ cap_parse_frames(
 				"cap_parse_frames: vod_alloc failed");
 			return VOD_ALLOC_FAILED;
 		}
-		
+
 		// Note: mapping of cue into input_frame_t:
 		//	- offset = pointer to buffer containing: cue id, cue settings list, cue payload
 		//	- size = size of data pointed by offset
@@ -466,7 +466,7 @@ cap_parse_frames(
 		cur_frame->key_frame = 0;
 		track->total_frames_size += cur_frame->size;
 
-		last_start_time = start_time;		
+		last_start_time = start_time;
 	}
 
 	track->frame_count = frames.nelts;

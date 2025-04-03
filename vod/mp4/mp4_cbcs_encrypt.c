@@ -174,9 +174,9 @@ mp4_cbcs_encrypt_write_encrypted(
 	int written;
 
 	rc = write_buffer_get_bytes(
-		&state->write_buffer, 
-		aes_round_up_to_block_exact(size), 
-		&output_size, 
+		&state->write_buffer,
+		aes_round_up_to_block_exact(size),
+		&output_size,
 		&output);
 	if (rc != VOD_OK)
 	{
@@ -444,7 +444,7 @@ mp4_cbcs_encrypt_video_write_buffer(void* context, u_char* buffer, uint32_t size
 
 			rc = stream_state->slice_parser.is_slice(
 				stream_state->slice_parser_context,
-				nal_type, 
+				nal_type,
 				&is_slice);
 			if (rc != VOD_OK)
 			{
@@ -462,7 +462,7 @@ mp4_cbcs_encrypt_video_write_buffer(void* context, u_char* buffer, uint32_t size
 			// initialize the slice header state
 			stream_state->slice_header[0] = nal_type;
 			stream_state->slice_header_pos = stream_state->slice_header + 1;
-			stream_state->slice_header_end = stream_state->slice_header + 
+			stream_state->slice_header_end = stream_state->slice_header +
 				vod_min(sizeof(stream_state->slice_header), stream_state->packet_size_left + 1);
 			stream_state->cur_state = STATE_SLICE_HEADER;
 			// fall through
@@ -539,8 +539,8 @@ mp4_cbcs_encrypt_video_write_buffer(void* context, u_char* buffer, uint32_t size
 			{
 				// write any remaining clear bytes in the slice header buffer
 				rc = write_buffer_write(
-					&state->write_buffer, 
-					stream_state->slice_header + 1 + slice_header_size + AES_BLOCK_SIZE, 
+					&state->write_buffer,
+					stream_state->slice_header + 1 + slice_header_size + AES_BLOCK_SIZE,
 					slice_header_buf_size - (1 + slice_header_size + AES_BLOCK_SIZE));
 				if (rc != VOD_OK)
 				{
@@ -563,7 +563,7 @@ mp4_cbcs_encrypt_video_write_buffer(void* context, u_char* buffer, uint32_t size
 			// fall through
 
 		case STATE_PACKET_ENCRYPT:
-			if (stream_state->packet_size_left > 0 && 
+			if (stream_state->packet_size_left > 0 &&
 				stream_state->packet_size_left <= stream_state->next_block_size_left)
 			{
 				// write encrypted bytes
@@ -699,7 +699,7 @@ mp4_cbcs_encrypt_video_get_fragment_writer(
 	mp4_cbcs_encrypt_init_stream_state(
 		&stream_state->base,
 		state,
-		media_set, 
+		media_set,
 		track);
 
 	segment_writer->write_tail = mp4_cbcs_encrypt_video_write_buffer;
@@ -825,9 +825,9 @@ mp4_cbcs_encrypt_audio_get_fragment_writer(
 	}
 
 	mp4_cbcs_encrypt_init_stream_state(
-		stream_state, 
+		stream_state,
 		state,
-		media_set, 
+		media_set,
 		track);
 
 	segment_writer->write_tail = mp4_cbcs_encrypt_audio_write_buffer;
@@ -860,7 +860,7 @@ mp4_cbcs_encrypt_get_writers(
 
 	// allocate the state and writers
 	state = vod_alloc(request_context->pool,
-		sizeof(*state) + 
+		sizeof(*state) +
 		sizeof(segment_writers[0]) * media_set->total_track_count);
 	if (state == NULL)
 	{

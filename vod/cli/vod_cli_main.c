@@ -9,30 +9,30 @@
 #include "read_cache.h"
 #include "muxer.h"
 
-static bool_t 
+static bool_t
 write_file(void* context, const u_char* buffer, uint32_t size)
 {
 	int* output_fd = (int*)context;
 	int rc;
-	
+
 	rc = write(*output_fd, buffer, size);
 	if (rc < size)
 	{
 		return FALSE;
 	}
-	
+
 	return TRUE;
 }
 
-static size_t 
+static size_t
 read_file(void* context, u_char *buf, size_t size, off_t offset)
 {
 	int* input_fd = (int*)context;
-	
+
 	return pread(*input_fd, buf, size, offset);
 }
 
-int 
+int
 main(int argc, const char *argv[])
 {
 	read_cache_state_t read_cache_state;
@@ -55,7 +55,7 @@ main(int argc, const char *argv[])
 	if (output_fd == -1)
 	{
 	}
-	
+
 	if (!parse_mpeg_file(read_file, &input_fd, &track_array, &input_params))
 	{
 	}
@@ -67,9 +67,9 @@ main(int argc, const char *argv[])
 	if (!hls_muxer_init(&muxer, &track_array, &read_cache_state, write_file, &output_fd))
 	{
 	}
-	
+
 	hls_muxer_process(&muxer);
-	
+
 	close(output_fd);
 	close(input_fd);
 

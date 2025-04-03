@@ -110,7 +110,7 @@ http {
 	upstream kalapi {
 		server localhost;
 	}
-	
+
 	include	   mime.types;
 	default_type  application/octet-stream;
 
@@ -124,7 +124,7 @@ http {
 
 		listen	   8001;
 		server_name  vod;
-		
+
 		# common vod settings
 		vod_mode mapped;
 		vod_upstream_location /kalapi_proxy;
@@ -136,14 +136,14 @@ http {
 		add_header 'Access-Control-Expose-Headers' 'Server,Content-Length,Content-Range,Date';
 		add_header 'Access-Control-Allow-Methods' 'GET, HEAD, OPTIONS';
 		add_header 'Access-Control-Allow-Origin' '*';
-		
+
 		# internal location for vod subrequests
 		location ^~ /kalapi_proxy/ {
 			internal;
 			proxy_pass http://kalapi/segmenter_test_backend.php/loc/;
 			proxy_set_header Host $http_host;
 		}
-		
+
 		%s
 	}
 }
@@ -154,7 +154,7 @@ def getConf():
 	for comb in itertools.product(*confMatrix):
 		locName = '-'.join(map(lambda x: x[0], comb))
 		locDirectives = reduce(lambda x, y: x + y, map(lambda x: x[1], comb))
-		locations += 'location /%s/ {\n%s\n}\n\n' % (locName, 
+		locations += 'location /%s/ {\n%s\n}\n\n' % (locName,
 			'\n'.join(map(lambda x: '\t%s;' % x, locDirectives)))
 	return confTemplate % locations.replace('\n', '\n\t\t')
 
@@ -167,28 +167,28 @@ def getTestUrls():
 			combDict = dict(confComb + baseJsonComb)
 			if combDict['type'] == 'live':
 				liveCombs = itertools.product(*liveJsonMatrix)
-				
+
 				if (not combDict.has_key('sps') or 	# segment policy last short is the only option for live
 					combDict.has_key('bs')):		# bootstrap segments not supported for live
 					continue
 			else:
 				liveCombs = [map(lambda x: x[0], liveJsonMatrix)]
 
-				# ignore some 
+				# ignore some
 				if (combDict.has_key('nzw') or 		# live window relevant only for live
 					combDict['disc'] == 'gap'):		# gap relevant only for live
 					continue
 				if combDict['type'] == 'vod':
 					if combDict['disc'] == 'yes' or combDict['csmi'] == 'no':	# discontinuity and csmi irrelevant for vod
 						continue
-			
+
 			for liveJsonComb in liveCombs:
 				liveCombDict = dict(liveJsonComb)
 				if (combDict['disc'] == 'no' or combDict.has_key('mss')) and combDict['type'] == 'live' and liveCombDict['sbt'] == 'no':
 					continue	# segment base time mandatory in continuous live
 				if combDict['type'] in set(['live', 'playlist']) and liveCombDict['sbt'] == 'yes' and combDict['disc'] == 'yes':
 					continue	# passing segment base time with multi clip in discontinuous mode will result in error of gap too small
-					
+
 				# build the url
 				jsonComb = list(baseJsonComb) + list(liveJsonComb)
 				url = '/' + locName + ''.join(map(lambda x: '/%s/%s' % x, jsonComb)) + \

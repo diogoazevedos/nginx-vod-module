@@ -100,9 +100,9 @@ dynamic_clip_parser_init(
 
 vod_status_t
 dynamic_clip_apply_mapping_json(
-	media_clip_dynamic_t* clip, 
+	media_clip_dynamic_t* clip,
 	request_context_t* request_context,
-	u_char* mapping, 
+	u_char* mapping,
 	media_set_t* media_set)
 {
 	media_filter_parse_context_t context;
@@ -173,7 +173,7 @@ dynamic_clip_apply_mapping_json(
 vod_status_t
 dynamic_clip_get_mapping_string(
 	request_context_t* request_context,
-	media_clip_dynamic_t* dynamic_clips_head, 
+	media_clip_dynamic_t* dynamic_clips_head,
 	vod_str_t* result)
 {
 	media_clip_dynamic_t* cur_clip;
@@ -231,16 +231,16 @@ dynamic_clip_get_mapping_string(
 
 		cur_source = (media_clip_source_t*)cur_clip->base.sources[0];
 
-		p = vod_sprintf(p, "%V-%uD-%uL", 
-			&cur_clip->id, 
-			cur_clip->base.source_count, 
+		p = vod_sprintf(p, "%V-%uD-%uL",
+			&cur_clip->id,
+			cur_clip->base.source_count,
 			cur_source->clip_time - cur_clip->clip_time);
 
 		for (i = 0; i < cur_clip->base.source_count; i++)
 		{
 			cur_source = (media_clip_source_t*)cur_clip->base.sources[i];
-			p = vod_sprintf(p, "-%V-%uL", 
-				&cur_source->mapped_uri, 
+			p = vod_sprintf(p, "-%V-%uL",
+				&cur_source->mapped_uri,
 				cur_source->clip_to);
 		}
 	}
@@ -254,9 +254,9 @@ dynamic_clip_get_mapping_string(
 
 static vod_status_t
 dynamic_clip_extract_token(
-	request_context_t* request_context, 
-	u_char** cur, 
-	u_char* end, 
+	request_context_t* request_context,
+	u_char** cur,
+	u_char* end,
 	vod_str_t* result)
 {
 	u_char* p = *cur;
@@ -286,8 +286,8 @@ static vod_status_t
 dynamic_clip_apply_mapping_string_clip(
 	request_context_t* request_context,
 	media_set_t* media_set,
-	media_clip_dynamic_t* clip, 
-	u_char** cur, 
+	media_clip_dynamic_t* clip,
+	u_char** cur,
 	u_char* end)
 {
 	media_clip_source_t* sources_list_head;
@@ -386,7 +386,7 @@ dynamic_clip_apply_mapping_string_clip(
 		if (duration > UINT_MAX - offset)
 		{
 			vod_log_error(VOD_LOG_ERR, request_context->log, 0,
-				"dynamic_clip_apply_mapping_string_clip: duration %uD too big for offset %uD", 
+				"dynamic_clip_apply_mapping_string_clip: duration %uD too big for offset %uD",
 				duration, offset);
 			return VOD_BAD_REQUEST;
 		}

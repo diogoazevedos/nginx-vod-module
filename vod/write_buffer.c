@@ -9,7 +9,7 @@ write_buffer_init(
 	write_buffer_state_t* state,
 	request_context_t* request_context,
 	write_callback_t write_callback,
-	void* write_context, 
+	void* write_context,
 	bool_t reuse_buffers)
 {
 	state->request_context = request_context;
@@ -46,8 +46,8 @@ write_buffer_flush(write_buffer_state_t* state, bool_t reallocate)
 	{
 		buffer_size = WRITE_BUFFER_SIZE;
 		state->start_pos = buffer_pool_alloc(
-			state->request_context, 
-			state->request_context->output_buffer_pool, 
+			state->request_context,
+			state->request_context->output_buffer_pool,
 			&buffer_size);
 		if (state->start_pos == NULL)
 		{

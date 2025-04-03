@@ -33,7 +33,7 @@ static uint16_t aac_config_channel_count[] = {
 	8,
 };
 
-vod_status_t 
+vod_status_t
 codec_config_avcc_get_nal_units(
 	request_context_t* request_context,
 	vod_str_t* extra_data,
@@ -142,11 +142,11 @@ codec_config_avcc_get_nal_units(
 }
 
 // Note: taken from gf_odf_hevc_cfg_read_bs in GPAC code
-vod_status_t 
+vod_status_t
 codec_config_hevc_config_parse(
-	request_context_t* request_context, 
-	vod_str_t* extra_data, 
-	hevc_config_t* cfg, 
+	request_context_t* request_context,
+	vod_str_t* extra_data,
+	hevc_config_t* cfg,
 	const u_char** end_pos)
 {
 	bit_reader_state_t reader;
@@ -603,8 +603,8 @@ codec_config_get_audio_codec_name(request_context_t* request_context, media_info
 
 vod_status_t
 codec_config_mp4a_config_parse(
-	request_context_t* request_context, 
-	vod_str_t* extra_data, 
+	request_context_t* request_context,
+	vod_str_t* extra_data,
 	media_info_t* media_info)
 {
 	bit_reader_state_t reader;
@@ -626,7 +626,7 @@ codec_config_mp4a_config_parse(
 
 	if (reader.stream.eof_reached)
 	{
-		vod_log_error(VOD_LOG_ERR, request_context->log, 0, 
+		vod_log_error(VOD_LOG_ERR, request_context->log, 0,
 			"codec_config_mp4a_config_parse: failed to read all required audio extra data fields");
 		return VOD_BAD_DATA;
 	}

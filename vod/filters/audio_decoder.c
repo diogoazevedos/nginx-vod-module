@@ -37,7 +37,7 @@ audio_decoder_init_decoder(
 		return VOD_BAD_REQUEST;
 	}
 
-	// init the decoder	
+	// init the decoder
 	decoder = avcodec_alloc_context3(decoder_codec);
 	if (decoder == NULL)
 	{
@@ -46,8 +46,8 @@ audio_decoder_init_decoder(
 		return VOD_ALLOC_FAILED;
 	}
 
-	state->decoder = decoder;	
-	
+	state->decoder = decoder;
+
 	decoder->codec_tag = media_info->format;
 	decoder->bit_rate = media_info->bitrate;
 	decoder->time_base.num = 1;

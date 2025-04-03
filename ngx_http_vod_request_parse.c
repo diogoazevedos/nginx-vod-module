@@ -39,9 +39,9 @@ typedef struct {
 
 bool_t
 ngx_http_vod_parse_string(
-	const ngx_http_vod_match_definition_t* match_def, 
-	u_char* start_pos, 
-	u_char* end_pos, 
+	const ngx_http_vod_match_definition_t* match_def,
+	u_char* start_pos,
+	u_char* end_pos,
 	void* output)
 {
 	uint64_t value;
@@ -198,7 +198,7 @@ ngx_http_vod_extract_track_tokens(
 			start_pos++;
 			if (start_pos >= end_pos)
 			{
-				break;			
+				break;
 			}
 		}
 	}
@@ -399,8 +399,8 @@ ngx_http_vod_parse_uri_file_name(
 
 				start_pos = ngx_http_vod_extract_track_tokens(
 					r,
-					start_pos, 
-					end_pos, 
+					start_pos,
+					end_pos,
 					tracks_mask);
 				if (start_pos == NULL)
 				{
@@ -419,7 +419,7 @@ ngx_http_vod_parse_uri_file_name(
 			}
 
 			// more than one sequence, allocate the per sequence tracks mask
-			sequence_tracks_mask = ngx_palloc(r->pool, 
+			sequence_tracks_mask = ngx_palloc(r->pool,
 				sizeof(sequence_tracks_mask[0]) * MAX_SEQUENCE_TRACKS_MASKS);
 			if (sequence_tracks_mask == NULL)
 			{
@@ -761,10 +761,10 @@ static ngx_http_vod_uri_param_def_t pd_uri_param_defs[] = {
 
 static ngx_int_t
 ngx_http_vod_init_hash(
-	ngx_conf_t *cf, 
+	ngx_conf_t *cf,
 	ngx_http_vod_uri_param_def_t* elements,
-	ngx_http_vod_loc_conf_t* conf, 
-	char* hash_name, 
+	ngx_http_vod_loc_conf_t* conf,
+	char* hash_name,
 	ngx_hash_t* output)
 {
 	ngx_http_vod_uri_param_def_t *element;
@@ -882,7 +882,7 @@ ngx_http_vod_extract_uri_params(
 	ngx_memset(source_clip->tracks_mask, 0xff, sizeof(source_clip->tracks_mask));
 	source_clip->uri = *uri;
 	source_clip->sequence = sequence;
-	
+
 	*result = &source_clip->base;
 
 	// allocate the stripped uri
@@ -942,7 +942,7 @@ ngx_http_vod_extract_uri_params(
 					rc = rate_filter_create_from_string(
 						&request_context,
 						&cur_param,
-						&source_clip->base, 
+						&source_clip->base,
 						&rate_filter);
 					if (rc != VOD_OK)
 					{
@@ -1030,7 +1030,7 @@ ngx_http_vod_parse_uri_path(
 		return rc;
 	}
 
-	if (multi_uri.parts_count > 1 && 
+	if (multi_uri.parts_count > 1 &&
 		request_params->sequence_ids[0].len == 0)
 	{
 		sequences_mask = request_params->sequences_mask;
@@ -1042,7 +1042,7 @@ ngx_http_vod_parse_uri_path(
 	}
 
 	parts_mask = (1 << multi_uri.parts_count) - 1;
-	
+
 	uri_count = vod_get_number_of_set_bits32(sequences_mask & parts_mask);
 	if (uri_count == 0)
 	{
@@ -1120,7 +1120,7 @@ ngx_http_vod_parse_uri_path(
 		{
 			continue;
 		}
-		
+
 		*cur_clip_ptr = cur_clip;
 
 		cur_source->next = sources_head;

@@ -41,7 +41,7 @@ static vod_hash_t pssh_keys_hash;
 vod_status_t
 udrm_parse_response(
 	request_context_t* request_context,
-	vod_str_t* drm_info, 
+	vod_str_t* drm_info,
 	bool_t base64_decode_pssh,
 	void** output)
 {
@@ -56,7 +56,7 @@ udrm_parse_response(
 	drm_info_t* result;
 	vod_int_t rc;
 	u_char error[128];
-	
+
 	// note: drm_info is guaranteed to be null terminated
 	rc = vod_json_parse(request_context->pool, drm_info->data, &parsed_info, error, sizeof(error));
 	if (rc != VOD_JSON_OK)
@@ -66,8 +66,8 @@ udrm_parse_response(
 		return VOD_BAD_DATA;
 	}
 
-	if (parsed_info.type != VOD_JSON_ARRAY || 
-		parsed_info.v.arr.count != 1 || 
+	if (parsed_info.type != VOD_JSON_ARRAY ||
+		parsed_info.v.arr.count != 1 ||
 		parsed_info.v.arr.type != VOD_JSON_OBJECT)
 	{
 		vod_log_error(VOD_LOG_ERR, request_context->log, 0,
@@ -78,7 +78,7 @@ udrm_parse_response(
 	element = (vod_json_object_t*)parsed_info.v.arr.part.first;
 
 	vod_memzero(drm_info_values, sizeof(drm_info_values));
-	
+
 	vod_json_get_object_values(element, &drm_info_keys_hash, drm_info_values);
 
 	if (drm_info_values[DRM_INFO_PARAM_KEY] == NULL ||
@@ -149,7 +149,7 @@ udrm_parse_response(
 
 	result->pssh_array.count = pssh_array->count;
 	result->pssh_array.first = vod_alloc(
-		request_context->pool, 
+		request_context->pool,
 		sizeof(*result->pssh_array.first) * result->pssh_array.count);
 	if (result->pssh_array.first == NULL)
 	{
@@ -176,9 +176,9 @@ udrm_parse_response(
 		}
 
 		vod_memzero(pssh_values, sizeof(pssh_values));
-		
+
 		vod_json_get_object_values(cur_input_pssh, &pssh_keys_hash, pssh_values);
-		
+
 		if (pssh_values[PSSH_PARAM_SYSTEM_ID] == NULL ||
 			pssh_values[PSSH_PARAM_DATA] == NULL)
 		{
@@ -227,7 +227,7 @@ vod_status_t
 udrm_init_parser(vod_pool_t* pool, vod_pool_t* temp_pool)
 {
 	vod_status_t rc;
-	
+
 	rc = vod_json_init_hash(
 		pool,
 		temp_pool,

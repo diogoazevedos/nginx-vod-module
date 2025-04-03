@@ -43,7 +43,7 @@ typedef struct
 
 // constants
 static const uint8_t piff_uuid[] = {
-	0xa2, 0x39, 0x4f, 0x52, 0x5a, 0x9b, 0x4f, 0x14, 
+	0xa2, 0x39, 0x4f, 0x52, 0x5a, 0x9b, 0x4f, 0x14,
 	0xa2, 0x44, 0x6c, 0x42, 0x7c, 0x64, 0x8d, 0xf4
 };
 
@@ -87,9 +87,9 @@ mss_playready_build_manifest(
 	{
 		extra_tags_size +=
 			sizeof(VOD_MSS_PLAYREADY_PROTECTION_HEADER_PREFIX) - 1 +
-			VOD_GUID_LENGTH + 
+			VOD_GUID_LENGTH +
 			sizeof(VOD_MSS_PLAYREADY_PROTECTION_HEADER_DELIMITER) - 1 +
-			vod_base64_encoded_length(cur_info->data.len) + 
+			vod_base64_encoded_length(cur_info->data.len) +
 			sizeof(VOD_MSS_PLAYREADY_PROTECTION_HEADER_SUFFIX) - 1;
 	}
 
@@ -195,7 +195,7 @@ mss_playready_audio_build_fragment_header(
 static vod_status_t
 mss_playready_video_build_fragment_header(
 	mp4_cenc_encrypt_video_state_t* state,
-	vod_str_t* fragment_header, 
+	vod_str_t* fragment_header,
 	size_t* total_fragment_size)
 {
 	mss_playready_video_extra_traf_atoms_context writer_context;
@@ -279,7 +279,7 @@ mss_playready_get_fragment_writer(
 			media_set,
 			segment_index,
 			passthrough_context.total_size + ATOM_HEADER_SIZE + sizeof(uuid_piff_atom_t),
-			mss_playready_passthrough_write_encryption_atoms, 
+			mss_playready_passthrough_write_encryption_atoms,
 			&passthrough_context,
 			size_only,
 			fragment_header,
@@ -305,7 +305,7 @@ mss_playready_get_fragment_writer(
 			segment_index,
 			single_nalu_per_frame,
 			mss_playready_video_build_fragment_header,
-			iv, 
+			iv,
 			fragment_header,
 			total_fragment_size);
 

@@ -129,7 +129,7 @@ static const u_char webm_header[] = {
 
 static vod_str_t mkv_writing_app = vod_string("nginx-vod-module");
 
-static int 
+static int
 ebml_num_size(uint64_t num)
 {
 	int result = 0;
@@ -153,7 +153,7 @@ ebml_uint_size(uint64_t num)
 	return size;
 }
 
-static u_char* 
+static u_char*
 ebml_write_num(u_char* p, uint64_t num, int size)
 {
 	int shift;
@@ -380,7 +380,7 @@ mkv_write_track(u_char* p, media_track_t* track, uint64_t track_uid)
 		write_id16(p, MKV_ID_TRACKCODECDELAY);
 		p = ebml_write_uint(p, track->media_info.codec_delay);
 	}
-	
+
 	if (track->media_info.extra_data.len != 0)
 	{
 		write_id16(p, MKV_ID_TRACKCODECPRIVATE);
@@ -416,7 +416,7 @@ mkv_get_max_track_size(media_track_t* track)
 	size_t result;
 
 	result = EBML_MASTER_SIZE + 4 * EBML_UINT_SIZE +
-		ebml_string_size(MKV_MAX_CODEC_SIZE) + ebml_string_size(track->media_info.extra_data.len) + 
+		ebml_string_size(MKV_MAX_CODEC_SIZE) + ebml_string_size(track->media_info.extra_data.len) +
 		mkv_get_max_content_encodings_size();
 
 	switch (track->media_info.media_type)
@@ -474,13 +474,13 @@ mkv_write_init_segment(u_char* p, media_track_t* track, uint64_t track_uid)
 static size_t
 mkv_get_max_init_segment_size(media_track_t* track)
 {
-	return sizeof(webm_header) + 
-		EBML_MASTER_SIZE + 
-		mkv_get_max_info_size() + 
+	return sizeof(webm_header) +
+		EBML_MASTER_SIZE +
+		mkv_get_max_info_size() +
 		mkv_get_max_tracks_size(track);
 }
 
-vod_status_t 
+vod_status_t
 mkv_build_init_segment(
 	request_context_t* request_context,
 	media_track_t* track,
@@ -489,7 +489,7 @@ mkv_build_init_segment(
 {
 	size_t alloc_size;
 	u_char* p;
-	
+
 	alloc_size = mkv_get_max_init_segment_size(track);
 
 	p = vod_alloc(request_context->pool, alloc_size);
@@ -534,12 +534,12 @@ mkv_builder_init_track(mkv_fragment_writer_state_t* state, media_track_t* track)
 	}
 }
 
-vod_status_t 
+vod_status_t
 mkv_builder_frame_writer_init(
 	request_context_t* request_context,
 	media_sequence_t* sequence,
 	write_callback_t write_callback,
-	void* write_context, 
+	void* write_context,
 	bool_t reuse_buffers,
 	mkv_encryption_type_t encryption_type,
 	u_char* iv,
@@ -587,7 +587,7 @@ mkv_builder_frame_writer_init(
 			}
 
 			block_data_size = frame_header_size + cur_frame->size;
-			frame_headers_size += 
+			frame_headers_size +=
 				1 + ebml_num_size(block_data_size) +			// simple block
 				frame_header_size;
 		}
@@ -644,7 +644,7 @@ mkv_builder_frame_writer_init(
 	if (alloc_size != response_header->len)
 	{
 		vod_log_error(VOD_LOG_ERR, request_context->log, 0,
-			"mkv_builder_frame_writer_init: response header size %uz different than allocated size %uz", 
+			"mkv_builder_frame_writer_init: response header size %uz different than allocated size %uz",
 			response_header->len, alloc_size);
 		return VOD_UNEXPECTED;
 	}
@@ -711,9 +711,9 @@ mkv_builder_frame_writer_init(
 
 static u_char*
 mkv_builder_write_clear_frame_header(
-	u_char* p, 
-	size_t data_size, 
-	uint16_t timecode, 
+	u_char* p,
+	size_t data_size,
+	uint16_t timecode,
 	uint32_t key_frame)
 {
 	write_id8(p, MKV_ID_SIMPLEBLOCK);
@@ -741,9 +741,9 @@ mkv_builder_write_frame_header(mkv_fragment_writer_state_t* state)
 	{
 		// write to write_buffer
 		rc = write_buffer_get_bytes(
-			&state->write_buffer, 
-			1 + ebml_num_size(data_size) + MKV_FRAME_HEADER_SIZE_ENCRYPTED, 
-			NULL, 
+			&state->write_buffer,
+			1 + ebml_num_size(data_size) + MKV_FRAME_HEADER_SIZE_ENCRYPTED,
+			NULL,
 			&p);
 		if (rc != VOD_OK)
 		{
@@ -751,9 +751,9 @@ mkv_builder_write_frame_header(mkv_fragment_writer_state_t* state)
 		}
 
 		p = mkv_builder_write_clear_frame_header(
-			p, 
-			data_size, 
-			timecode, 
+			p,
+			data_size,
+			timecode,
 			cur_frame->key_frame || state->key_frame);
 
 		*p++ = 0x01;	// encrypted
@@ -769,9 +769,9 @@ mkv_builder_write_frame_header(mkv_fragment_writer_state_t* state)
 		p = state->frame_headers;
 
 		p = mkv_builder_write_clear_frame_header(
-			p, 
-			data_size, 
-			timecode, 
+			p,
+			data_size,
+			timecode,
 			cur_frame->key_frame || state->key_frame);
 
 		if (state->encryption_type == MKV_CLEAR_LEAD)
@@ -835,7 +835,7 @@ mkv_builder_start_frame(mkv_fragment_writer_state_t* state)
 
 	rc = state->cur_frame_part.frames_source->start_frame(
 		state->cur_frame_part.frames_source_context,
-		state->cur_frame, 
+		state->cur_frame,
 		NULL);
 	if (rc != VOD_OK)
 	{
@@ -870,9 +870,9 @@ mkv_builder_frame_writer_process(void* context)
 	{
 		// read some data from the frame
 		rc = state->cur_frame_part.frames_source->read(
-			state->cur_frame_part.frames_source_context, 
-			&read_buffer, 
-			&read_size, 
+			state->cur_frame_part.frames_source_context,
+			&read_buffer,
+			&read_size,
 			&frame_done);
 		if (rc != VOD_OK)
 		{

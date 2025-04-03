@@ -3,9 +3,9 @@
 
 static ngx_int_t
 ngx_file_reader_init_open_file_info(
-	ngx_open_file_info_t* of, 
+	ngx_open_file_info_t* of,
 	ngx_http_request_t *r,
-	ngx_http_core_loc_conf_t *clcf, 
+	ngx_http_core_loc_conf_t *clcf,
 	ngx_str_t* path)
 {
 	ngx_int_t rc;
@@ -127,9 +127,9 @@ ngx_file_reader_init(
 	}
 
 	rc = ngx_open_cached_file(
-		(flags & OPEN_FILE_NO_CACHE) != 0 ? NULL : clcf->open_file_cache, 
-		path, 
-		&of, 
+		(flags & OPEN_FILE_NO_CACHE) != 0 ? NULL : clcf->open_file_cache,
+		path,
+		&of,
 		r->pool);
 
 	return ngx_file_reader_update_state_file_info(state, &of, rc);
@@ -163,7 +163,7 @@ ngx_file_reader_async_open_callback(void* ctx, ngx_int_t rc)
 	ngx_http_run_posted_requests(c);
 }
 
-ngx_int_t 
+ngx_int_t
 ngx_file_reader_init_async(
 	ngx_file_reader_state_t* state,
 	void** context,
@@ -219,7 +219,7 @@ ngx_file_reader_init_async(
 	}
 
 	rc = ngx_async_open_cached_file(
-		(flags & OPEN_FILE_NO_CACHE) != 0 ? NULL : clcf->open_file_cache, 
+		(flags & OPEN_FILE_NO_CACHE) != 0 ? NULL : clcf->open_file_cache,
 		path,
 		&open_context->of,
 		r->pool,
@@ -309,7 +309,7 @@ ngx_file_reader_enable_directio(ngx_file_reader_state_t* state)
 {
 	if (state->directio <= state->file_size)
 	{
-		if (ngx_directio_on(state->file.fd) == NGX_FILE_ERROR) 
+		if (ngx_directio_on(state->file.fd) == NGX_FILE_ERROR)
 		{
 			ngx_log_error(NGX_LOG_ALERT, state->log, ngx_errno,
 				"ngx_file_reader_enable_directio: " ngx_directio_on_n " \"%s\" failed", state->file.name.data);
@@ -322,7 +322,7 @@ ngx_file_reader_enable_directio(ngx_file_reader_state_t* state)
 	return NGX_OK;
 }
 
-size_t 
+size_t
 ngx_file_reader_get_size(void* context)
 {
 	ngx_file_reader_state_t* state = context;
@@ -380,7 +380,7 @@ ngx_async_read_completed_callback(ngx_event_t *ev)
 	ngx_http_run_posted_requests(c);
 }
 
-ngx_int_t 
+ngx_int_t
 ngx_async_file_read(ngx_file_reader_state_t* state, ngx_buf_t *buf, size_t size, off_t offset)
 {
 	ssize_t rc;
@@ -416,13 +416,13 @@ ngx_async_file_read(ngx_file_reader_state_t* state, ngx_buf_t *buf, size_t size,
 
 	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, state->log, 0, "ngx_async_file_read: ngx_file_aio_read returned %z", rc);
 	buf->last += rc;
-	
+
 	return NGX_OK;
 }
 
 #else
 
-ngx_int_t 
+ngx_int_t
 ngx_async_file_read(ngx_file_reader_state_t* state, ngx_buf_t *buf, size_t size, off_t offset)
 {
 	ssize_t rc;
