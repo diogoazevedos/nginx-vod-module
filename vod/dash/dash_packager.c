@@ -137,9 +137,14 @@
 	"        label=\"%V\"\n"													\
 	"        mimeType=\"text/vtt\">\n"											\
 	"      <Representation\n"													\
-	"          id=\"textstream_%s_%uD\"\n"										\
+	"          id=\"%s%V\"\n"										\
 	"          bandwidth=\"0\">\n"												\
-	"        <BaseURL>%V%V-%s%V.vtt</BaseURL>\n"								\
+	"        <SegmentTemplate\n"												\
+	"            timescale=\"1000\"\n"											\
+	"            media=\"%V%V-$Number$-$RepresentationID$.vtt\"\n"			\
+	"            duration=\"%ui\"\n"											\
+	"            startNumber=\"%uD\">\n"										\
+	"        </SegmentTemplate>\n"												\
 	"      </Representation>\n"													\
 	"    </AdaptationSet>\n"
 
@@ -721,7 +726,6 @@ dash_packager_write_mpd_period(
 	media_track_t** cur_track_ptr;
 	media_track_t* cur_track;
 	media_set_t* media_set = context->media_set;
-	const char* lang_code;
 	vod_str_t representation_id;
 	vod_str_t cur_base_url;
 	vod_str_t frame_rate;
@@ -738,7 +742,6 @@ dash_packager_write_mpd_period(
 	uint32_t start_number;
 	uint32_t media_type;
 	uint32_t adapt_id = 1;
-	uint32_t subtitle_adapt_id = 0;
 	uint32_t sequence_index;
 
 	frame_rate.data = frame_rate_buffer;
@@ -812,6 +815,9 @@ dash_packager_write_mpd_period(
 		adaptation_set < context->adaptation_sets.last;
 		adaptation_set++, cur_duration_items++)
 	{
+		// get the segment index start number
+		start_number = (*cur_duration_items)[0].segment_index;
+
 		media_type = adaptation_set->type;
 		switch (media_type)
 		{
@@ -919,16 +925,15 @@ dash_packager_write_mpd_period(
 				representation_id.len--;
 			}
 
-			lang_code = lang_get_rfc_5646_name(cur_track->media_info.tags.language);
 			p = vod_sprintf(p, VOD_DASH_MANIFEST_ADAPTATION_SUBTITLE_VTT,
 				&cur_track->media_info.tags.lang_str,
 				&cur_track->media_info.tags.label,
-				lang_code,
-				subtitle_adapt_id++,
+				clip_spec,
+				&representation_id,
 				&cur_base_url,
 				&context->conf->subtitle_file_name_prefix,
-				clip_spec,
-				&representation_id);
+				media_set->segmenter_conf->segment_duration,
+				start_number + 1);
 			continue;
 		}
 
@@ -939,9 +944,6 @@ dash_packager_write_mpd_period(
 				p,
 				reference_track);
 		}
-
-		// get the segment index start number
-		start_number = (*cur_duration_items)[0].segment_index;
 
 		// print the segment template
 		switch (context->conf->manifest_format)

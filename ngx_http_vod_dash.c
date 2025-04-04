@@ -511,7 +511,7 @@ static const ngx_http_vod_request_t dash_webm_fragment_request = {
 static const ngx_http_vod_request_t dash_webvtt_file_request = {
 	REQUEST_FLAG_SINGLE_TRACK | REQUEST_FLAG_PARSE_ALL_CLIPS,
 	PARSE_FLAG_FRAMES_ALL | PARSE_FLAG_EXTRA_DATA,
-	REQUEST_CLASS_OTHER,
+	REQUEST_CLASS_SEGMENT,
 	VOD_CODEC_FLAG(WEBVTT),
 	WEBVTT_TIMESCALE,
 	ngx_http_vod_dash_handle_vtt_file,
@@ -638,7 +638,7 @@ ngx_http_vod_dash_parse_uri_file_name(
 		start_pos += conf->dash.mpd_config.subtitle_file_name_prefix.len;
 		end_pos -= (sizeof(vtt_file_ext) - 1);
 		*request = &dash_webvtt_file_request;
-		flags = PARSE_FILE_NAME_ALLOW_CLIP_INDEX;
+		flags = PARSE_FILE_NAME_EXPECT_SEGMENT_INDEX;
 	}
 	else
 	{
