@@ -41,7 +41,7 @@
 #define ATOM_NAME_ESDS (0x73647365)		// elementary stream description
 #define ATOM_NAME_DAC3 (0x33636164)
 #define ATOM_NAME_DEC3 (0x33636564)
-#define ATOM_NAME_WAVE (0x65766177)		// 
+#define ATOM_NAME_WAVE (0x65766177)		//
 #define ATOM_NAME_DINF (0x666e6964)		// data information
 #define ATOM_NAME_TKHD (0x64686b74)		// track header
 #define ATOM_NAME_MVHD (0x6468766d)		// movie header

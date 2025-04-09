@@ -17,10 +17,10 @@ struct id3_context_s;
 typedef struct id3_context_s id3_context_t;
 
 typedef void(*hls_get_iframe_positions_callback_t)(
-	void* context, 
-	uint32_t segment_index, 
-	uint32_t frame_duration, 
-	uint32_t frame_start, 
+	void* context,
+	uint32_t segment_index,
+	uint32_t frame_duration,
+	uint32_t frame_start,
 	uint32_t frame_size);
 
 typedef struct {
@@ -32,7 +32,7 @@ typedef struct {
 
 typedef struct {
 	int media_type;
-	
+
 	// input frames
 	frame_list_part_t* first_frame_part;
 	frame_list_part_t cur_frame_part;
@@ -70,7 +70,7 @@ typedef struct {
 	// child states
 	write_buffer_queue_t queue;
 	struct id3_context_s* id3_context;
-	
+
 	// cur clip state
 	media_set_t* media_set;
 	media_track_t* first_clip_track;

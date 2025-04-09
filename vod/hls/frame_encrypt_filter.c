@@ -155,7 +155,7 @@ frame_encrypt_filter_init(
 			"frame_encrypt_filter_init: vod_pool_cleanup_add failed");
 		return VOD_ALLOC_FAILED;
 	}
-	
+
 	state->cipher = EVP_CIPHER_CTX_new();
 	if (state->cipher == NULL)
 	{

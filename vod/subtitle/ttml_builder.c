@@ -224,8 +224,8 @@ ttml_build_mp4(
 		sizeof(trun_atom) +
 		sizeof(sdtp_atom);
 
-	moof_atom_size = ATOM_HEADER_SIZE + 
-		ATOM_HEADER_SIZE + sizeof(mfhd_atom_t) + 
+	moof_atom_size = ATOM_HEADER_SIZE +
+		ATOM_HEADER_SIZE + sizeof(mfhd_atom_t) +
 		traf_atom_size;
 
 	result_size = moof_atom_size +
@@ -253,8 +253,8 @@ ttml_build_mp4(
 	write_atom_header(p, traf_atom_size, 't', 'r', 'a', 'f');
 
 	// moof.traf.tfhd
-	p = ttml_write_tfhd_atom(p, 
-		rescale_time(media_set->segment_duration, 1000, timescale), 
+	p = ttml_write_tfhd_atom(p,
+		rescale_time(media_set->segment_duration, 1000, timescale),
 		&default_sample_size);
 
 	// moof.traf.trun

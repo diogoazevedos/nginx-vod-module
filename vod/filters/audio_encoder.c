@@ -155,7 +155,7 @@ audio_encoder_free(
 	{
 		return;
 	}
-	
+
 	avcodec_close(state->encoder);
 	av_free(state->encoder);
 }

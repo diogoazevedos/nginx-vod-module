@@ -222,12 +222,12 @@ mp4_fragment_init_track(fragment_writer_state_t* state, media_track_t* track)
 	}
 }
 
-vod_status_t 
+vod_status_t
 mp4_fragment_frame_writer_init(
 	request_context_t* request_context,
 	media_sequence_t* sequence,
 	write_callback_t write_callback,
-	void* write_context, 
+	void* write_context,
 	bool_t reuse_buffers,
 	fragment_writer_state_t** result)
 {

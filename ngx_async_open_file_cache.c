@@ -165,7 +165,7 @@ ngx_save_open_file_to_cache(ngx_open_file_cache_t *cache, ngx_cached_open_file_t
                 }
                 of->fd = NGX_INVALID_FILE;
             }
-            
+
             if (file->err == 0) {
                 of->err = 0;
                 of->failed = NULL;
@@ -202,7 +202,7 @@ ngx_save_open_file_to_cache(ngx_open_file_cache_t *cache, ngx_cached_open_file_t
         if (open_rc != NGX_OK && (of->err == 0 || !of->errors)) {
             goto failed;
         }
-        
+
         if (of->is_dir) {
 
             if (file->is_dir || file->err) {
@@ -250,7 +250,7 @@ ngx_save_open_file_to_cache(ngx_open_file_cache_t *cache, ngx_cached_open_file_t
     }
 
     /* not found */
-    
+
     if (open_rc != NGX_OK && (of->err == 0 || !of->errors)) {
         goto failed;
     }
@@ -1173,7 +1173,7 @@ uint32_t hash, ngx_open_file_info_t *of, ngx_log_t *log, ngx_pool_cleanup_t *cln
 
         return NGX_DONE;
     }
-    
+
     if (file->err == 0) {
 
         of->fd = file->fd;
@@ -1249,7 +1249,7 @@ static void
 ngx_thread_open_handler(void *data, ngx_log_t *log)
 {
 	ngx_async_open_file_ctx_t* ctx = data;
-	
+
 	ctx->err = ngx_open_and_stat_file(&ctx->name, ctx->of, log);
 }
 
@@ -1287,13 +1287,13 @@ ngx_async_open_thread_event_handler(ngx_event_t *ev)
 
 ngx_int_t
 ngx_async_open_cached_file(
-	ngx_open_file_cache_t *cache, 
+	ngx_open_file_cache_t *cache,
 	ngx_str_t *name,
-	ngx_open_file_info_t *of, 
-	ngx_pool_t *pool, 
-	ngx_thread_pool_t *tp, 
-	ngx_thread_task_t **taskp, 
-	ngx_async_open_file_callback_t callback, 
+	ngx_open_file_info_t *of,
+	ngx_pool_t *pool,
+	ngx_thread_pool_t *tp,
+	ngx_thread_task_t **taskp,
+	ngx_async_open_file_callback_t callback,
 	void* context)
 {
 	ngx_async_open_file_ctx_t* ctx;
@@ -1309,7 +1309,7 @@ ngx_async_open_cached_file(
 	if (cache != NULL)
 	{
 		cln = ngx_pool_cleanup_add(pool, sizeof(ngx_open_file_cache_cleanup_t));
-		if (cln == NULL) 
+		if (cln == NULL)
 		{
 			return NGX_ERROR;
 		}
@@ -1326,7 +1326,7 @@ ngx_async_open_cached_file(
 	else
 	{
 		cln = ngx_pool_cleanup_add(pool, sizeof(ngx_pool_cleanup_file_t));
-		if (cln == NULL) 
+		if (cln == NULL)
 		{
 			ngx_log_debug0(NGX_LOG_DEBUG_HTTP, pool->log, 0,
 				"ngx_async_open_cached_file: ngx_pool_cleanup_add failed");
@@ -1339,7 +1339,7 @@ ngx_async_open_cached_file(
 
 	if (task == NULL) {
 		task = ngx_thread_task_alloc(pool, sizeof(ngx_async_open_file_ctx_t));
-		if (task == NULL) 
+		if (task == NULL)
 		{
 			ngx_log_debug0(NGX_LOG_DEBUG_HTTP, pool->log, 0,
 				"ngx_async_open_cached_file: ngx_thread_task_alloc failed");
@@ -1367,7 +1367,7 @@ ngx_async_open_cached_file(
 	task->event.data = ctx;
 	task->event.handler = ngx_async_open_thread_event_handler;
 
-	if (ngx_thread_task_post(tp, task) != NGX_OK) 
+	if (ngx_thread_task_post(tp, task) != NGX_OK)
 	{
 		ngx_log_debug0(NGX_LOG_DEBUG_HTTP, pool->log, 0,
 			"ngx_async_open_cached_file: ngx_thread_task_post failed");

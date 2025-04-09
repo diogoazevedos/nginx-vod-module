@@ -93,9 +93,9 @@ webvtt_utf16_to_utf8(
 
 	// initialize the output array
 	if (vod_array_init(
-		&output_arr, 
-		request_context->pool, 
-		input->len / 2 + ICONV_INITIAL_ALLOC_SIZE, 
+		&output_arr,
+		request_context->pool,
+		input->len / 2 + ICONV_INITIAL_ALLOC_SIZE,
 		1) != VOD_OK)
 	{
 		vod_log_debug0(VOD_LOG_DEBUG_LEVEL, request_context->log, 0,
@@ -255,7 +255,7 @@ webvtt_find_next_cue(u_char* cur_pos)
 		case '-':
 			dash_count++;
 			continue;
-		
+
 		case '>':
 			if (dash_count >= 2)
 			{

@@ -56,7 +56,7 @@ dfxp_reader_init(
 }
 
 // a simplified version of xmlGetProp that does not copy memory, but is also limited to a single child
-static xmlChar* 
+static xmlChar*
 dfxp_get_xml_prop(xmlNode* node, xmlChar* name)
 {
 	xmlAttrPtr prop;
@@ -73,7 +73,7 @@ dfxp_get_xml_prop(xmlNode* node, xmlChar* name)
 	return prop->children->content;
 }
 
-static int64_t 
+static int64_t
 dfxp_parse_timestamp(u_char* ts)
 {
 	u_char* p = ts;
@@ -81,7 +81,7 @@ dfxp_parse_timestamp(u_char* ts)
 	int64_t num = 0;
 	int64_t den;
 	int64_t mul;
-	
+
 	// Note: according to spec, hours must be at least 2 digits, but some samples have only one
 	//		so this is not enforced
 	if (!isdigit(*p))
@@ -98,7 +98,7 @@ dfxp_parse_timestamp(u_char* ts)
 	{
 		// clock time
 		p++;	// skip the :
-		
+
 		// minutes / seconds
 		if (!isdigit(p[0]) || !isdigit(p[1]) ||
 			p[2] != ':' ||
@@ -106,12 +106,12 @@ dfxp_parse_timestamp(u_char* ts)
 		{
 			return -1;
 		}
-		
+
 		num = num * 3600 + 								// hours
 			((p[0] - '0') * 10 + (p[1] - '0')) * 60 +	// min
 			((p[3] - '0') * 10 + (p[4] - '0'));			// sec
 		p += 5;
-		
+
 		switch (*p)
 		{
 		case '\0':
@@ -124,21 +124,21 @@ dfxp_parse_timestamp(u_char* ts)
 			{
 				return -1;
 			}
-			
+
 			den = 1;
 			do
 			{
 				num = num * 10 + (*p++ - '0');
 				den *= 10;
 			} while (isdigit(*p));
-			
+
 			if (*p != '\0')
 			{
 				return -1;
 			}
 
 			return (num * 1000) / den;
-			
+
 		case ':':
 			// frames
 			p++;	// skip the :
@@ -146,13 +146,13 @@ dfxp_parse_timestamp(u_char* ts)
 			{
 				return -1;
 			}
-			
+
 			frames = 0;
 			do
 			{
 				frames = frames * 10 + (*p++ - '0');
 			} while (isdigit(*p));
-			
+
 			if (*p != '\0')
 			{
 				return -1;
@@ -179,14 +179,14 @@ dfxp_parse_timestamp(u_char* ts)
 				den *= 10;
 			} while (isdigit(*p));
 		}
-		
+
 		// metric
 		switch (*p)
 		{
 		case 'h':
 			mul = 3600000;
 			break;
-			
+
 		case 'm':
 			if (p[1] == 's')
 			{
@@ -198,70 +198,70 @@ dfxp_parse_timestamp(u_char* ts)
 				mul = 60000;
 			}
 			break;
-			
+
 		case 's':
 			mul = 1000;
 			break;
-			
+
 		case 'f':
 			mul = 1000;
 			den *= DFXP_FRAME_RATE;
 			break;
-			
+
 		default:
 			return -1;
 		}
-		
+
 		if (p[1] != '\0')
 		{
 			return -1;
 		}
-		
+
 		return (num * mul) / den;
 	}
 
 	return -1;
 }
 
-static int64_t 
+static int64_t
 dfxp_get_end_time(xmlNode *cur_node)
 {
 	xmlChar* attr;
 	int64_t begin;
 	int64_t dur;
-	
+
 	// prefer the end attribute
 	attr = dfxp_get_xml_prop(cur_node, DFXP_ATTR_END);
 	if (attr != NULL)
 	{
 		return dfxp_parse_timestamp(attr);
 	}
-	
+
 	// fall back to dur + start
 	attr = dfxp_get_xml_prop(cur_node, DFXP_ATTR_DUR);
 	if (attr == NULL)
 	{
 		return -1;
 	}
-	
+
 	dur = dfxp_parse_timestamp(attr);
 	if (dur < 0)
 	{
 		return -1;
 	}
-	
+
 	attr = dfxp_get_xml_prop(cur_node, DFXP_ATTR_BEGIN);
 	if (attr == NULL)
 	{
 		return -1;
 	}
-	
+
 	begin = dfxp_parse_timestamp(attr);
 	if (begin < 0)
 	{
 		return -1;
 	}
-	
+
 	return begin + dur;
 }
 
@@ -298,7 +298,7 @@ dfxp_get_duration(xmlDoc *doc)
 		// recurse into non-p nodes
 		if (vod_strcmp(cur_node->name, DFXP_ELEMENT_P) != 0)
 		{
-			if (cur_node->last == NULL || 
+			if (cur_node->last == NULL ||
 				node_stack_pos >= vod_array_entries(node_stack))
 			{
 				continue;
@@ -323,7 +323,7 @@ dfxp_get_duration(xmlDoc *doc)
 			break;
 		}
 	}
-	
+
 	return result;
 }
 
@@ -431,7 +431,7 @@ dfxp_parse(
 	}
 
 	xmlCtxtUseOptions(ctxt, XML_PARSE_RECOVER | XML_PARSE_NOWARNING | XML_PARSE_NONET);
-	
+
 	ctxt->sax->setDocumentLocator = NULL;
 	ctxt->sax->error = dfxp_xml_sax_error;
 	ctxt->sax->fatalError = dfxp_xml_sax_error;
@@ -470,7 +470,7 @@ dfxp_parse(
 		result);
 }
 
-static u_char* 
+static u_char*
 dfxp_append_string(u_char* p, u_char* s)
 {
 	// Note: not using strcpy as it would require an extra strlen to get the end position
@@ -537,7 +537,7 @@ dfxp_get_text_content_len(xmlNode* cur_node)
 	return result;
 }
 
-static u_char* 
+static u_char*
 dfxp_append_text_content(xmlNode* cur_node, u_char* p)
 {
 	xmlNode* node_stack[DFXP_MAX_STACK_DEPTH];
@@ -594,14 +594,14 @@ dfxp_append_text_content(xmlNode* cur_node, u_char* p)
 
 static vod_status_t
 dfxp_get_frame_body(
-	request_context_t* request_context, 
-	xmlNode* cur_node, 
+	request_context_t* request_context,
+	xmlNode* cur_node,
 	vod_str_t* result)
 {
 	size_t alloc_size;
 	u_char* start;
 	u_char* end;
-	
+
 	// get the buffer length
 	alloc_size = dfxp_get_text_content_len(cur_node);
 	if (alloc_size == 0)
@@ -715,7 +715,7 @@ dfxp_parse_frames(
 
 	header->len = sizeof(WEBVTT_HEADER_NEWLINES) - 1;
 	header->data = (u_char*)WEBVTT_HEADER_NEWLINES;
-	
+
 	if ((parse_params->parse_type & PARSE_FLAG_FRAMES_ALL) == 0)
 	{
 		return VOD_OK;

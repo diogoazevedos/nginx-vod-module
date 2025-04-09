@@ -25,7 +25,7 @@
 static const u_char jpg_file_ext[] = ".jpg";
 static u_char jpeg_content_type[] = "image/jpeg";
 
-ngx_int_t 
+ngx_int_t
 ngx_http_vod_thumb_get_url(
 	ngx_http_vod_submodule_context_t* submodule_context,
 	uint32_t sequences_mask,
@@ -71,7 +71,7 @@ ngx_http_vod_thumb_get_url(
 	}
 
 	// get the result size
-	result_size = base_url.len + conf->thumb.file_name_prefix.len + 
+	result_size = base_url.len + conf->thumb.file_name_prefix.len +
 		1 + VOD_INT64_LEN + request_params_str.len + sizeof(jpg_file_ext) - 1;
 
 	// allocate the result buffer
@@ -174,7 +174,7 @@ ngx_http_vod_thumb_merge_loc_conf(
 	return NGX_CONF_OK;
 }
 
-static int 
+static int
 ngx_http_vod_thumb_get_file_path_components(ngx_str_t* uri)
 {
 	return 1;
@@ -279,7 +279,7 @@ ngx_http_vod_thumb_parse_uri_file_name(
 	}
 
 	time = 0;
-	do 
+	do
 	{
 		time = time * 10 + *start_pos++ - '0';
 	} while (start_pos < end_pos && *start_pos >= '0' && *start_pos <= '9');
@@ -309,7 +309,7 @@ ngx_http_vod_thumb_parse_uri_file_name(
 			"ngx_http_vod_thumb_parse_uri_file_name: ngx_http_vod_parse_uri_file_name failed %i", rc);
 		return rc;
 	}
-	
+
 	request_params->segment_time = time;
 	request_params->segment_time_type = time_type;
 	vod_track_mask_reset_all_bits(request_params->tracks_mask[MEDIA_TYPE_AUDIO]);

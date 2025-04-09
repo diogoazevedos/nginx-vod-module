@@ -5,7 +5,7 @@
 
 vod_status_t
 media_format_finalize_track(
-	request_context_t* request_context, 
+	request_context_t* request_context,
 	int parse_type,
 	media_info_t* media_info)
 {

@@ -144,4 +144,3 @@ subtitle_parse(
 
 	return VOD_OK;
 }
-

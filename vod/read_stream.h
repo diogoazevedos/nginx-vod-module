@@ -24,7 +24,7 @@ typedef struct {
 } simple_read_stream_t;
 
 // functions
-static vod_inline u_char 
+static vod_inline u_char
 read_stream_get_byte(simple_read_stream_t* stream)
 {
 	if (stream->cur_pos >= stream->end_pos)
@@ -51,7 +51,7 @@ read_stream_get_be32(simple_read_stream_t* stream)
 	return result;
 }
 
-static vod_inline void 
+static vod_inline void
 read_stream_skip(simple_read_stream_t* stream, int bytes)
 {
 	if (stream->cur_pos + bytes > stream->end_pos)

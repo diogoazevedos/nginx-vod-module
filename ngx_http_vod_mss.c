@@ -37,7 +37,7 @@ static u_char manifest_content_type[] = "text/xml";		// TODO: consider moving to
 // extensions
 static const u_char m4s_file_ext[] = ".m4s";
 
-static ngx_int_t 
+static ngx_int_t
 ngx_http_vod_mss_handle_manifest(
 	ngx_http_vod_submodule_context_t* submodule_context,
 	ngx_str_t* response,
@@ -262,7 +262,7 @@ ngx_http_vod_mss_merge_loc_conf(
 	return NGX_CONF_OK;
 }
 
-static int 
+static int
 ngx_http_vod_mss_get_file_path_components(ngx_str_t* uri)
 {
 	u_char* end_pos = uri->data + uri->len;
@@ -380,7 +380,7 @@ ngx_http_vod_mss_parse_drm_info(
 	void** output)
 {
 	vod_status_t rc;
-	
+
 	rc = udrm_parse_response(
 		&submodule_context->request_context,
 		drm_info,

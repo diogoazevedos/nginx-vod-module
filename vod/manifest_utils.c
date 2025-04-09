@@ -255,13 +255,13 @@ manifest_utils_build_request_params_string(
 	}
 
 	result_size = 0;
-	
+
 	// segment index
 	if (segment_index != INVALID_SEGMENT_INDEX)
 	{
 		result_size += 1 + vod_get_int_print_len(segment_index + 1);
 	}
-	
+
 	// sequence mask
 	if (sequences_mask != 0xffffffff)
 	{
@@ -302,7 +302,7 @@ manifest_utils_build_request_params_string(
 	{
 		p = vod_sprintf(p, "-%uD", segment_index + 1);
 	}
-	
+
 	// sequence mask
 	if (sequences_mask != 0xffffffff)
 	{
@@ -321,7 +321,7 @@ manifest_utils_build_request_params_string(
 			p = manifest_utils_write_track_mask(p, tracks_mask[MEDIA_TYPE_VIDEO], 'v');
 		}
 	}
-	
+
 	// audio tracks
 	if (vod_track_mask_is_any_bit_set(has_tracks[MEDIA_TYPE_AUDIO]))
 	{
@@ -340,19 +340,19 @@ manifest_utils_build_request_params_string(
 	if (result->len > result_size)
 	{
 		vod_log_error(VOD_LOG_ERR, request_context->log, 0,
-			"manifest_utils_build_request_params_string: result length %uz exceeded allocated length %uz", 
+			"manifest_utils_build_request_params_string: result length %uz exceeded allocated length %uz",
 			result->len, result_size);
 		return VOD_UNEXPECTED;
 	}
-	
+
 	return VOD_OK;
 }
 
 u_char*
 manifest_utils_append_tracks_spec(
-	u_char* p, 
-	media_track_t** tracks, 
-	uint32_t track_count, 
+	u_char* p,
+	media_track_t** tracks,
+	uint32_t track_count,
 	bool_t write_sequence_index)
 {
 	media_sequence_t* cur_sequence;
@@ -830,7 +830,7 @@ manifest_utils_get_muxed_adaptation_set(
 	uint32_t main_media_type;
 
 	// allocate the tracks array
-	cur_track_ptr = vod_alloc(request_context->pool, 
+	cur_track_ptr = vod_alloc(request_context->pool,
 		sizeof(output->first[0]) * media_set->total_track_count * MEDIA_TYPE_COUNT);
 	if (cur_track_ptr == NULL)
 	{
@@ -852,7 +852,7 @@ manifest_utils_get_muxed_adaptation_set(
 		}
 		else if (cur_sequence->track_count[MEDIA_TYPE_AUDIO] > 0)
 		{
-			if ((flags & ADAPTATION_SETS_FLAG_AVOID_AUDIO_ONLY) != 0 && 
+			if ((flags & ADAPTATION_SETS_FLAG_AVOID_AUDIO_ONLY) != 0 &&
 				media_set->track_count[MEDIA_TYPE_VIDEO] > 0)
 			{
 				continue;
@@ -867,7 +867,7 @@ manifest_utils_get_muxed_adaptation_set(
 
 		// find the audio track
 		audio_track = cur_sequence->filtered_clips[0].ref_track[MEDIA_TYPE_AUDIO];
-		if ((audio_track == NULL || 
+		if ((audio_track == NULL ||
 			(audio_key != NULL && !track_group_key_match_track(audio_key, audio_track, flags))) &&
 			media_set->track_count[MEDIA_TYPE_AUDIO] > 0)
 		{
@@ -880,7 +880,7 @@ manifest_utils_get_muxed_adaptation_set(
 			last_track = media_set->filtered_tracks + media_set->total_track_count;
 			for (cur_track = media_set->filtered_tracks; cur_track < last_track; cur_track++)
 			{
-				if (cur_track->media_info.media_type == MEDIA_TYPE_AUDIO && 
+				if (cur_track->media_info.media_type == MEDIA_TYPE_AUDIO &&
 					(audio_key == NULL || track_group_key_match_track(audio_key, cur_track, flags)))
 				{
 					audio_track = cur_track;
@@ -1008,13 +1008,13 @@ manifest_utils_get_adaptation_sets(
 
 	adaptation_sets_count =
 		output->count[ADAPTATION_TYPE_VIDEO] +
-		output->count[ADAPTATION_TYPE_AUDIO] + 
-		output->count[ADAPTATION_TYPE_SUBTITLE] + 
+		output->count[ADAPTATION_TYPE_AUDIO] +
+		output->count[ADAPTATION_TYPE_SUBTITLE] +
 		output->count[ADAPTATION_TYPE_MUXED];
 
 	// allocate the adaptation sets and tracks
-	adaptation_sets = vod_alloc(request_context->pool, 
-		sizeof(adaptation_sets[0]) * adaptation_sets_count + 
+	adaptation_sets = vod_alloc(request_context->pool,
+		sizeof(adaptation_sets[0]) * adaptation_sets_count +
 		sizeof(adaptation_sets[0].first[0]) * media_set->total_track_count);
 	if (adaptation_sets == NULL)
 	{

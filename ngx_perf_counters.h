@@ -25,7 +25,7 @@ typedef struct timeval ngx_tick_count_t;
 
 #define ngx_tick_count_diff(start, end) \
 	(((end).tv_sec - (start).tv_sec) * 1000000 + ((end).tv_usec - (start).tv_usec))
-	
+
 #endif // NGX_HAVE_CLOCK_GETTIME
 
 #ifdef NGX_PERF_COUNTERS_ENABLED
@@ -42,7 +42,7 @@ typedef struct timeval ngx_tick_count_t;
 
 // Note: the calculation of 'max' has a race condition, the value can decrease since the condition
 //		and the assignment are not performed atomically. however, the value of max is expected to
-//		converge quickly so that its updates will be performed less and less frequently, so it 
+//		converge quickly so that its updates will be performed less and less frequently, so it
 //		should be accurate enough.
 #define ngx_perf_counter_end(state, ctx, type)						\
 	if (state != NULL)												\

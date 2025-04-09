@@ -41,8 +41,8 @@ vod_status_t media_set_map_source(
 
 // filter utility functions
 vod_status_t media_set_parse_null_term_string(
-	void* ctx, 
-	vod_json_value_t* value, 
+	void* ctx,
+	vod_json_value_t* value,
 	void* dest);
 
 vod_status_t media_set_parse_filter_sources(

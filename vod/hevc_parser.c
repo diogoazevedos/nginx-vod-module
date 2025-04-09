@@ -78,8 +78,8 @@ hevc_parser_sub_layer_hrd_parameters(
 
 	for (i = 0; i <= cpb_cnt_minus1 && !reader->stream.eof_reached; i++)
 	{
-		bit_read_stream_skip_unsigned_exp(reader);		// bit_rate_value_minus1[i] 
-		bit_read_stream_skip_unsigned_exp(reader);		// cpb_size_value_minus1[i] 
+		bit_read_stream_skip_unsigned_exp(reader);		// bit_rate_value_minus1[i]
+		bit_read_stream_skip_unsigned_exp(reader);		// cpb_size_value_minus1[i]
 		if (sub_pic_hrd_params_present_flag)
 		{
 			bit_read_stream_skip_unsigned_exp(reader);	// cpb_size_du_value_minus1[i]
@@ -144,7 +144,7 @@ hevc_parser_hrd_parameters(
 		low_delay_hrd_flag = 0;
 		if (fixed_pic_rate_within_cvs_flag)
 		{
-			bit_read_stream_skip_unsigned_exp(reader);	// elemental_duration_in_tc_minus1[i] 
+			bit_read_stream_skip_unsigned_exp(reader);	// elemental_duration_in_tc_minus1[i]
 		}
 		else
 		{
@@ -207,7 +207,7 @@ hevc_parser_skip_vui_parameters(
 		{
 			bit_read_stream_skip(reader, 8);			// colour_primaries
 			sps->transfer_characteristics = bit_read_stream_get(reader, 8);
-			bit_read_stream_skip(reader, 8);			// matrix_coeffs 
+			bit_read_stream_skip(reader, 8);			// matrix_coeffs
 		}
 	}
 	chroma_loc_info_present_flag = bit_read_stream_get_one(reader);
@@ -222,10 +222,10 @@ hevc_parser_skip_vui_parameters(
 	default_display_window_flag = bit_read_stream_get_one(reader);
 	if (default_display_window_flag)
 	{
-		bit_read_stream_skip_unsigned_exp(reader);		// def_disp_win_left_offset 
-		bit_read_stream_skip_unsigned_exp(reader);		// def_disp_win_right_offset 
-		bit_read_stream_skip_unsigned_exp(reader);		// def_disp_win_top_offset 
-		bit_read_stream_skip_unsigned_exp(reader);		// def_disp_win_bottom_offset 
+		bit_read_stream_skip_unsigned_exp(reader);		// def_disp_win_left_offset
+		bit_read_stream_skip_unsigned_exp(reader);		// def_disp_win_right_offset
+		bit_read_stream_skip_unsigned_exp(reader);		// def_disp_win_top_offset
+		bit_read_stream_skip_unsigned_exp(reader);		// def_disp_win_bottom_offset
 	}
 	vui_timing_info_present_flag = bit_read_stream_get_one(reader);
 	if (vui_timing_info_present_flag)
@@ -246,11 +246,11 @@ hevc_parser_skip_vui_parameters(
 	bitstream_restriction_flag = bit_read_stream_get_one(reader);
 	if (bitstream_restriction_flag)
 	{
-		bit_read_stream_get_one(reader);				// tiles_fixed_structure_flag 
+		bit_read_stream_get_one(reader);				// tiles_fixed_structure_flag
 		bit_read_stream_get_one(reader);				// motion_vectors_over_pic_boundaries_flag
-		bit_read_stream_get_one(reader);				// restricted_ref_pic_lists_flag 
+		bit_read_stream_get_one(reader);				// restricted_ref_pic_lists_flag
 		bit_read_stream_skip_unsigned_exp(reader);		// min_spatial_segmentation_idc
-		bit_read_stream_skip_unsigned_exp(reader);		// max_bytes_per_pic_denom 
+		bit_read_stream_skip_unsigned_exp(reader);		// max_bytes_per_pic_denom
 		bit_read_stream_skip_unsigned_exp(reader);		// max_bits_per_min_cu_denom
 		bit_read_stream_skip_unsigned_exp(reader);		// log2_max_mv_length_horizontal
 		bit_read_stream_skip_unsigned_exp(reader);		// log2_max_mv_length_vertical
@@ -261,15 +261,15 @@ static void
 hevc_parser_skip_sps_range_extension(
 	bit_reader_state_t* reader)
 {
-	bit_read_stream_get_one(reader);					// transform_skip_rotation_enabled_flag 
-	bit_read_stream_get_one(reader);					// transform_skip_context_enabled_flag 
-	bit_read_stream_get_one(reader);					// implicit_rdpcm_enabled_flag 
-	bit_read_stream_get_one(reader);					// explicit_rdpcm_enabled_flag 
-	bit_read_stream_get_one(reader);					// extended_precision_processing_flag 
-	bit_read_stream_get_one(reader);					// intra_smoothing_disabled_flag 
-	bit_read_stream_get_one(reader);					// high_precision_offsets_enabled_flag 
-	bit_read_stream_get_one(reader);					// persistent_rice_adaptation_enabled_flag 
-	bit_read_stream_get_one(reader);					// cabac_bypass_alignment_enabled_flag 
+	bit_read_stream_get_one(reader);					// transform_skip_rotation_enabled_flag
+	bit_read_stream_get_one(reader);					// transform_skip_context_enabled_flag
+	bit_read_stream_get_one(reader);					// implicit_rdpcm_enabled_flag
+	bit_read_stream_get_one(reader);					// explicit_rdpcm_enabled_flag
+	bit_read_stream_get_one(reader);					// extended_precision_processing_flag
+	bit_read_stream_get_one(reader);					// intra_smoothing_disabled_flag
+	bit_read_stream_get_one(reader);					// high_precision_offsets_enabled_flag
+	bit_read_stream_get_one(reader);					// persistent_rice_adaptation_enabled_flag
+	bit_read_stream_get_one(reader);					// cabac_bypass_alignment_enabled_flag
 }
 
 static void
@@ -299,7 +299,7 @@ hevc_parser_parse_sps_scc_extension(
 			{
 				for (i = 0; i <= sps_num_palette_predictor_initializer_minus1 && !reader->stream.eof_reached; i++)
 				{
-					bit_read_stream_skip(reader, comp == 0 ? sps->bit_depth_luma : sps->bit_depth_chroma);	// sps_palette_predictor_initializers[comp][i] 
+					bit_read_stream_skip(reader, comp == 0 ? sps->bit_depth_luma : sps->bit_depth_chroma);	// sps_palette_predictor_initializers[comp][i]
 				}
 			}
 		}
@@ -323,25 +323,25 @@ hevc_parser_skip_sps_3d_extension(
 
 	for (d = 0; d <= 1; d++)
 	{
-		bit_read_stream_get_one(reader);				// iv_di_mc_enabled_flag[d] 
-		bit_read_stream_get_one(reader);				// iv_mv_scal_enabled_flag[d] 
+		bit_read_stream_get_one(reader);				// iv_di_mc_enabled_flag[d]
+		bit_read_stream_get_one(reader);				// iv_mv_scal_enabled_flag[d]
 		if (d == 0)
 		{
-			bit_read_stream_skip_unsigned_exp(reader);	// log2_ivmc_sub_pb_size_minus3[d] 
-			bit_read_stream_get_one(reader);			// iv_res_pred_enabled_flag[d] 
-			bit_read_stream_get_one(reader);			// depth_ref_enabled_flag[d] 
-			bit_read_stream_get_one(reader);			// vsp_mc_enabled_flag[d] 
-			bit_read_stream_get_one(reader);			// dbbp_enabled_flag[d] 
+			bit_read_stream_skip_unsigned_exp(reader);	// log2_ivmc_sub_pb_size_minus3[d]
+			bit_read_stream_get_one(reader);			// iv_res_pred_enabled_flag[d]
+			bit_read_stream_get_one(reader);			// depth_ref_enabled_flag[d]
+			bit_read_stream_get_one(reader);			// vsp_mc_enabled_flag[d]
+			bit_read_stream_get_one(reader);			// dbbp_enabled_flag[d]
 		}
 		else
 		{
-			bit_read_stream_get_one(reader);			// tex_mc_enabled_flag[d] 
-			bit_read_stream_skip_unsigned_exp(reader);	// log2_texmc_sub_pb_size_minus3[d] 
-			bit_read_stream_get_one(reader);			// intra_contour_enabled_flag[d] 
-			bit_read_stream_get_one(reader);			// intra_dc_only_wedge_enabled_flag[d] 
-			bit_read_stream_get_one(reader);			// cqt_cu_part_pred_enabled_flag[d] 
-			bit_read_stream_get_one(reader);			// inter_dc_only_enabled_flag[d] 
-			bit_read_stream_get_one(reader);			// skip_intra_enabled_flag[d] 
+			bit_read_stream_get_one(reader);			// tex_mc_enabled_flag[d]
+			bit_read_stream_skip_unsigned_exp(reader);	// log2_texmc_sub_pb_size_minus3[d]
+			bit_read_stream_get_one(reader);			// intra_contour_enabled_flag[d]
+			bit_read_stream_get_one(reader);			// intra_dc_only_wedge_enabled_flag[d]
+			bit_read_stream_get_one(reader);			// cqt_cu_part_pred_enabled_flag[d]
+			bit_read_stream_get_one(reader);			// inter_dc_only_enabled_flag[d]
+			bit_read_stream_get_one(reader);			// skip_intra_enabled_flag[d]
 		}
 	}
 }
@@ -359,18 +359,18 @@ hevc_parser_skip_profile_tier_level(
 	if (profile_present_flag)
 	{
 		bit_read_stream_skip(reader, 2);				// general_profile_space
-		bit_read_stream_get_one(reader);				// general_tier_flag 
-		bit_read_stream_skip(reader, 5);				// general_profile_idc 
+		bit_read_stream_get_one(reader);				// general_tier_flag
+		bit_read_stream_skip(reader, 5);				// general_profile_idc
 		bit_read_stream_skip(reader, 32);				// general_profile_compatibility_flag[j]
-		bit_read_stream_get_one(reader);				// general_progressive_source_flag 
-		bit_read_stream_get_one(reader);				// general_interlaced_source_flag 
-		bit_read_stream_get_one(reader);				// general_non_packed_constraint_flag 
-		bit_read_stream_get_one(reader);				// general_frame_only_constraint_flag 
-		bit_read_stream_skip(reader, 43);				// general_reserved_zero_43bits 
-		bit_read_stream_get_one(reader);				// general_reserved_zero_bit 
+		bit_read_stream_get_one(reader);				// general_progressive_source_flag
+		bit_read_stream_get_one(reader);				// general_interlaced_source_flag
+		bit_read_stream_get_one(reader);				// general_non_packed_constraint_flag
+		bit_read_stream_get_one(reader);				// general_frame_only_constraint_flag
+		bit_read_stream_skip(reader, 43);				// general_reserved_zero_43bits
+		bit_read_stream_get_one(reader);				// general_reserved_zero_bit
 	}
 
-	bit_read_stream_skip(reader, 8);					// general_level_idc 
+	bit_read_stream_skip(reader, 8);					// general_level_idc
 	for (i = 0; i < max_num_sublayers_minus1 && !reader->stream.eof_reached; i++)
 	{
 		sub_layer_profile_present_flag |= bit_read_stream_get_one(reader) << i;
@@ -381,7 +381,7 @@ hevc_parser_skip_profile_tier_level(
 	{
 		for (i = max_num_sublayers_minus1; i < 8; i++)
 		{
-			bit_read_stream_skip(reader, 2);			// reserved_zero_2bits[i] 
+			bit_read_stream_skip(reader, 2);			// reserved_zero_2bits[i]
 		}
 	}
 
@@ -389,21 +389,21 @@ hevc_parser_skip_profile_tier_level(
 	{
 		if ((sub_layer_profile_present_flag >> i) & 1)
 		{
-			bit_read_stream_skip(reader, 2);			// sub_layer_profile_space[i] 
-			bit_read_stream_get_one(reader);			// sub_layer_tier_flag[i] 
-			bit_read_stream_skip(reader, 5);			// sub_layer_profile_idc[i] 
-			bit_read_stream_skip(reader, 32);			// sub_layer_profile_compatibility_flag[i][j] 
-			bit_read_stream_get_one(reader);			// sub_layer_progressive_source_flag[i] 
-			bit_read_stream_get_one(reader);			// sub_layer_interlaced_source_flag[i] 
-			bit_read_stream_get_one(reader);			// sub_layer_non_packed_constraint_flag[i] 
-			bit_read_stream_get_one(reader);			// sub_layer_frame_only_constraint_flag[i] 
-			bit_read_stream_skip(reader, 43);			// sub_layer_reserved_zero_43bits[i] 
-			bit_read_stream_get_one(reader);			// sub_layer_reserved_zero_bit[i] 
+			bit_read_stream_skip(reader, 2);			// sub_layer_profile_space[i]
+			bit_read_stream_get_one(reader);			// sub_layer_tier_flag[i]
+			bit_read_stream_skip(reader, 5);			// sub_layer_profile_idc[i]
+			bit_read_stream_skip(reader, 32);			// sub_layer_profile_compatibility_flag[i][j]
+			bit_read_stream_get_one(reader);			// sub_layer_progressive_source_flag[i]
+			bit_read_stream_get_one(reader);			// sub_layer_interlaced_source_flag[i]
+			bit_read_stream_get_one(reader);			// sub_layer_non_packed_constraint_flag[i]
+			bit_read_stream_get_one(reader);			// sub_layer_frame_only_constraint_flag[i]
+			bit_read_stream_skip(reader, 43);			// sub_layer_reserved_zero_43bits[i]
+			bit_read_stream_get_one(reader);			// sub_layer_reserved_zero_bit[i]
 		}
 
 		if ((sub_layer_level_present_flag >> i) & 1)
 		{
-			bit_read_stream_skip(reader, 8);			// sub_layer_level_idc[i] 
+			bit_read_stream_skip(reader, 8);			// sub_layer_level_idc[i]
 		}
 	}
 }
@@ -426,14 +426,14 @@ hevc_parser_skip_scaling_list_data(bit_reader_state_t* reader)
 			scaling_list_pred_mode_flag = bit_read_stream_get_one(reader);
 			if (!scaling_list_pred_mode_flag)
 			{
-				bit_read_stream_skip_unsigned_exp(reader);		// scaling_list_pred_matrix_id_delta[size_id][matrix_id] 
+				bit_read_stream_skip_unsigned_exp(reader);		// scaling_list_pred_matrix_id_delta[size_id][matrix_id]
 			}
 			else
 			{
 				coef_num = vod_min(64, (1 << (4 + (size_id << 1))));
 				if (size_id > 1)
 				{
-					bit_read_stream_skip_signed_exp(reader);	// scaling_list_dc_coef_minus8[size_id − 2][matrix_id] 
+					bit_read_stream_skip_signed_exp(reader);	// scaling_list_dc_coef_minus8[size_id − 2][matrix_id]
 				}
 				for (i = 0; i < coef_num && !reader->stream.eof_reached; i++)
 				{
@@ -486,12 +486,12 @@ hevc_parser_skip_st_ref_pic_set(
 				return VOD_BAD_DATA;
 			}
 		}
-		
+
 		rps_ridx = &sps->st_rps[st_rps_idx - delta_idx];
 
 		delta_rps_sign = bit_read_stream_get_one(reader);
 		abs_delta_rps = bit_read_stream_get_unsigned_exp(reader) + 1;
-		if (abs_delta_rps < 1 || abs_delta_rps > 32768) 
+		if (abs_delta_rps < 1 || abs_delta_rps > 32768)
 		{
 			vod_log_error(VOD_LOG_ERR, ctx->request_context->log, 0,
 				"hevc_parser_skip_st_ref_pic_set: invalid abs_delta_rps %u", abs_delta_rps);
@@ -506,7 +506,7 @@ hevc_parser_skip_st_ref_pic_set(
 		for (i = 0; i <= rps_ridx->num_delta_pocs && !reader->stream.eof_reached; i++)
 		{
 			int used = rps->used[k] = bit_read_stream_get_one(reader);
-			
+
 			if (!used)
 			{
 				use_delta_flag = bit_read_stream_get_one(reader);
@@ -543,10 +543,10 @@ hevc_parser_skip_st_ref_pic_set(
 		{
 			delta_poc = rps->delta_poc[i];
 			used = rps->used[i];
-			for (k = i - 1; k >= 0; k--) 
+			for (k = i - 1; k >= 0; k--)
 			{
 				tmp = rps->delta_poc[k];
-				if (delta_poc < tmp) 
+				if (delta_poc < tmp)
 				{
 					rps->delta_poc[k + 1] = tmp;
 					rps->used[k + 1] = rps->used[k];
@@ -558,7 +558,7 @@ hevc_parser_skip_st_ref_pic_set(
 
 		// flip the negative values to largest first
 		for (i = 0, k = num_negative_pics - 1;
-			i < num_negative_pics >> 1; 
+			i < num_negative_pics >> 1;
 			i++, k--)
 		{
 			delta_poc = rps->delta_poc[i];
@@ -575,7 +575,7 @@ hevc_parser_skip_st_ref_pic_set(
 		num_positive_pics = bit_read_stream_get_unsigned_exp(reader);
 
 		if (num_negative_pics >= HEVC_MAX_REFS ||
-			num_positive_pics >= HEVC_MAX_REFS) 
+			num_positive_pics >= HEVC_MAX_REFS)
 		{
 			vod_log_error(VOD_LOG_ERR, ctx->request_context->log, 0,
 				"hevc_parser_skip_st_ref_pic_set: too many refs");
@@ -587,19 +587,19 @@ hevc_parser_skip_st_ref_pic_set(
 		prev = 0;
 		for (i = 0; i < num_negative_pics && !reader->stream.eof_reached; i++)
 		{
-			delta_poc = bit_read_stream_get_unsigned_exp(reader) + 1;	// delta_poc_s0_minus1[i] 
+			delta_poc = bit_read_stream_get_unsigned_exp(reader) + 1;	// delta_poc_s0_minus1[i]
 			prev -= delta_poc;
 			rps->delta_poc[i] = prev;
-			rps->used[i] = bit_read_stream_get_one(reader);			// used_by_curr_pic_s0_flag[i] 
+			rps->used[i] = bit_read_stream_get_one(reader);			// used_by_curr_pic_s0_flag[i]
 		}
 
 		prev = 0;
 		for (; i < rps->num_delta_pocs && !reader->stream.eof_reached; i++)
 		{
-			delta_poc = bit_read_stream_get_unsigned_exp(reader) + 1;	// delta_poc_s1_minus1[i] 
+			delta_poc = bit_read_stream_get_unsigned_exp(reader) + 1;	// delta_poc_s1_minus1[i]
 			prev += delta_poc;
 			rps->delta_poc[i] = prev;
-			rps->used[i] = bit_read_stream_get_one(reader);			// used_by_curr_pic_s1_flag[i] 
+			rps->used[i] = bit_read_stream_get_one(reader);			// used_by_curr_pic_s1_flag[i]
 		}
 	}
 
@@ -661,10 +661,10 @@ hevc_parser_seq_parameter_set_rbsp(
 	conformance_window_flag = bit_read_stream_get_one(reader);
 	if (conformance_window_flag)
 	{
-		bit_read_stream_skip_unsigned_exp(reader);		// conf_win_left_offset 
-		bit_read_stream_skip_unsigned_exp(reader);		// conf_win_right_offset 
-		bit_read_stream_skip_unsigned_exp(reader);		// conf_win_top_offset 
-		bit_read_stream_skip_unsigned_exp(reader);		// conf_win_bottom_offset 
+		bit_read_stream_skip_unsigned_exp(reader);		// conf_win_left_offset
+		bit_read_stream_skip_unsigned_exp(reader);		// conf_win_right_offset
+		bit_read_stream_skip_unsigned_exp(reader);		// conf_win_top_offset
+		bit_read_stream_skip_unsigned_exp(reader);		// conf_win_bottom_offset
 	}
 	sps->bit_depth_luma = bit_read_stream_get_unsigned_exp(reader) + 8;
 	sps->bit_depth_chroma = bit_read_stream_get_unsigned_exp(reader) + 8;
@@ -674,16 +674,16 @@ hevc_parser_seq_parameter_set_rbsp(
 		i <= sps->sps_max_sub_layers_minus1 && !reader->stream.eof_reached;
 		i++)
 	{
-		bit_read_stream_skip_unsigned_exp(reader);		// sps_max_dec_pic_buffering_minus1[i] 
-		bit_read_stream_skip_unsigned_exp(reader);		// sps_max_num_reorder_pics[i] 
-		bit_read_stream_skip_unsigned_exp(reader);		// sps_max_latency_increase_plus1[i] 
+		bit_read_stream_skip_unsigned_exp(reader);		// sps_max_dec_pic_buffering_minus1[i]
+		bit_read_stream_skip_unsigned_exp(reader);		// sps_max_num_reorder_pics[i]
+		bit_read_stream_skip_unsigned_exp(reader);		// sps_max_latency_increase_plus1[i]
 	}
 	sps->log2_min_luma_coding_block_size = bit_read_stream_get_unsigned_exp(reader) + 3;
 	sps->log2_diff_max_min_luma_coding_block_size = bit_read_stream_get_unsigned_exp(reader);
-	bit_read_stream_skip_unsigned_exp(reader);			// log2_min_luma_transform_block_size_minus2 
-	bit_read_stream_skip_unsigned_exp(reader);			// log2_diff_max_min_luma_transform_block_size 
-	bit_read_stream_skip_unsigned_exp(reader);			// max_transform_hierarchy_depth_inter 
-	bit_read_stream_skip_unsigned_exp(reader);			// max_transform_hierarchy_depth_intra 
+	bit_read_stream_skip_unsigned_exp(reader);			// log2_min_luma_transform_block_size_minus2
+	bit_read_stream_skip_unsigned_exp(reader);			// log2_diff_max_min_luma_transform_block_size
+	bit_read_stream_skip_unsigned_exp(reader);			// max_transform_hierarchy_depth_inter
+	bit_read_stream_skip_unsigned_exp(reader);			// max_transform_hierarchy_depth_intra
 	scaling_list_enabled_flag = bit_read_stream_get_one(reader);
 	if (scaling_list_enabled_flag)
 	{
@@ -693,16 +693,16 @@ hevc_parser_seq_parameter_set_rbsp(
 			hevc_parser_skip_scaling_list_data(reader);
 		}
 	}
-	bit_read_stream_get_one(reader);					// amp_enabled_flag 
+	bit_read_stream_get_one(reader);					// amp_enabled_flag
 	sps->sample_adaptive_offset_enabled_flag = bit_read_stream_get_one(reader);
 	pcm_enabled_flag = bit_read_stream_get_one(reader);
 	if (pcm_enabled_flag)
 	{
-		bit_read_stream_skip(reader, 4);				// pcm_sample_bit_depth_luma_minus1 
-		bit_read_stream_skip(reader, 4);				// pcm_sample_bit_depth_chroma_minus1 
-		bit_read_stream_skip_unsigned_exp(reader);		// log2_min_pcm_luma_coding_block_size_minus3 
-		bit_read_stream_skip_unsigned_exp(reader);		// log2_diff_max_min_pcm_luma_coding_block_size 
-		bit_read_stream_get_one(reader);				// pcm_loop_filter_disabled_flag 
+		bit_read_stream_skip(reader, 4);				// pcm_sample_bit_depth_luma_minus1
+		bit_read_stream_skip(reader, 4);				// pcm_sample_bit_depth_chroma_minus1
+		bit_read_stream_skip_unsigned_exp(reader);		// log2_min_pcm_luma_coding_block_size_minus3
+		bit_read_stream_skip_unsigned_exp(reader);		// log2_diff_max_min_pcm_luma_coding_block_size
+		bit_read_stream_get_one(reader);				// pcm_loop_filter_disabled_flag
 	}
 	sps->num_short_term_ref_pic_sets = bit_read_stream_get_unsigned_exp(reader);
 	if (sps->num_short_term_ref_pic_sets > HEVC_MAX_SHORT_TERM_RPS_COUNT)
@@ -744,7 +744,7 @@ hevc_parser_seq_parameter_set_rbsp(
 		for (i = 0; i < sps->num_long_term_ref_pics_sps && !reader->stream.eof_reached; i++)
 		{
 			bit_read_stream_skip(reader, sps->log2_max_pic_order_cnt_lsb);	// lt_ref_pic_poc_lsb_sps[i]
-			sps->used_by_curr_pic_lt_sps_flag |= (bit_read_stream_get_one(reader) << i);			// used_by_curr_pic_lt_sps_flag[i] 
+			sps->used_by_curr_pic_lt_sps_flag |= (bit_read_stream_get_one(reader) << i);			// used_by_curr_pic_lt_sps_flag[i]
 		}
 	}
 	sps->sps_temporal_mvp_enabled_flag = bit_read_stream_get_one(reader);
@@ -824,7 +824,7 @@ hevc_parser_skip_pps_range_extension(
 		for (i = 0; i <= chroma_qp_offset_list_len_minus1 && !reader->stream.eof_reached; i++)
 		{
 			bit_read_stream_skip_signed_exp(reader);	// cb_qp_offset_list[i]
-			bit_read_stream_skip_signed_exp(reader);	// cr_qp_offset_list[i] 
+			bit_read_stream_skip_signed_exp(reader);	// cr_qp_offset_list[i]
 		}
 	}
 	bit_read_stream_skip_unsigned_exp(reader);			// log2_sao_offset_scale_luma
@@ -906,7 +906,7 @@ hevc_parser_skip_pps_3d_extension(
 					depth_max_value = (1 << pps_bit_depth_for_depth_layers) - 1;
 					for (j = 0; j <= depth_max_value && !reader->stream.eof_reached; j++)
 					{
-						bit_read_stream_get_one(reader);	// dlt_value_flag[i][j] 
+						bit_read_stream_get_one(reader);	// dlt_value_flag[i][j]
 					}
 				}
 				else
@@ -984,7 +984,7 @@ hevc_parser_skip_colour_mapping_octants(
 						res_coeff_r = bit_read_stream_get(reader, cm_res_ls_bits);	// [idxShiftY][idx_cb][idx_cr][j][c]
 						if (res_coeff_q || res_coeff_r)
 						{
-							bit_read_stream_get_one(reader);	// res_coeff_s[idxShiftY][idx_cb][idx_cr][j][c] 
+							bit_read_stream_get_one(reader);	// res_coeff_s[idxShiftY][idx_cb][idx_cr][j][c]
 						}
 					}
 				}
@@ -1011,7 +1011,7 @@ hevc_parser_skip_colour_mapping_table(
 	num_cm_ref_layers_minus1 = bit_read_stream_get_unsigned_exp(reader);
 	for (i = 0; i <= num_cm_ref_layers_minus1 && !reader->stream.eof_reached; i++)
 	{
-		bit_read_stream_skip(reader, 6);				// cm_ref_layer_id[i] 
+		bit_read_stream_skip(reader, 6);				// cm_ref_layer_id[i]
 	}
 	cm_octant_depth = bit_read_stream_get(reader, 2);
 	cm_y_part_num_log2 = bit_read_stream_get(reader, 2);
@@ -1039,11 +1039,11 @@ hevc_parser_skip_colour_mapping_table(
 		bit_read_stream_skip_signed_exp(reader);		// cm_adapt_threshold_v_delta
 	}
 	hevc_parser_skip_colour_mapping_octants(
-		reader, 
-		cm_octant_depth, 
-		1 << cm_y_part_num_log2, 
-		cm_res_ls_bits, 
-		0, 0, 0, 0, 
+		reader,
+		cm_octant_depth,
+		1 << cm_y_part_num_log2,
+		cm_res_ls_bits,
+		0, 0, 0, 0,
 		1 << cm_octant_depth);
 }
 
@@ -1073,25 +1073,25 @@ hevc_parser_skip_pps_multilayer_extension(
 		if (scaled_ref_layer_offset_present_flag)
 		{
 			bit_read_stream_skip_signed_exp(reader);	// scaled_ref_layer_left_offset[ref_loc_offset_layer_id[i]]
-			bit_read_stream_skip_signed_exp(reader);	// scaled_ref_layer_top_offset[ref_loc_offset_layer_id[i]] 
-			bit_read_stream_skip_signed_exp(reader);	// scaled_ref_layer_right_offset[ref_loc_offset_layer_id[i]] 
-			bit_read_stream_skip_signed_exp(reader);	// scaled_ref_layer_bottom_offset[ref_loc_offset_layer_id[i]] 
+			bit_read_stream_skip_signed_exp(reader);	// scaled_ref_layer_top_offset[ref_loc_offset_layer_id[i]]
+			bit_read_stream_skip_signed_exp(reader);	// scaled_ref_layer_right_offset[ref_loc_offset_layer_id[i]]
+			bit_read_stream_skip_signed_exp(reader);	// scaled_ref_layer_bottom_offset[ref_loc_offset_layer_id[i]]
 		}
 		ref_region_offset_present_flag = bit_read_stream_get_one(reader);
 		if (ref_region_offset_present_flag)
 		{
-			bit_read_stream_skip_signed_exp(reader);	// ref_region_left_offset[ref_loc_offset_layer_id[i]] 
-			bit_read_stream_skip_signed_exp(reader);	// ref_region_top_offset[ref_loc_offset_layer_id[i]] 
-			bit_read_stream_skip_signed_exp(reader);	// ref_region_right_offset[ref_loc_offset_layer_id[i]] 
-			bit_read_stream_skip_signed_exp(reader);	// ref_region_bottom_offset[ref_loc_offset_layer_id[i]] 
+			bit_read_stream_skip_signed_exp(reader);	// ref_region_left_offset[ref_loc_offset_layer_id[i]]
+			bit_read_stream_skip_signed_exp(reader);	// ref_region_top_offset[ref_loc_offset_layer_id[i]]
+			bit_read_stream_skip_signed_exp(reader);	// ref_region_right_offset[ref_loc_offset_layer_id[i]]
+			bit_read_stream_skip_signed_exp(reader);	// ref_region_bottom_offset[ref_loc_offset_layer_id[i]]
 		}
 		resample_phase_set_present_flag = bit_read_stream_get_one(reader);
 		if (resample_phase_set_present_flag)
 		{
-			bit_read_stream_skip_unsigned_exp(reader);	// phase_hor_luma[ref_loc_offset_layer_id[i]] 
-			bit_read_stream_skip_unsigned_exp(reader);	// phase_ver_luma[ref_loc_offset_layer_id[i]] 
-			bit_read_stream_skip_unsigned_exp(reader);	// phase_hor_chroma_plus8[ref_loc_offset_layer_id[i]] 
-			bit_read_stream_skip_unsigned_exp(reader);	// phase_ver_chroma_plus8[ref_loc_offset_layer_id[i]] 
+			bit_read_stream_skip_unsigned_exp(reader);	// phase_hor_luma[ref_loc_offset_layer_id[i]]
+			bit_read_stream_skip_unsigned_exp(reader);	// phase_ver_luma[ref_loc_offset_layer_id[i]]
+			bit_read_stream_skip_unsigned_exp(reader);	// phase_hor_chroma_plus8[ref_loc_offset_layer_id[i]]
+			bit_read_stream_skip_unsigned_exp(reader);	// phase_ver_chroma_plus8[ref_loc_offset_layer_id[i]]
 		}
 	}
 	colour_mapping_enabled_flag = bit_read_stream_get_one(reader);
@@ -1121,9 +1121,9 @@ hevc_parser_skip_pps_scc_extension(
 	if (residual_adaptive_colour_transform_enabled_flag)
 	{
 		pps->pps_slice_act_qp_offsets_present_flag = bit_read_stream_get_one(reader);
-		bit_read_stream_skip_signed_exp(reader);		// pps_act_y_qp_offset_plus5 
-		bit_read_stream_skip_signed_exp(reader);		// pps_act_cb_qp_offset_plus5 
-		bit_read_stream_skip_signed_exp(reader);		// pps_act_cr_qp_offset_plus3 
+		bit_read_stream_skip_signed_exp(reader);		// pps_act_y_qp_offset_plus5
+		bit_read_stream_skip_signed_exp(reader);		// pps_act_cb_qp_offset_plus5
+		bit_read_stream_skip_signed_exp(reader);		// pps_act_cr_qp_offset_plus3
 	}
 	pps_palette_predictor_initializer_present_flag = bit_read_stream_get_one(reader);
 	if (pps_palette_predictor_initializer_present_flag)
@@ -1483,10 +1483,10 @@ hevc_parser_skip_pred_weight_table(
 	uint32_t j;
 	uint32_t i;
 
-	bit_read_stream_skip_unsigned_exp(reader);			// luma_log2_weight_denom 
+	bit_read_stream_skip_unsigned_exp(reader);			// luma_log2_weight_denom
 	if (chroma_array_type != 0)
 	{
-		bit_read_stream_skip_signed_exp(reader);		// delta_chroma_log2_weight_denom 
+		bit_read_stream_skip_signed_exp(reader);		// delta_chroma_log2_weight_denom
 	}
 
 	luma_weight_l0_flag = 0;
@@ -1508,16 +1508,16 @@ hevc_parser_skip_pred_weight_table(
 	{
 		if ((luma_weight_l0_flag >> i) & 1)
 		{
-			bit_read_stream_skip_signed_exp(reader);	// delta_luma_weight_l0[i] 
-			bit_read_stream_skip_signed_exp(reader);	// luma_offset_l0[i] 
+			bit_read_stream_skip_signed_exp(reader);	// delta_luma_weight_l0[i]
+			bit_read_stream_skip_signed_exp(reader);	// luma_offset_l0[i]
 		}
 
 		if ((chroma_weight_l0_flag >> i) & 1)
 		{
 			for (j = 0; j < 2; j++)
 			{
-				bit_read_stream_skip_signed_exp(reader);	// delta_chroma_weight_l0[i][j] 
-				bit_read_stream_skip_signed_exp(reader);	// delta_chroma_offset_l0[i][j] 
+				bit_read_stream_skip_signed_exp(reader);	// delta_chroma_weight_l0[i][j]
+				bit_read_stream_skip_signed_exp(reader);	// delta_chroma_offset_l0[i][j]
 			}
 		}
 	}
@@ -1542,16 +1542,16 @@ hevc_parser_skip_pred_weight_table(
 		{
 			if ((luma_weight_l1_flag >> i) & 1)
 			{
-				bit_read_stream_skip_signed_exp(reader);	// delta_luma_weight_l1[i] 
-				bit_read_stream_skip_signed_exp(reader);	// luma_offset_l1[i] 
+				bit_read_stream_skip_signed_exp(reader);	// delta_luma_weight_l1[i]
+				bit_read_stream_skip_signed_exp(reader);	// luma_offset_l1[i]
 			}
 
 			if ((chroma_weight_l1_flag >> i) & 1)
 			{
 				for (j = 0; j < 2; j++)
 				{
-					bit_read_stream_skip_signed_exp(reader);	// delta_chroma_weight_l1[i][j] 
-					bit_read_stream_skip_signed_exp(reader);	// delta_chroma_offset_l1[i][j] 
+					bit_read_stream_skip_signed_exp(reader);	// delta_chroma_weight_l1[i][j]
+					bit_read_stream_skip_signed_exp(reader);	// delta_chroma_offset_l1[i][j]
 				}
 			}
 		}
@@ -1719,7 +1719,7 @@ hevc_parser_get_slice_header_size(
 						"hevc_parser_get_slice_header_size: invalid short_term_ref_pic_set_idx %uD",
 						sps->num_short_term_ref_pic_sets);
 					return VOD_BAD_DATA;
-				}				
+				}
 
 				st_rps = &sps->st_rps[short_term_ref_pic_set_idx];
 			}
@@ -1737,7 +1737,7 @@ hevc_parser_get_slice_header_size(
 					{
 						if (sps->num_long_term_ref_pics_sps > 1)
 						{
-							lt_idx_sps = bit_read_stream_get(&reader, 
+							lt_idx_sps = bit_read_stream_get(&reader,
 								avc_hevc_parser_ceil_log2(sps->num_long_term_ref_pics_sps));
 							lt_used_by_curr_pic_sum += (sps->used_by_curr_pic_lt_sps_flag >> lt_idx_sps) & 1;
 						}
@@ -1785,9 +1785,9 @@ hevc_parser_get_slice_header_size(
 
 			if (pps->lists_modification_present_flag)
 			{
-				num_pic_total_curr = 
+				num_pic_total_curr =
 					(st_rps != NULL ? hevc_parser_st_rps_frame_nb_refs(st_rps) : 0) +
-					lt_used_by_curr_pic_sum + 
+					lt_used_by_curr_pic_sum +
 					pps->pps_curr_pic_ref_enabled_flag;
 
 				if (num_pic_total_curr > 1)

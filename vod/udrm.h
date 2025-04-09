@@ -30,7 +30,7 @@ typedef struct {
 // functions
 vod_status_t udrm_parse_response(
 	request_context_t* request_context,
-	vod_str_t* drm_info, 
+	vod_str_t* drm_info,
 	bool_t base64_decode_pssh,
 	void** output);
 

@@ -4,7 +4,7 @@ import time
 INGORED_HEADERS = set([
 	'x-vod-me','x-vod-session',
 	'x-proxy-me', 'x-proxy-session',
-	'x-me', 'x-kaltura-session', 
+	'x-me', 'x-kaltura-session',
 	'x-varnish', 'x-amz-id-2', 'x-amz-request-id',
 ])
 
@@ -17,12 +17,12 @@ IGNORE_HEADER_VALUES = set([
 
 def parseHttpTime(timeStr):
 	return time.mktime(eut.parsedate(timeStr))
-	
+
 def compareHeaders(headers1, headers2):
 	for headerName in INGORED_HEADERS:
 		headers1.pop(headerName, None)
 		headers2.pop(headerName, None)
-	
+
 	onlyIn1 = set(headers1.keys()) - set(headers2.keys())
 	if len(onlyIn1) != 0:
 		return 'Error: headers %s found only in headers1' % (','.join(onlyIn1))

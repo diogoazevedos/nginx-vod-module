@@ -46,7 +46,7 @@ static const u_char webm_file_ext[] = ".webm";
 static const u_char vtt_file_ext[] = ".vtt";
 static const u_char ttml_file_ext[] = ".ttml";
 
-static ngx_int_t 
+static ngx_int_t
 ngx_http_vod_dash_handle_manifest(
 	ngx_http_vod_submodule_context_t* submodule_context,
 	ngx_str_t* response,
@@ -203,7 +203,7 @@ ngx_http_vod_dash_mp4_init_frame_processor(
 			&submodule_context->request_context,
 			&submodule_context->media_set,
 			submodule_context->request_params.segment_index,
-			conf->min_single_nalu_per_frame_segment > 0 && 
+			conf->min_single_nalu_per_frame_segment > 0 &&
 				submodule_context->media_set.initial_segment_clip_relative_index >= conf->min_single_nalu_per_frame_segment - 1,
 			submodule_context->media_set.sequences[0].encryption_key,		// iv
 			size_only,

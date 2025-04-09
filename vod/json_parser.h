@@ -58,10 +58,10 @@ typedef struct {
 
 // functions
 vod_json_status_t vod_json_parse(
-	vod_pool_t* pool, 
-	u_char* string, 
-	vod_json_value_t* result, 
-	u_char* error, 
+	vod_pool_t* pool,
+	u_char* string,
+	vod_json_value_t* result,
+	u_char* error,
 	size_t error_size);
 
 vod_json_status_t vod_json_decode_string(vod_str_t* dest, vod_str_t* src);

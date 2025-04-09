@@ -132,7 +132,7 @@ vod_json_get_value_type(vod_json_parser_state_t* state, vod_json_type_t** result
 	return VOD_JSON_OK;
 }
 
-static void 
+static void
 vod_json_skip_spaces(vod_json_parser_state_t* state)
 {
 	for (; *state->cur_pos && isspace(*state->cur_pos); state->cur_pos++);
@@ -521,7 +521,7 @@ vod_json_parse_object(vod_json_parser_state_t* state, vod_json_object_t* result)
 	}
 }
 
-static vod_json_status_t 
+static vod_json_status_t
 vod_json_parser_string(vod_json_parser_state_t* state, void* result)
 {
 	ASSERT_CHAR(state, '"');
@@ -782,11 +782,11 @@ vod_json_decode_string(vod_str_t* dest, vod_str_t* src)
 
 vod_status_t
 vod_json_init_hash(
-	vod_pool_t* pool, 
-	vod_pool_t* temp_pool, 
-	char* hash_name, 
-	void* elements, 
-	size_t element_size, 
+	vod_pool_t* pool,
+	vod_pool_t* temp_pool,
+	char* hash_name,
+	void* elements,
+	size_t element_size,
 	vod_hash_t* result)
 {
 	vod_array_t elements_arr;
@@ -827,7 +827,7 @@ vod_json_init_hash(
 	hash.pool = pool;
 	hash.temp_pool = NULL;
 
-	if (vod_hash_init(&hash, elements_arr.elts, elements_arr.nelts) != VOD_OK) 
+	if (vod_hash_init(&hash, elements_arr.elts, elements_arr.nelts) != VOD_OK)
 	{
 		return VOD_ALLOC_FAILED;
 	}
@@ -837,8 +837,8 @@ vod_json_init_hash(
 
 void
 vod_json_get_object_values(
-	vod_json_object_t* object, 
-	vod_hash_t* values_hash, 
+	vod_json_object_t* object,
+	vod_hash_t* values_hash,
 	vod_json_value_t** result)
 {
 	vod_json_key_value_t* cur_element = object->elts;
@@ -848,9 +848,9 @@ vod_json_get_object_values(
 	for (; cur_element < last_element; cur_element++)
 	{
 		key_def = vod_hash_find(
-			values_hash, 
-			cur_element->key_hash, 
-			cur_element->key.data, 
+			values_hash,
+			cur_element->key_hash,
+			cur_element->key.data,
 			cur_element->key.len);
 		if (key_def == NULL)
 		{
@@ -867,9 +867,9 @@ vod_json_get_object_values(
 
 vod_status_t
 vod_json_parse_object_values(
-	vod_json_object_t* object, 
-	vod_hash_t* values_hash, 
-	void* context, 
+	vod_json_object_t* object,
+	vod_hash_t* values_hash,
+	void* context,
 	void* result)
 {
 	vod_json_key_value_t* cur_element = object->elts;
@@ -889,7 +889,7 @@ vod_json_parse_object_values(
 			continue;
 		}
 
-		if (cur_element->value.type != parser->type && 
+		if (cur_element->value.type != parser->type &&
 			(cur_element->value.type != VOD_JSON_INT || parser->type != VOD_JSON_FRAC))
 		{
 			continue;
@@ -1054,8 +1054,8 @@ vod_json_replace_array(vod_json_array_t* array1, vod_json_array_t* array2)
 	part1 = &array1->part;
 	part2 = &array2->part;
 
-	for (cur_object1 = part1->first, cur_object2 = part2->first; 
-		; 
+	for (cur_object1 = part1->first, cur_object2 = part2->first;
+		;
 		cur_object1++, cur_object2++)
 	{
 		if ((void*)cur_object2 >= part2->last)

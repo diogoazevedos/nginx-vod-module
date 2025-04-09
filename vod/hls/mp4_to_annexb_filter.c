@@ -110,7 +110,7 @@ mp4_to_annexb_set_media_info(
 	return VOD_OK;
 }
 
-bool_t 
+bool_t
 mp4_to_annexb_simulation_supported(media_info_t* media_info)
 {
 	/* When the packet size field length is 4 we can bound the output size - since every 4-byte length
@@ -126,7 +126,7 @@ mp4_to_annexb_simulation_supported(media_info_t* media_info)
 	return TRUE;
 }
 
-static vod_status_t 
+static vod_status_t
 mp4_to_annexb_start_frame(media_filter_context_t* context, output_frame_t* frame)
 {
 	mp4_to_annexb_state_t* state = get_context(context);
@@ -153,7 +153,7 @@ mp4_to_annexb_start_frame(media_filter_context_t* context, output_frame_t* frame
 	{
 		return rc;
 	}
-	
+
 	// init state
 	state->first_frame_packet = TRUE;
 	state->cur_state = STATE_PACKET_SIZE;
@@ -179,7 +179,7 @@ mp4_to_annexb_start_frame(media_filter_context_t* context, output_frame_t* frame
 	return VOD_OK;
 }
 
-static vod_status_t 
+static vod_status_t
 mp4_to_annexb_write(media_filter_context_t* context, const u_char* buffer, uint32_t size)
 {
 	mp4_to_annexb_state_t* state = get_context(context);
@@ -211,7 +211,7 @@ mp4_to_annexb_write(media_filter_context_t* context, const u_char* buffer, uint3
 
 			state->cur_state++;
 			// fall through
-			
+
 		case STATE_NAL_TYPE:
 			unit_type = *buffer & state->unit_type_mask;
 			if (unit_type == state->aud_unit_type)
@@ -224,8 +224,8 @@ mp4_to_annexb_write(media_filter_context_t* context, const u_char* buffer, uint3
 			if (state->sample_aes)
 			{
 				rc = sample_aes_avc_start_nal_unit(
-					context, 
-					unit_type, 
+					context,
+					unit_type,
 					state->packet_size_left);
 				if (rc != VOD_OK)
 				{
@@ -233,7 +233,7 @@ mp4_to_annexb_write(media_filter_context_t* context, const u_char* buffer, uint3
 				}
 			}
 #endif // VOD_HAVE_OPENSSL_EVP
-						
+
 			if (state->first_frame_packet)
 			{
 				state->first_frame_packet = FALSE;
@@ -245,15 +245,15 @@ mp4_to_annexb_write(media_filter_context_t* context, const u_char* buffer, uint3
 				state->frame_size_left -= (sizeof(nal_marker) - 1);
 				rc = state->next_filter.write(context, nal_marker + 1, sizeof(nal_marker) - 1);
 			}
-			
+
 			if (rc != VOD_OK)
 			{
 				return rc;
 			}
-			
+
 			state->cur_state++;
 			// fall through
-			
+
 		case STATE_COPY_PACKET:
 		case STATE_SKIP_PACKET:
 			write_size = vod_min(state->packet_size_left, (uint32_t)(buffer_end - buffer));
@@ -277,11 +277,11 @@ mp4_to_annexb_write(media_filter_context_t* context, const u_char* buffer, uint3
 			break;
 		}
 	}
-	
+
 	return VOD_OK;
 }
 
-static vod_status_t 
+static vod_status_t
 mp4_to_annexb_flush_frame(media_filter_context_t* context, bool_t last_stream_frame)
 {
 	mp4_to_annexb_state_t* state = get_context(context);
@@ -392,4 +392,3 @@ mp4_to_annexb_init(
 
 	return VOD_OK;
 }
-

@@ -5,19 +5,19 @@
 
 // globals
 static const char* iso639_1_codes[] = {
-#define LANG(id, iso639_1, iso639_2b, iso639_3, name, native_name) iso639_1, 
+#define LANG(id, iso639_1, iso639_2b, iso639_3, name, native_name) iso639_1,
 #include "languages_x.h"
 #undef LANG
 };
 
 static const char* iso639_2b_codes[] = {
-#define LANG(id, iso639_1, iso639_2b, iso639_3, name, native_name) iso639_2b, 
+#define LANG(id, iso639_1, iso639_2b, iso639_3, name, native_name) iso639_2b,
 #include "languages_x.h"
 #undef LANG
 };
 
 static const char* iso639_3_codes[] = {
-#define LANG(id, iso639_1, iso639_2b, iso639_3, name, native_name) iso639_3, 
+#define LANG(id, iso639_1, iso639_2b, iso639_3, name, native_name) iso639_3,
 #include "languages_x.h"
 #undef LANG
 };
@@ -45,7 +45,7 @@ language_code_process_init(vod_pool_t* pool, vod_log_t* log)
 	uint16_t int_code2;
 	uint16_t index;
 	unsigned i;
-	
+
 	iso639_3_hash = vod_alloc(pool, ISO639_3_HASH_TOTAL_SIZE * sizeof(iso639_3_hash[0]));
 	if (iso639_3_hash == NULL)
 	{
@@ -53,9 +53,9 @@ language_code_process_init(vod_pool_t* pool, vod_log_t* log)
 			"language_code_process_init: vod_alloc failed");
 		return VOD_ALLOC_FAILED;
 	}
-	
+
 	vod_memzero(iso639_3_hash, ISO639_3_HASH_TOTAL_SIZE * sizeof(iso639_3_hash[0]));
-			
+
 	for (i = 1; i < vod_array_entries(iso639_3_codes); i++)
 	{
 		// iso639-3
@@ -70,7 +70,7 @@ language_code_process_init(vod_pool_t* pool, vod_log_t* log)
 				(uint32_t)index, iso639_3_codes[i]);
 			return VOD_UNEXPECTED;
 		}
-	
+
 		iso639_3_hash[index] = i;
 
 		// iso639-2b
@@ -98,11 +98,11 @@ language_code_process_init(vod_pool_t* pool, vod_log_t* log)
 
 		iso639_3_hash[index] = i;
 	}
-	
+
 	return VOD_OK;
 }
 
-language_id_t 
+language_id_t
 lang_parse_iso639_3_code(uint16_t code)
 {
 	const language_hash_offsets_t* hash_offsets;
@@ -121,13 +121,13 @@ lang_parse_iso639_3_code(uint16_t code)
 	{
 		return 0;
 	}
-	
-	if (iso639_3_str_to_int(iso639_3_codes[result]) != code && 
+
+	if (iso639_3_str_to_int(iso639_3_codes[result]) != code &&
 		(iso639_2b_codes[result] == NULL || iso639_3_str_to_int(iso639_2b_codes[result]) != code))
 	{
 		return 0;
 	}
-	
+
 	return result;
 }
 

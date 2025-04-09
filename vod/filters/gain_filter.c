@@ -21,8 +21,8 @@ typedef struct {
 
 // constants
 static json_object_key_def_t gain_filter_params[] = {
-	{ vod_string("gain"), VOD_JSON_FRAC, GAIN_FILTER_PARAM_GAIN },
-	{ vod_string("source"), VOD_JSON_OBJECT, GAIN_FILTER_PARAM_SOURCE },
+	{ vod_string("gain"),	VOD_JSON_FRAC,		GAIN_FILTER_PARAM_GAIN },
+	{ vod_string("source"),	VOD_JSON_OBJECT,	GAIN_FILTER_PARAM_SOURCE },
 	{ vod_null_string, 0, 0 }
 };
 
@@ -101,7 +101,7 @@ gain_filter_parse(
 	if (gain->v.num.num <= 0 || gain->v.num.denom > 100)
 	{
 		vod_log_error(VOD_LOG_ERR, context->request_context->log, 0,
-			"gain_filter_parse: invalid gain %L/%uL, expecting a positive number with up to 2 decimal points", 
+			"gain_filter_parse: invalid gain %L/%uL, expecting a positive number with up to 2 decimal points",
 			gain->v.num.num, gain->v.num.denom);
 		return VOD_BAD_MAPPING;
 	}

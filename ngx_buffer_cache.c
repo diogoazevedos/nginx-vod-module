@@ -16,11 +16,11 @@
 	the shared memory is composed of 3 sections:
 	1. fixed size headers - contains the ngx_slab_pool_t struct allocated by nginx,
 		the log context string and ngx_buffer_cache_sh_t
-	2. entries - an array of ngx_buffer_cache_entry_t, each entry has a key and 
-		points to a buffer in the buffers section. the entries are connected with a 
-		red/black tree for fast lookup by key. the entries section grows as needed until 
-		it bumps into the buffers section. each entry is a member of one of 2 doubly 
-		linked lists - the free queue and the used queue. the entries move between these 
+	2. entries - an array of ngx_buffer_cache_entry_t, each entry has a key and
+		points to a buffer in the buffers section. the entries are connected with a
+		red/black tree for fast lookup by key. the entries section grows as needed until
+		it bumps into the buffers section. each entry is a member of one of 2 doubly
+		linked lists - the free queue and the used queue. the entries move between these
 		queues as they are allocated / deallocated
 	3. buffers - a cyclic queue of variable size buffers. the buffers section starts
 		at the end of the shared memory and grows towards its beginning until it bumps
@@ -33,29 +33,29 @@
 // Note: code taken from ngx_str_rbtree_insert_value, updated the node comparison
 static void
 ngx_buffer_cache_rbtree_insert_value(
-	ngx_rbtree_node_t *temp, 
-	ngx_rbtree_node_t *node, 
+	ngx_rbtree_node_t *temp,
+	ngx_rbtree_node_t *node,
 	ngx_rbtree_node_t *sentinel)
 {
 	ngx_buffer_cache_entry_t *n, *t;
 	ngx_rbtree_node_t **p;
 
-	for (;;) 
+	for (;;)
 	{
 		n = (ngx_buffer_cache_entry_t *)node;
 		t = (ngx_buffer_cache_entry_t *)temp;
 
-		if (node->key != temp->key) 
+		if (node->key != temp->key)
 		{
 			p = (node->key < temp->key) ? &temp->left : &temp->right;
 		}
-		else 
+		else
 		{
 			p = (ngx_memcmp(n->key, t->key, BUFFER_CACHE_KEY_SIZE) < 0)
 				? &temp->left : &temp->right;
 		}
 
-		if (*p == sentinel) 
+		if (*p == sentinel)
 		{
 			break;
 		}
@@ -81,24 +81,24 @@ ngx_buffer_cache_rbtree_lookup(ngx_rbtree_t *rbtree, const u_char* key, uint32_t
 	node = rbtree->root;
 	sentinel = rbtree->sentinel;
 
-	while (node != sentinel) 
+	while (node != sentinel)
 	{
 		n = (ngx_buffer_cache_entry_t *)node;
 
-		if (hash != node->key) 
+		if (hash != node->key)
 		{
 			node = (hash < node->key) ? node->left : node->right;
 			continue;
 		}
 
 		rc = ngx_memcmp(key, n->key, BUFFER_CACHE_KEY_SIZE);
-		if (rc < 0) 
+		if (rc < 0)
 		{
 			node = node->left;
 			continue;
 		}
 
-		if (rc > 0) 
+		if (rc > 0)
 		{
 			node = node->right;
 			continue;
@@ -145,7 +145,7 @@ ngx_buffer_cache_init(ngx_shm_zone_t *shm_zone, void *data)
 
 	cache->shpool = (ngx_slab_pool_t *)shm_zone->shm.addr;
 
-	if (shm_zone->shm.exists) 
+	if (shm_zone->shm.exists)
 	{
 		cache->sh = cache->shpool->data;
 		return NGX_OK;
@@ -207,7 +207,7 @@ ngx_buffer_cache_free_oldest_entry(ngx_buffer_cache_sh_t *cache, uint32_t expira
 	{
 		return NULL;
 	}
-	
+
 	// update the state
 	entry->state = CES_FREE;
 
@@ -248,7 +248,7 @@ ngx_buffer_cache_get_free_entry(ngx_buffer_cache_sh_t *cache)
 		// return the free queue head
 		return container_of(ngx_queue_head(&cache->free_queue), ngx_buffer_cache_entry_t, queue_node);
 	}
-	
+
 	if ((u_char*)(cache->entries_end + 1) < cache->buffers_start)
 	{
 		// enlarge the entries buffer
@@ -260,7 +260,7 @@ ngx_buffer_cache_get_free_entry(ngx_buffer_cache_sh_t *cache)
 		ngx_queue_insert_tail(&cache->free_queue, &entry->queue_node);
 		return entry;
 	}
-	
+
 	return ngx_buffer_cache_free_oldest_entry(cache, 0);
 }
 
@@ -283,7 +283,7 @@ ngx_buffer_cache_get_free_buffer(
 	for (;;)
 	{
 		// Layout:	S	W/////R		E
-		if (cache->buffers_write < cache->buffers_read || 
+		if (cache->buffers_write < cache->buffers_read ||
 			(cache->buffers_write == cache->buffers_read && ngx_queue_empty(&cache->used_queue)))
 		{
 			if (buffer_start >= cache->buffers_start)
@@ -341,7 +341,7 @@ ngx_buffer_cache_fetch(
 	if (!sh->reset)
 	{
 		entry = ngx_buffer_cache_rbtree_lookup(&sh->rbtree, key, hash);
-		if (entry != NULL && entry->state == CES_READY && 
+		if (entry != NULL && entry->state == CES_READY &&
 			(cache->expiration == 0 || ngx_time() < (time_t)(entry->write_time + cache->expiration)))
 		{
 			result = 1;
@@ -355,7 +355,7 @@ ngx_buffer_cache_fetch(
 			buffer->len = entry->buffer_size;
 			*token = entry->write_time;
 
-			// Note: setting the access time of the entry and cache to prevent it 
+			// Note: setting the access time of the entry and cache to prevent it
 			//		from being freed while the caller uses the buffer
 			sh->access_time = entry->access_time = ngx_time();
 			(void)ngx_atomic_fetch_add(&entry->ref_count, 1);
@@ -400,8 +400,8 @@ ngx_buffer_cache_release(
 
 ngx_flag_t
 ngx_buffer_cache_store_gather(
-	ngx_buffer_cache_t* cache, 
-	u_char* key, 
+	ngx_buffer_cache_t* cache,
+	u_char* key,
 	ngx_str_t* buffers,
 	size_t buffer_count)
 {
@@ -422,7 +422,7 @@ ngx_buffer_cache_store_gather(
 	{
 		// a previous store operation was killed in progress, need to reset the cache
 		// since the data structures may be corrupt. we can only reset the cache after
-		// the access time expires since other processes may still be reading from / 
+		// the access time expires since other processes may still be reading from /
 		// writing to the cache
 		if (ngx_time() < sh->access_time + CACHE_LOCK_EXPIRATION)
 		{
@@ -582,7 +582,7 @@ ngx_buffer_cache_create(ngx_conf_t *cf, ngx_str_t *name, size_t size, time_t exp
 	ngx_buffer_cache_t* cache;
 
 	cache = ngx_pcalloc(cf->pool, sizeof(ngx_buffer_cache_t));
-	if (cache == NULL) 
+	if (cache == NULL)
 	{
 		return NGX_CONF_ERROR;
 	}
@@ -595,7 +595,7 @@ ngx_buffer_cache_create(ngx_conf_t *cf, ngx_str_t *name, size_t size, time_t exp
 		return NULL;
 	}
 
-	if (cache->shm_zone->data) 
+	if (cache->shm_zone->data)
 	{
 		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
 			"duplicate zone \"%V\"", name);

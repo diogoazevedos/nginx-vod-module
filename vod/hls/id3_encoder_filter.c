@@ -30,7 +30,7 @@ static u_char header_template[] = {
 	0x03,						// encoding	(=utf8, null term)
 };
 
-static vod_status_t 
+static vod_status_t
 id3_encoder_start_frame(media_filter_context_t* context, output_frame_t* frame)
 {
 	id3_encoder_state_t* state = get_context(context);
@@ -40,13 +40,13 @@ id3_encoder_start_frame(media_filter_context_t* context, output_frame_t* frame)
 
 	// start the frame
 	frame->size = size + sizeof(state->header);
-	
+
 	rc = state->start_frame(context, frame);
 	if (rc != VOD_OK)
 	{
 		return rc;
 	}
-	
+
 	// write the header
 	p = state->header.frame_header.size;
 	size += sizeof(id3_text_frame_header_t);
@@ -60,7 +60,7 @@ id3_encoder_start_frame(media_filter_context_t* context, output_frame_t* frame)
 }
 
 
-static void 
+static void
 id3_encoder_simulated_start_frame(media_filter_context_t* context, output_frame_t* frame)
 {
 	id3_encoder_state_t* state = get_context(context);

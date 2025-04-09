@@ -17,7 +17,7 @@ static u_char abst_content_type[] = "video/abst";
 static const u_char manifest_file_ext[] = ".f4m";
 static const u_char bootstrap_file_ext[] = ".abst";
 
-static ngx_int_t 
+static ngx_int_t
 ngx_http_vod_hds_handle_manifest(
 	ngx_http_vod_submodule_context_t* submodule_context,
 	ngx_str_t* response,
@@ -64,7 +64,7 @@ ngx_http_vod_hds_handle_bootstrap(
 	ngx_str_t* content_type)
 {
 	vod_status_t rc;
-	
+
 	rc = hds_packager_build_bootstrap(
 		&submodule_context->request_context,
 		&submodule_context->media_set,
@@ -283,7 +283,7 @@ ngx_http_vod_hds_parse_drm_info(
 {
 	drm_info_t* result;
 	ngx_int_t rc;
-	
+
 	rc = udrm_parse_response(
 		&submodule_context->request_context,
 		drm_info,

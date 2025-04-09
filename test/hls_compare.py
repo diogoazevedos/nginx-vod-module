@@ -41,13 +41,13 @@ class TestThread(stress_base.TestThreadBase):
 		f.write(data)
 		f.close()
 		return f.name
-		
+
 	def shouldCompareLine(self, line):
 		for ignoredPrefix in IGNORED_PREFIXES_FULL:
 			if line.startswith(ignoredPrefix):
 				return False
 		return True
-		
+
 	def writeLinesToDiff(self, lines):
 		lines = filter(self.shouldCompareLine, lines)
 		return self.writeToTempFile('\n'.join(lines))
@@ -67,7 +67,7 @@ class TestThread(stress_base.TestThreadBase):
 			messages.append('Error: line count mismatch %s vs %s' % (len(lines1), len(lines2)))
 			messages.append(diffResult)
 			return False
-		
+
 		#ptsDiff = None
 		#dtsDiff = None
 		result = True
@@ -76,7 +76,7 @@ class TestThread(stress_base.TestThreadBase):
 			line2 = lines2[curIndex].strip()
 			if line1 == line2:
 				continue
-			
+
 			skipLine = False
 			for ignoredPrefix in IGNORED_PREFIXES:
 				if line1.startswith(ignoredPrefix) and line2.startswith(ignoredPrefix):
@@ -109,8 +109,8 @@ class TestThread(stress_base.TestThreadBase):
 				if curDiff > DTS_THRESHOLD:
 					messages.append('Error: dts diff exceeds threshold - dts1 %s dts2 %s streamType %s' % (dts1, dts2, streamType))
 					result = False
-				continue				
-				
+				continue
+
 			messages.append('Error: test failed line1=%s line2=%s' % (line1, line2))
 			result = False
 		return result
@@ -120,7 +120,7 @@ class TestThread(stress_base.TestThreadBase):
 		ffprobeData = commands.getoutput('%s -i %s -show_packets -show_data -select_streams %s 2>/dev/null' % (FFPROBE_BIN, tempFilename, streamType))
 		os.remove(tempFilename)
 		return ffprobeData
-		
+
 	def compareStream(self, tsData1, tsData2, streamType, messages):
 		ffprobeData1 = self.runFfprobe(tsData1, streamType)
 		ffprobeData2 = self.runFfprobe(tsData2, streamType)
@@ -132,12 +132,12 @@ class TestThread(stress_base.TestThreadBase):
 		for curPos in xrange(0, len(tsData), TS_PACKET_LENGTH):
 			pid = ((ord(tsData[curPos + 1]) & 0x1f) << 8) | ord(tsData[curPos + 2])
 			cc = ord(tsData[curPos + 3]) & 0x0f
-			
+
 			if continuityCounters.has_key(pid):
 				lastValue = continuityCounters[pid]
 				expectedValue = (lastValue + 1) & 0x0f
 				if cc != expectedValue:
-					self.writeOutput('Error: bad continuity counter - pos=%s pid=%d exp=%s actual=%s' % 
+					self.writeOutput('Error: bad continuity counter - pos=%s pid=%d exp=%s actual=%s' %
 						(curPos, pid, expectedValue, cc))
 					result = False
 				else:
@@ -150,7 +150,7 @@ class TestThread(stress_base.TestThreadBase):
 		m = hashlib.md5()
 		m.update(data)
 		return m.hexdigest()
-		
+
 	def retrieveUrl(self, url):
 		startTime = time.time()
 		code, headers, data = http_utils.getUrl(url)
@@ -170,20 +170,20 @@ class TestThread(stress_base.TestThreadBase):
 				if tsData1 == None:
 					self.writeOutput(error)
 					return False
-			
+
 			if not self.testContinuity(tsData1, continuityCounters):
 				result = False
 		else:
 			continuityCounters.clear()
-			
+
 		for attempt in xrange(RETRIES):
 			code2, tsData2 = self.retrieveUrl(url2)
-			
+
 			if code1 != code2:
 				if code1 != 0 and code2 != 0:
 					self.writeOutput('Error: got different status codes %s vs %s (ts)' % (code1, code2))
 				return False
-			
+
 			messages = []
 			curResult = True
 			if not self.compareStream(tsData1, tsData2, 'a', messages):
@@ -193,14 +193,14 @@ class TestThread(stress_base.TestThreadBase):
 			if curResult or attempt + 1 >= RETRIES:
 				break
 			self.writeOutput('Info: got errors, retrying...')
-		
+
 		self.writeOutput('Info: size diff is %s' % (len(tsData2) - len(tsData1)))
-		
+
 		for message in messages:
 			self.writeOutput(message)
 		return result and curResult
 
-	@staticmethod		
+	@staticmethod
 	def getTsSegments(manifest):
 		result = []
 		duration = None
@@ -212,16 +212,16 @@ class TestThread(stress_base.TestThreadBase):
 				result.append((curLine, duration))
 		return result
 
-	def runTest(self, uri):		
+	def runTest(self, uri):
 		url1 = URL1_BASE + random.choice(URL1_PREFIXES) + uri
 		url2 = URL2_PREFIX + uri
-		
+
 		self.writeOutput('Info: testing %s %s' % (url1, url2))
-		
+
 		# avoid billing real partners
 		url1 = re.sub('/p/\d+/sp/\d+/', '/p/%s/sp/%s00/' % (TEST_PARTNER_ID, TEST_PARTNER_ID), url1)
 		url2 = re.sub('/p/\d+/sp/\d+/', '/p/%s/sp/%s00/' % (TEST_PARTNER_ID, TEST_PARTNER_ID), url2)
-		
+
 		# get the manifests
 		code1, manifest1 = self.retrieveUrl(url1 + URL1_SUFFIX)
 		code2, manifest2 = self.retrieveUrl(url2 + URL2_SUFFIX)
@@ -232,7 +232,7 @@ class TestThread(stress_base.TestThreadBase):
 		if code1 == 404 and code2 == 404:
 			self.writeOutput('Notice: both servers returned 404')
 			return True
-		
+
 		if not manifest1.startswith('#EXTM3U') or not manifest2.startswith('#EXTM3U'):
 			if not manifest1.startswith('#EXTM3U') and not manifest2.startswith('#EXTM3U'):
 				self.writeOutput('Notice: both servers returned invalid manifests')
@@ -245,7 +245,7 @@ class TestThread(stress_base.TestThreadBase):
 				self.writeOutput('Error: server2 returned invalid manifest')
 				self.writeOutput('manifest2=%s' % manifest2)
 				return True
-		
+
 		# extract the ts uris
 		tsUris1 = self.getTsSegments(manifest1)
 		tsUris2 = self.getTsSegments(manifest2)
@@ -265,7 +265,7 @@ class TestThread(stress_base.TestThreadBase):
 			if abs(duration1 - duration2) > 0.01:
 				self.writeOutput('Error: TS durations mismatch at index %s - %s vs %s' % (curIndex, duration1, duration2))
 				return False
-				
+
 		# get the encryption key, if exists
 		keyUri = None
 		for curLine in manifest1.split('\n'):
@@ -296,7 +296,7 @@ class TestThread(stress_base.TestThreadBase):
 				result = False
 		self.writeOutput('Info: success')
 		return result
-		
+
 if __name__ == '__main__':
 	# delete temp files
 	for curFile in os.listdir(TEMP_DIR):

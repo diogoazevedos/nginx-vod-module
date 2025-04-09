@@ -45,7 +45,7 @@ enum {
 };
 
 // SPS
-static void 
+static void
 avc_parser_skip_hrd_parameters(bit_reader_state_t* reader)
 {
 	uint32_t cpb_cnt_minus1;
@@ -66,7 +66,7 @@ avc_parser_skip_hrd_parameters(bit_reader_state_t* reader)
 	bit_read_stream_skip(reader, 5); // time_offset_length
 }
 
-static void 
+static void
 avc_parser_parse_vui_parameters(avc_sps_t* sps, bit_reader_state_t* reader)
 {
 	uint32_t aspect_ratio_info_present_flag;
@@ -157,9 +157,9 @@ avc_parser_skip_scaling_list(bit_reader_state_t* reader, int size_of_scaling_lis
 	int delta_scale;
 	int j;
 
-	for (j = 0; j < size_of_scaling_list; j++) 
+	for (j = 0; j < size_of_scaling_list; j++)
 	{
-		if (next_scale != 0) 
+		if (next_scale != 0)
 		{
 			delta_scale = bit_read_stream_get_signed_exp(reader);
 			next_scale = (last_scale + delta_scale) & 0xff;
@@ -168,7 +168,7 @@ avc_parser_skip_scaling_list(bit_reader_state_t* reader, int size_of_scaling_lis
 	}
 }
 
-static vod_status_t 
+static vod_status_t
 avc_parser_seq_parameter_set_rbsp(avc_hevc_parse_ctx_t* ctx, bit_reader_state_t* reader)
 {
 	avc_sps_t* sps;
@@ -181,7 +181,7 @@ avc_parser_seq_parameter_set_rbsp(avc_hevc_parse_ctx_t* ctx, bit_reader_state_t*
 	bool_t seq_scaling_list_present_flag;
 	bool_t vui_parameters_present_flag;
 	bool_t frame_cropping_flag;
-	
+
 	profile_idc = bit_read_stream_get(reader, 8); // profile_idc
 	bit_read_stream_get_one(reader); // constraint_set0_flag
 	bit_read_stream_get_one(reader); // constraint_set1_flag
@@ -230,7 +230,7 @@ avc_parser_seq_parameter_set_rbsp(avc_hevc_parse_ctx_t* ctx, bit_reader_state_t*
 				sps->chroma_array_type = 0;
 			}
 		}
-		bit_read_stream_skip_unsigned_exp(reader); // bit_depth_luma_minus8 
+		bit_read_stream_skip_unsigned_exp(reader); // bit_depth_luma_minus8
 		bit_read_stream_skip_unsigned_exp(reader); // bit_depth_chroma_minus8
 		bit_read_stream_get_one(reader);	// qpprime_y_zero_transform_bypass_flag
 		seq_scaling_matrix_present_flag = bit_read_stream_get_one(reader);
@@ -841,7 +841,7 @@ avc_parser_get_slice_header_size(
 			"avc_parser_get_slice_header_size: invalid slice type %uD", (uint32_t)slice_type);
 		return VOD_BAD_DATA;
 	}
-	
+
 	if (slice_type >= 5)
 	{
 		slice_type -= 5;
@@ -884,14 +884,14 @@ avc_parser_get_slice_header_size(
 		bit_read_stream_skip_unsigned_exp(&reader);		// idr_pic_id
 	}
 
-	if (sps->pic_order_cnt_type == 0) 
+	if (sps->pic_order_cnt_type == 0)
 	{
 		bit_read_stream_skip(&reader, sps->log2_max_pic_order_cnt_lsb);		// pic_order_cnt_lsb
 		if (pps->bottom_field_pic_order_in_frame_present_flag && !field_pic_flag)
 			bit_read_stream_skip_signed_exp(&reader);	// delta_pic_order_cnt_bottom
 	}
 
-	if (sps->pic_order_cnt_type == 1 && !sps->delta_pic_order_always_zero_flag) 
+	if (sps->pic_order_cnt_type == 1 && !sps->delta_pic_order_always_zero_flag)
 	{
 		bit_read_stream_skip_signed_exp(&reader);		// delta_pic_order_cnt[ 0 ]
 		if (pps->bottom_field_pic_order_in_frame_present_flag && !field_pic_flag)
@@ -956,16 +956,16 @@ avc_parser_get_slice_header_size(
 		bit_read_stream_skip_signed_exp(&reader); 	// slice_qs_delta
 	}
 
-	if (pps->deblocking_filter_control_present_flag) 
+	if (pps->deblocking_filter_control_present_flag)
 	{
 		disable_deblocking_filter_idc = bit_read_stream_get_unsigned_exp(&reader);
-		if (disable_deblocking_filter_idc != 1) 
+		if (disable_deblocking_filter_idc != 1)
 		{
 			bit_read_stream_skip_signed_exp(&reader);	// slice_alpha_c0_offset_div2
 			bit_read_stream_skip_signed_exp(&reader);	// slice_beta_offset_div2
 		}
 	}
-	if (pps->num_slice_groups_minus1 > 0 && 
+	if (pps->num_slice_groups_minus1 > 0 &&
 		pps->slice_group_map_type >= 3 && pps->slice_group_map_type <= 5)
 	{
 		pic_size_in_map_units = sps->pic_height_in_map_units * sps->pic_width_in_mbs;
@@ -973,20 +973,20 @@ avc_parser_get_slice_header_size(
 		len = avc_hevc_parser_ceil_log2(len + 1);
 		bit_read_stream_skip(&reader, len);		// slice_group_change_cycle
 	}
-	
+
 	if (reader.stream.eof_reached)
 	{
 		vod_log_error(VOD_LOG_ERR, ctx->request_context->log, 0,
 			"avc_parser_get_slice_header_size: bit stream overflow");
 		return VOD_BAD_DATA;
 	}
-	
+
 	*result = AVC_NAL_HEADER_SIZE + (reader.stream.cur_pos - start_pos);
 
 	if (start_pos != buffer + AVC_NAL_HEADER_SIZE)
 	{
 		*result += avc_hevc_parser_emulation_prevention_encode_bytes(
-			start_pos, 
+			start_pos,
 			reader.stream.cur_pos);
 	}
 

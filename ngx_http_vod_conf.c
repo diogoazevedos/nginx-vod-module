@@ -24,7 +24,7 @@ static ngx_int_t
 ngx_http_vod_init_parsers(ngx_conf_t *cf)
 {
 	vod_status_t rc;
-	
+
 	rc = media_set_parser_init(cf->pool, cf->temp_pool);
 	if (rc != VOD_OK)
 	{
@@ -60,7 +60,7 @@ ngx_http_vod_create_loc_conf(ngx_conf_t *cf)
 	int type;
 
     conf = ngx_pcalloc(cf->pool, sizeof(ngx_http_vod_loc_conf_t));
-    if (conf == NULL) 
+    if (conf == NULL)
 	{
 		ngx_log_debug0(NGX_LOG_DEBUG_HTTP, cf->log, 0,
 			"ngx_http_vod_create_loc_conf: ngx_pcalloc failed");
@@ -298,7 +298,7 @@ ngx_http_vod_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
 		conf->drm_request_uri = prev->drm_request_uri;
 	}
 	ngx_conf_merge_uint_value(conf->min_single_nalu_per_frame_segment, prev->min_single_nalu_per_frame_segment, 0);
-	
+
 	ngx_conf_merge_str_value(conf->clip_to_param_name, prev->clip_to_param_name, "clipTo");
 	ngx_conf_merge_str_value(conf->clip_from_param_name, prev->clip_from_param_name, "clipFrom");
 	ngx_conf_merge_str_value(conf->tracks_param_name, prev->tracks_param_name, "tracks");
@@ -424,9 +424,9 @@ ngx_http_vod_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
 	for (cur_module = submodules; *cur_module != NULL; cur_module++)
 	{
 		err = (*cur_module)->merge_loc_conf(
-			cf, 
-			conf, 
-			(u_char*)conf + (*cur_module)->conf_offset, 
+			cf,
+			conf,
+			(u_char*)conf + (*cur_module)->conf_offset,
 			(u_char*)prev + (*cur_module)->conf_offset);
 		if (err != NGX_CONF_OK)
 		{
@@ -518,19 +518,19 @@ ngx_http_vod_mode_command(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
 	value = cf->args->elts;
 
-	if (ngx_strcasecmp(value[1].data, (u_char *) "local") == 0) 
+	if (ngx_strcasecmp(value[1].data, (u_char *) "local") == 0)
 	{
 		vod_conf->request_handler = ngx_http_vod_local_request_handler;
 	}
-	else if (ngx_strcasecmp(value[1].data, (u_char *) "remote") == 0) 
+	else if (ngx_strcasecmp(value[1].data, (u_char *) "remote") == 0)
 	{
 		vod_conf->request_handler = ngx_http_vod_remote_request_handler;
 	}
-	else if (ngx_strcasecmp(value[1].data, (u_char *) "mapped") == 0) 
+	else if (ngx_strcasecmp(value[1].data, (u_char *) "mapped") == 0)
 	{
 		vod_conf->request_handler = ngx_http_vod_mapped_request_handler;
 	}
-	else 
+	else
 	{
 		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
 			"invalid value \"%s\" in \"%s\" directive, "
@@ -648,7 +648,7 @@ ngx_http_vod_cache_command(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 		return "is duplicate";
 	}
 
-	if (ngx_strcmp(value[1].data, "off") == 0) 
+	if (ngx_strcmp(value[1].data, "off") == 0)
 	{
 		*cache = NULL;
 		return NGX_CONF_OK;
@@ -672,7 +672,7 @@ ngx_http_vod_cache_command(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 	if (cf->args->nelts > 3)
 	{
 		expiration = ngx_parse_time(&value[3], 1);
-		if (expiration == (time_t)NGX_ERROR) 
+		if (expiration == (time_t)NGX_ERROR)
 		{
 			ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
 				"invalid expiration %V", &value[3]);
@@ -751,13 +751,13 @@ ngx_http_vod_buffer_pool_command(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 	{
 		return "invalid count";
 	}
-	
+
 	*buffer_pool = buffer_pool_create(cf->pool, cf->log, buffer_size, count);
 	if (*buffer_pool == NULL)
 	{
 		return NGX_CONF_ERROR;
 	}
-	
+
 	return NGX_CONF_OK;
 }
 
@@ -989,7 +989,7 @@ ngx_command_t ngx_http_vod_commands[] = {
 	NGX_HTTP_LOC_CONF_OFFSET,
 	offsetof(ngx_http_vod_loc_conf_t, segments_base_url),
 	NULL },
-	
+
 	// mp4 reading parameters
 	{ ngx_string("vod_metadata_cache"),
 	NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE123,
@@ -1225,7 +1225,7 @@ ngx_command_t ngx_http_vod_commands[] = {
 	NGX_HTTP_LOC_CONF_OFFSET,
 	offsetof(ngx_http_vod_loc_conf_t, expires[EXPIRES_TYPE_VOD]),
 	NULL },
-	
+
 	{ ngx_string("vod_expires_live"),
 	NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,
 	ngx_conf_set_sec_slot,
@@ -1349,7 +1349,7 @@ ngx_command_t ngx_http_vod_commands[] = {
 	NGX_HTTP_LOC_CONF_OFFSET,
 	offsetof(ngx_http_vod_loc_conf_t, speed_param_name),
 	NULL },
-	
+
 	{ ngx_string("vod_lang_param_name"),
 	NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,
 	ngx_conf_set_str_slot,

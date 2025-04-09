@@ -23,8 +23,8 @@ mp4_cenc_passthrough_init(mp4_cenc_passthrough_context_t* context, media_sequenc
 		// can only passthrough if the content is encrypted with the required key
 		if (cur_track->frames.frames_source != &mp4_cenc_decrypt_frames_source ||
 			vod_memcmp(
-				mp4_cenc_decrypt_get_key(cur_track->frames.frames_source_context), 
-				((drm_info_t*)sequence->drm_info)->key, 
+				mp4_cenc_decrypt_get_key(cur_track->frames.frames_source_context),
+				((drm_info_t*)sequence->drm_info)->key,
 				DRM_KEY_SIZE) != 0)
 		{
 			return FALSE;
@@ -65,8 +65,8 @@ mp4_cenc_passthrough_init(mp4_cenc_passthrough_context_t* context, media_sequenc
 
 u_char*
 mp4_cenc_passthrough_write_saiz_saio(
-	mp4_cenc_passthrough_context_t* context, 
-	u_char* p, 
+	mp4_cenc_passthrough_context_t* context,
+	u_char* p,
 	size_t auxiliary_data_offset)
 {
 	media_clip_filtered_t* cur_clip;

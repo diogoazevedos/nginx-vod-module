@@ -236,9 +236,9 @@ hds_muxer_encrypt_start_frame(hds_muxer_state_t* state)
 
 static vod_status_t
 hds_muxer_encrypt_write(
-	hds_muxer_state_t* state, 
-	u_char* buffer, 
-	uint32_t size, 
+	hds_muxer_state_t* state,
+	u_char* buffer,
+	uint32_t size,
 	bool_t frame_done)
 {
 	vod_status_t rc;
@@ -327,9 +327,9 @@ hds_muxer_encrypt_start_frame(hds_muxer_state_t* state)
 
 static vod_status_t
 hds_muxer_encrypt_write(
-	hds_muxer_state_t* state, 
-	u_char* buffer, 
-	uint32_t size, 
+	hds_muxer_state_t* state,
+	u_char* buffer,
+	uint32_t size,
 	bool_t frame_done)
 {
 	return VOD_UNEXPECTED;
@@ -401,9 +401,9 @@ hds_get_sound_info(request_context_t* request_context, media_info_t* media_info,
 
 static u_char*
 hds_write_adobe_mux_packet_header(
-	u_char* p, 
-	uint8_t tag_type, 
-	uint32_t data_size, 
+	u_char* p,
+	uint8_t tag_type,
+	uint32_t data_size,
 	uint32_t timestamp)
 {
 	*p++ = tag_type;
@@ -414,14 +414,14 @@ hds_write_adobe_mux_packet_header(
 	return p;
 }
 
-static u_char* 
+static u_char*
 hds_write_video_tag_header(
-	u_char* p, 
+	u_char* p,
 	uint8_t tag_type,
-	uint32_t data_size, 
-	uint32_t timestamp, 
-	uint8_t frame_type, 
-	uint8_t avc_packet_type, 
+	uint32_t data_size,
+	uint32_t timestamp,
+	uint8_t frame_type,
+	uint8_t avc_packet_type,
 	uint32_t comp_time_offset)
 {
 	data_size += sizeof(video_tag_header_avc);
@@ -556,7 +556,7 @@ static size_t
 hds_get_traf_atom_size(hds_muxer_stream_state_t* cur_stream)
 {
 	size_t result;
-	
+
 	result = ATOM_HEADER_SIZE + ATOM_HEADER_SIZE + sizeof(hds_tfhd_atom_t);
 	switch (cur_stream->media_type)
 	{
@@ -620,7 +620,7 @@ hds_muxer_init_track(
 	{
 		cur_stream->sound_info = 0;
 	}
-	
+
 	cur_stream->tag_size = hds_muxer_get_tag_size(cur_track);
 
 	return VOD_OK;
@@ -711,9 +711,9 @@ hds_muxer_choose_stream(hds_muxer_state_t* state, hds_muxer_stream_state_t** res
 
 static vod_status_t
 hds_calculate_output_offsets_and_write_afra_entries(
-	hds_muxer_state_t* state, 
-	uint32_t initial_value, 
-	uint32_t afra_entries_base, 
+	hds_muxer_state_t* state,
+	uint32_t initial_value,
+	uint32_t afra_entries_base,
 	size_t* frames_size,
 	u_char** p)
 {
@@ -837,7 +837,7 @@ hds_muxer_init_state(
 	}
 
 	state->first_stream = vod_alloc(
-		request_context->pool, 
+		request_context->pool,
 		sizeof(state->first_stream[0]) * media_set->total_track_count);
 	if (state->first_stream == NULL)
 	{
@@ -977,7 +977,7 @@ hds_muxer_init_fragment(
 	write_callback_t write_callback,
 	void* write_context,
 	bool_t size_only,
-	vod_str_t* header, 
+	vod_str_t* header,
 	size_t* total_fragment_size,
 	hds_muxer_state_t** processor_state)
 {
@@ -1009,11 +1009,11 @@ hds_muxer_init_fragment(
 
 	// initialize the muxer state
 	rc = hds_muxer_init_state(
-		request_context, 
+		request_context,
 		encryption_params,
 		media_set,
-		write_callback, 
-		write_context, 
+		write_callback,
+		write_context,
 		&state);
 	if (rc != VOD_OK)
 	{
@@ -1094,10 +1094,10 @@ hds_muxer_init_fragment(
 		p = hds_write_afra_atom_header(p, afra_atom_size, video_key_frame_count);
 
 		rc = hds_calculate_output_offsets_and_write_afra_entries(
-			state, 
-			moof_atom_size + mdat_header_size, 
-			afra_atom_size, 
-			&mdat_atom_size, 
+			state,
+			moof_atom_size + mdat_header_size,
+			afra_atom_size,
+			&mdat_atom_size,
 			&p);
 		if (rc != VOD_OK)
 		{
@@ -1207,8 +1207,8 @@ hds_muxer_init_fragment(
 	if (video_key_frame_count == 0)
 	{
 		p = hds_muxer_write_codec_config(
-			p, 
-			state, 
+			p,
+			state,
 			state->first_stream->next_frame_time_offset);
 	}
 
@@ -1281,7 +1281,7 @@ hds_muxer_start_frame(hds_muxer_state_t* state)
 	frame_size = state->cur_frame->size;
 	if (state->enc_type != HDS_ENC_NONE)
 	{
-		frame_size = 
+		frame_size =
 			ENCRYPTION_TAG_HEADER_SIZE +
 			sizeof(hds_selective_encryption_filter_params_t) +
 			aes_round_up_to_block(frame_size);

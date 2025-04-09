@@ -15,8 +15,8 @@ struct mp4_cenc_encrypt_video_state_s;
 typedef struct mp4_cenc_encrypt_video_state_s mp4_cenc_encrypt_video_state_t;
 
 typedef vod_status_t (*mp4_cenc_encrypt_video_build_fragment_header_t)(
-	mp4_cenc_encrypt_video_state_t* state, 
-	vod_str_t* header, 
+	mp4_cenc_encrypt_video_state_t* state,
+	vod_str_t* header,
 	size_t* total_fragment_size);
 
 typedef struct {
@@ -82,7 +82,7 @@ vod_status_t mp4_cenc_encrypt_video_get_fragment_writer(
 	uint32_t segment_index,
 	bool_t single_nalu_per_frame,
 	mp4_cenc_encrypt_video_build_fragment_header_t build_fragment_header,
-	const u_char* iv, 
+	const u_char* iv,
 	vod_str_t* fragment_header,
 	size_t* total_fragment_size);
 

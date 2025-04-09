@@ -63,16 +63,16 @@ class TestThread(stress_base.TestThreadBase):
 			return code1, headers1, body1
 
 		return False
-		
+
 	def runTest(self, uri):
 		hostHeader, uri = uri.split(' ')
-	
+
 		uri = uri.replace('@time@', str(int(time.time())))
 		urlBase1 = random.choice(URL1_BASE)
 		urlBase2 = random.choice(URL2_BASE)
 		url1 = urlBase1 + uri
 		url2 = urlBase2 + uri
-		
+
 		self.writeOutput('Info: testing %s %s' % (url1, url2))
 		compareResult = self.compareUrls(hostHeader, url1, url2)
 		if compareResult == False:
@@ -80,7 +80,7 @@ class TestThread(stress_base.TestThreadBase):
 		code, headers, body = compareResult
 		if str(code) != '200':
 			return True
-		
+
 		mimeType = headers['content-type'][0]
 		urls = manifest_utils.getManifestUrls(url1.rsplit('/', 1)[0], body, mimeType, {'Host':hostHeader})
 		urls = map(lambda x: urlBase1 + urlparse(x).path, urls)		# the urls may contain the host header

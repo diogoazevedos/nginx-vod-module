@@ -30,8 +30,8 @@ typedef struct {
 
 // functions
 void write_buffer_queue_init(
-	write_buffer_queue_t* queue, 
-	request_context_t* request_context, 
+	write_buffer_queue_t* queue,
+	request_context_t* request_context,
 	write_callback_t write_callback,
 	void* write_context,
 	bool_t reuse_buffers);

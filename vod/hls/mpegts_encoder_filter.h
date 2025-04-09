@@ -40,7 +40,7 @@ typedef struct {
 	u_char* cur_packet_end;
 	u_char* cur_pos;
 	u_char* temp_packet;
-	
+
 	// frame state
 	unsigned cc;
 	unsigned initial_cc;
@@ -82,7 +82,7 @@ vod_status_t mpegts_encoder_init_streams(
 	uint32_t segment_index);
 
 void mpegts_encoder_finalize_streams(
-	mpegts_encoder_init_streams_state_t* stream_state, 
+	mpegts_encoder_init_streams_state_t* stream_state,
 	vod_str_t* ts_header);
 
 vod_status_t mpegts_encoder_init(
@@ -95,7 +95,7 @@ vod_status_t mpegts_encoder_init(
 	bool_t align_frames);
 
 vod_status_t mpegts_encoder_start_sub_frame(
-	media_filter_context_t* context, 
+	media_filter_context_t* context,
 	output_frame_t* frame);
 
 void mpegts_encoder_simulated_start_segment(write_buffer_queue_t* queue);
