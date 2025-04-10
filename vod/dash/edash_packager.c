@@ -15,39 +15,39 @@
 
 // manifest constants
 #define VOD_EDASH_MANIFEST_CONTENT_PROTECTION_CENC									\
-	"        <ContentProtection schemeIdUri=\"urn:mpeg:dash:mp4protection:2011\" value=\"cenc\"/>\n"
+	"      <ContentProtection schemeIdUri=\"urn:mpeg:dash:mp4protection:2011\" value=\"cenc\"/>\n"
 
 #define VOD_EDASH_MANIFEST_CONTENT_PROTECTION_CENC_PART1							\
-	"        <ContentProtection xmlns:cenc=\"urn:mpeg:cenc:2013\" schemeIdUri=\"urn:uuid:"
+	"      <ContentProtection xmlns:cenc=\"urn:mpeg:cenc:2013\" schemeIdUri=\"urn:uuid:"
 
 #define VOD_EDASH_MANIFEST_CONTENT_PROTECTION_CENC_PART2							\
 	"\" cenc:default_KID=\""
 
 #define VOD_EDASH_MANIFEST_CONTENT_PROTECTION_CENC_PART3							\
 	"\">\n"																			\
-	"          <cenc:pssh>"
+	"        <cenc:pssh>"
 
 #define VOD_EDASH_MANIFEST_CONTENT_PROTECTION_CENC_PART4							\
 	"</cenc:pssh>\n"																\
-	"        </ContentProtection>\n"
+	"      </ContentProtection>\n"
 
 // TODO: remove this - always generate a default_KID for PlayReady
 #define VOD_EDASH_MANIFEST_CONTENT_PROTECTION_PLAYREADY_PART1						\
-	"        <ContentProtection xmlns:mspr=\"urn:microsoft:playready\" schemeIdUri=\"urn:uuid:"
+	"      <ContentProtection xmlns:mspr=\"urn:microsoft:playready\" schemeIdUri=\"urn:uuid:"
 
 #define VOD_EDASH_MANIFEST_CONTENT_PROTECTION_PLAYREADY_V2_PART1					\
-	"        <ContentProtection xmlns:cenc=\"urn:mpeg:cenc:2013\" xmlns:mspr=\"urn:microsoft:playready\" schemeIdUri=\"urn:uuid:"
+	"      <ContentProtection xmlns:cenc=\"urn:mpeg:cenc:2013\" xmlns:mspr=\"urn:microsoft:playready\" schemeIdUri=\"urn:uuid:"
 
 #define VOD_EDASH_MANIFEST_CONTENT_PROTECTION_PLAYREADY_V2_PART2					\
 	"\" value=\"2.0\" cenc:default_KID=\""
 
 #define VOD_EDASH_MANIFEST_CONTENT_PROTECTION_PLAYREADY_PART3						\
 	"\">\n"																			\
-	"          <mspr:pro>"
+	"        <mspr:pro>"
 
 #define VOD_EDASH_MANIFEST_CONTENT_PROTECTION_PLAYREADY_PART4						\
 	"</mspr:pro>\n"																	\
-	"        </ContentProtection>\n"
+	"      </ContentProtection>\n"
 
 // mpd types
 typedef struct {
