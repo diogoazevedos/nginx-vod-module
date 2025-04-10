@@ -1,30 +1,17 @@
 #!/bin/sh
-set -eo nounset                              # Treat unset variables as an error
 
-BASE_DOWNLOAD_URI=http://nginx.org/download
-NGINX_VERSION=`curl -L "$BASE_DOWNLOAD_URI" |
+set -eo nounset # Treat unset variables as an error
+
+BASE_URL=https://nginx.org/download
+VERSION=`curl -sL $BASE_URL |
    grep -oP 'href="nginx-\K[0-9]+\.[0-9]+\.[0-9]+' |
    sort -t. -rn -k1,1 -k2,2 -k3,3 | head -1`
-NGINX_URI="$BASE_DOWNLOAD_URI/nginx-$NGINX_VERSION.tar.gz"
 
-if [ ! -x "`which curl 2>/dev/null`" ];then
-        echo "Need to install curl."
-        exit 2
-fi
+mkdir -p /tmp/nginx /tmp/nginx-vod-module
+curl -s $BASE_URL/nginx-$VERSION.tar.gz | tar -xz --strip-components 1 -C /tmp/nginx
+cp -r . /tmp/nginx-vod-module
 
-mkdir -p /tmp/builddir/nginx-$NGINX_VERSION
-cp -r . /tmp/builddir/nginx-$NGINX_VERSION/nginx-vod-module
-cd /tmp/builddir
-curl $NGINX_URI > kaltura-nginx-$NGINX_VERSION.tar.gz
-tar zxf kaltura-nginx-$NGINX_VERSION.tar.gz
-mv nginx-$NGINX_VERSION nginx
-cd nginx
-
-FFMPEG_VERSION=4.2.2
-LD_LIBRARY_PATH=/opt/kaltura/ffmpeg-$FFMPEG_VERSION/lib
-LIBRARY_PATH=/opt/kaltura/ffmpeg-$FFMPEG_VERSION/lib
-C_INCLUDE_PATH=/opt/kaltura/ffmpeg-$FFMPEG_VERSION/include
-export LD_LIBRARY_PATH LIBRARY_PATH C_INCLUDE_PATH
+cd /tmp/nginx
 
 ./configure \
         --prefix=/etc/nginx \
@@ -55,9 +42,9 @@ export LD_LIBRARY_PATH LIBRARY_PATH C_INCLUDE_PATH
         --with-mail \
         --with-mail_ssl_module \
         --with-file-aio \
-        --with-ipv6 \
         --with-debug \
         --with-threads \
 	--with-cc-opt="-O3 -mpopcnt" \
         $*
+
 make -j $(nproc)
