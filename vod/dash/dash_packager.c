@@ -91,14 +91,12 @@
 // TODO: value should be the number of channels ?
 #define VOD_DASH_MANIFEST_AUDIO_CHANNEL_CONFIG									\
 	"      <AudioChannelConfiguration\n"										\
-	"          schemeIdUri=\"urn:mpeg:dash:23003:3:"							\
-								"audio_channel_configuration:2011\"\n"			\
+	"          schemeIdUri=\"urn:mpeg:dash:23003:3:audio_channel_configuration:2011\"\n"	\
 	"          value=\"1\"/>\n"
 
 #define VOD_DASH_MANIFEST_AUDIO_CHANNEL_CONFIG_EAC3								\
 	"      <AudioChannelConfiguration\n"										\
-	"          schemeIdUri=\"tag:dolby.com,2014:dash:"							\
-								"audio_channel_configuration:2011\"\n"			\
+	"          schemeIdUri=\"tag:dolby.com,2014:dash:audio_channel_configuration:2011\"\n"	\
 	"          value=\"%uxD\"/>\n"
 
 #define VOD_DASH_MANIFEST_REPRESENTATION_HEADER_AUDIO							\
@@ -143,51 +141,50 @@
 	"      </Representation>\n"													\
 	"    </AdaptationSet>\n"
 
-
 // SegmentTemplate
 #define VOD_DASH_MANIFEST_SEGMENT_TEMPLATE_FIXED								\
-	"        <SegmentTemplate\n"												\
-	"            timescale=\"1000\"\n"											\
-	"            media=\"%V%V-$Number$-%s$RepresentationID$.%V\"\n"				\
-	"            initialization=\"%V%V-%s$RepresentationID$.%V\"\n"				\
-	"            duration=\"%ui\"\n"											\
-	"            startNumber=\"%uD\">\n"										\
-	"        </SegmentTemplate>\n"
+	"      <SegmentTemplate\n"													\
+	"          timescale=\"1000\"\n"											\
+	"          media=\"%V%V-$Number$-%s$RepresentationID$.%V\"\n"				\
+	"          initialization=\"%V%V-%s$RepresentationID$.%V\"\n"				\
+	"          duration=\"%ui\"\n"												\
+	"          startNumber=\"%uD\">\n"											\
+	"      </SegmentTemplate>\n"
 
 #define VOD_DASH_MANIFEST_SEGMENT_TEMPLATE_HEADER								\
-	"        <SegmentTemplate\n"												\
-	"            timescale=\"1000\"\n"											\
-	"            media=\"%V%V-$Number$-$RepresentationID$.%V\"\n"				\
-	"            initialization=\"%V%V-%s$RepresentationID$.%V\"\n"				\
-	"            startNumber=\"%uD\">\n"										\
-	"            <SegmentTimeline>\n"
+	"      <SegmentTemplate\n"													\
+	"          timescale=\"1000\"\n"											\
+	"          media=\"%V%V-$Number$-$RepresentationID$.%V\"\n"					\
+	"          initialization=\"%V%V-%s$RepresentationID$.%V\"\n"				\
+	"          startNumber=\"%uD\">\n"											\
+	"        <SegmentTimeline>\n"
 
 #define VOD_DASH_MANIFEST_SEGMENT_REPEAT										\
-	"                <S d=\"%uD\" r=\"%uD\"/>\n"
+	"          <S d=\"%uD\" r=\"%uD\"/>\n"
 
 #define VOD_DASH_MANIFEST_SEGMENT												\
-	"                <S d=\"%uD\"/>\n"
+	"          <S d=\"%uD\"/>\n"
 
 #define VOD_DASH_MANIFEST_SEGMENT_REPEAT_TIME									\
-	"                <S t=\"%uL\" d=\"%uD\" r=\"%uD\"/>\n"
+	"          <S t=\"%uL\" d=\"%uD\" r=\"%uD\"/>\n"
 
 #define VOD_DASH_MANIFEST_SEGMENT_TIME											\
-	"                <S t=\"%uL\" d=\"%uD\"/>\n"
+	"          <S t=\"%uL\" d=\"%uD\"/>\n"
 
 #define VOD_DASH_MANIFEST_SEGMENT_TEMPLATE_FOOTER								\
-	"            </SegmentTimeline>\n"											\
-	"        </SegmentTemplate>\n"
+	"        </SegmentTimeline>\n"												\
+	"      </SegmentTemplate>\n"
 
 // SegmentList
 #define VOD_DASH_MANIFEST_SEGMENT_LIST_HEADER									\
-	"        <SegmentList timescale=\"1000\" duration=\"%ui\" startNumber=\"%uD\">\n"				\
-	"          <Initialization sourceURL=\"%V%V-%s%V.%V\"/>\n"
+	"      <SegmentList timescale=\"1000\" duration=\"%ui\" startNumber=\"%uD\">\n"	\
+	"        <Initialization sourceURL=\"%V%V-%s%V.%V\"/>\n"
 
 #define VOD_DASH_MANIFEST_SEGMENT_URL											\
-	"          <SegmentURL media=\"%V%V-%uD-%V.%V\"/>\n"
+	"        <SegmentURL media=\"%V%V-%uD-%V.%V\"/>\n"
 
 #define VOD_DASH_MANIFEST_SEGMENT_LIST_FOOTER									\
-	"        </SegmentList>\n"
+	"      </SegmentList>\n"
 
 #define VOD_DASH_MANIFEST_PERIOD_FOOTER											\
 	"  </Period>\n"
