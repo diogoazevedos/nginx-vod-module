@@ -1081,6 +1081,9 @@ ngx_http_vod_parse_uri_path(
 		cur_sequence->tags.lang_str.len = 0;
 		cur_sequence->tags.language = 0;
 		cur_sequence->tags.label.len = 0;
+		cur_sequence->tags.is_forced = 0;
+		cur_sequence->tags.characteristics.len = 0;
+		cur_sequence->tags.is_autoselect = 0;
 		cur_sequence->tags.is_default = -1;
 
 		rc = ngx_array_init(&cur_sequence->tags.roles, r->pool, 1, sizeof(ngx_str_t));

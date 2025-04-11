@@ -139,6 +139,9 @@ static json_object_value_def_t media_sequence_params[] = {
 	{ vod_string("language"),		VOD_JSON_STRING,	offsetof(media_sequence_t, tags.lang_str), media_set_parse_null_term_string },
 	{ vod_string("label"),			VOD_JSON_STRING,	offsetof(media_sequence_t, tags.label), media_set_parse_null_term_string },
 	{ vod_string("default"),		VOD_JSON_BOOL,		offsetof(media_sequence_t, tags.is_default), media_set_parse_bool },
+	{ vod_string("autoselect"),		VOD_JSON_BOOL,		offsetof(media_sequence_t, tags.is_autoselect), media_set_parse_bool },
+	{ vod_string("characteristics"),VOD_JSON_STRING,	offsetof(media_sequence_t, tags.characteristics), media_set_parse_null_term_string },
+	{ vod_string("forced"),			VOD_JSON_BOOL,		offsetof(media_sequence_t, tags.is_forced), media_set_parse_bool },
 	{ vod_string("bitrate"),		VOD_JSON_OBJECT,	offsetof(media_sequence_t, bitrate), media_set_parse_bitrate },
 	{ vod_string("avg_bitrate"),	VOD_JSON_OBJECT,	offsetof(media_sequence_t, avg_bitrate), media_set_parse_bitrate },
 	{ vod_string("roles"),			VOD_JSON_ARRAY,		offsetof(media_sequence_t, tags.roles), media_set_parse_string_array },
@@ -1036,6 +1039,9 @@ media_set_parse_sequences(
 		cur_output->tags.lang_str.len = 0;
 		cur_output->tags.language = 0;
 		cur_output->tags.label.len = 0;
+		cur_output->tags.is_forced = 0;
+		cur_output->tags.characteristics.len = 0;
+		cur_output->tags.is_autoselect = 0;
 		cur_output->tags.is_default = -1;
 
 		rc = vod_array_init(&cur_output->tags.roles, request_context->pool, 1, sizeof(vod_str_t));
