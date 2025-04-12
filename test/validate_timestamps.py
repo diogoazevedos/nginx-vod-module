@@ -96,53 +96,6 @@ def getFragmentInfoFromDtssPtss(url, segIndex, fileIndex, dtss, ptss, audioPacke
 		result.append((url, int(segIndex), streamId, fileIndex, timingInfo))
 	return result
 
-def getHdsFragmentInfo(url):
-	req = urllib2.Request(url, headers=headers)
-	d = urllib2.urlopen(req).read()
-	atoms = mp4_utils.parseAtoms(d, 0, len(d))
-	mdatAtom = mp4_utils.getAtomData(d, atoms, 'mdat')
-	curPos = 0
-	dtss = {}
-	ptss = {}
-	while curPos < len(mdatAtom):
-		# parse the adobe mux packet header
-		tagType = ord(mdatAtom[curPos])
-		dataSize = parse24be(mdatAtom[(curPos + 1):(curPos + 4)])
-		dts = parse24be(mdatAtom[(curPos + 4):(curPos + 7)])
-		dtsExt = ord(mdatAtom[curPos + 7])
-		dts |= dtsExt << 24
-		if tagType == 9:
-			streamId = 'v1'
-			ptsDelay = parse24be(mdatAtom[(curPos + 13):(curPos + 16)])
-			realFrame = ord(mdatAtom[curPos + 12]) == 1
-		elif tagType == 8:
-			streamId = 'a1'
-			ptsDelay = 0
-			realFrame = ord(mdatAtom[curPos + 12]) == 1
-		else:
-			realFrame = False
-		curPos += 11 + dataSize + 4
-		if not realFrame:
-			continue
-		dtss.setdefault(streamId, [])
-		dtss[streamId].append(dts)
-		ptss.setdefault(streamId, [])
-		ptss[streamId].append(dts + ptsDelay)
-
-	urlFilename = url.rsplit('/', 1)[-1]
-	urlFilename = urlFilename.replace('-v1', '').replace('-a1', '').replace('-Seg1-Frag', '-')
-	_, fileIndex, segIndex = urlFilename.split('-')
-	return getFragmentInfoFromDtssPtss(url, segIndex, fileIndex, dtss, ptss)
-
-def getHdsFragmentsInfo(urls):
-	result = []
-	for url in urls:
-		if not 'Seg1-Frag' in url:
-			continue
-		print('.', end=' ')
-		result += getHdsFragmentInfo(url)
-	return result
-
 def countAdtsPackets(d):
 	curPos = 0
 	result = 0
@@ -244,42 +197,6 @@ def getHlsFragmentsInfo(urls):
 		result += getHlsFragmentInfo(url, fileIndex)
 	return result
 
-def getMssFragmentInfo(url):
-	urlInfo = url.split('QualityLevels(', 1)[-1]
-	if 'video' in urlInfo:
-		streamId = 'v1'
-	elif 'audio' in urlInfo:
-		streamId = 'a1'
-	else:
-		return []
-	bitrate = int(urlInfo.split(')')[0])
-	fileIndex = 'f%s' % ((((bitrate) >> 5) & 0x1F) + 1)
-	timestamp = int(url.split('=')[-1].split(')')[0])
-	segIndex = timestamp / SEGMENT_DURATION
-
-	req = urllib2.Request(url, headers={'Range': 'bytes=0-65535'})
-	d = urllib2.urlopen(req).read()
-	atoms = mp4_utils.parseAtoms(d, 0, len(d))
-
-	# get the start pts
-	uuidAtoms = mp4_utils.getAtom(atoms, 'moof.traf')[3]['uuid']
-	for uuidAtom in uuidAtoms:
-		curAtomData = d[(uuidAtom[0] + uuidAtom[1]):uuidAtom[2]]
-		if not curAtomData.startswith('6d1d9b0542d544e680e2141daff757b2'.decode('hex')):
-			continue
-		startPts = struct.unpack('>Q', curAtomData[20:28])[0]
-
-	trunAtom = mp4_utils.getAtomData(d, atoms, 'moof.traf.trun')
-	timingInfo = getTimingInfoFromTrunAtom(trunAtom, startPts)
-	return [(url, int(segIndex), streamId, fileIndex, timingInfo)]
-
-def getMssFragmentsInfo(urls):
-	result = []
-	for url in urls:
-		print('.', end=' ')
-		result += getMssFragmentInfo(url)
-	return result
-
 res = urllib2.urlopen(URL)
 mimeType = res.info().getheader('Content-Type')
 d = res.read()
@@ -293,18 +210,14 @@ for header in res.info().headers:
 
 PARSER_BY_MIME_TYPE = {
 	'application/dash+xml': getDashFragmentsInfo,
-	'video/f4m': getHdsFragmentsInfo,
 	'application/vnd.apple.mpegurl': getHlsFragmentsInfo,
 	'application/x-mpegurl': getHlsFragmentsInfo,
-	'text/xml': getMssFragmentsInfo,
 }
 
 TIMESCALE = {
 	'application/dash+xml': 90000,
-	'video/f4m': 1000,
 	'application/vnd.apple.mpegurl': 90000,
 	'application/x-mpegurl': 90000,
-	'text/xml': 10000000,
 }
 
 baseUrl = URL.rsplit('/', 1)[0] + '/'

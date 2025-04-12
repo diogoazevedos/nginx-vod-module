@@ -24,7 +24,7 @@
 
 	# manifest compression
 	gzip on;
-	gzip_types application/vnd.apple.mpegurl video/f4m application/dash+xml text/xml text/vtt;
+	gzip_types application/vnd.apple.mpegurl application/dash+xml text/xml text/vtt;
 	gzip_proxied any;
 
 	# shared memory zones

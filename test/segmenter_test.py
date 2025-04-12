@@ -7,8 +7,6 @@ from functools import reduce
 confMatrix = [
 	[
 		('hls', ['vod hls']),
-		('hds', ['vod hds']),
-		('mss', ['vod mss']),
 		('dash-stl', ['vod dash', 'vod_dash_manifest_format segmenttimeline']),
 		('dash-st', ['vod dash', 'vod_dash_manifest_format segmenttemplate']),
 		('dash-sl', ['vod dash', 'vod_dash_manifest_format segmentlist']),
@@ -39,8 +37,6 @@ confMatrix = [
 
 fileByProtocol = {
 	'hls': 'master.m3u8',
-	'hds': 'manifest.f4m',
-	'mss': 'manifest',
 	'dash-stl': 'manifest.mpd',
 	'dash-st': 'manifest.mpd',
 	'dash-sl': 'manifest.mpd',
@@ -184,7 +180,7 @@ def getTestUrls():
 
 			for liveJsonComb in liveCombs:
 				liveCombDict = dict(liveJsonComb)
-				if (combDict['disc'] == 'no' or combDict.has_key('mss')) and combDict['type'] == 'live' and liveCombDict['sbt'] == 'no':
+				if combDict['disc'] == 'no' and combDict['type'] == 'live' and liveCombDict['sbt'] == 'no':
 					continue	# segment base time mandatory in continuous live
 				if combDict['type'] in set(['live', 'playlist']) and liveCombDict['sbt'] == 'yes' and combDict['disc'] == 'yes':
 					continue	# passing segment base time with multi clip in discontinuous mode will result in error of gap too small
