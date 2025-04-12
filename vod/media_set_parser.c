@@ -1041,7 +1041,7 @@ media_set_parse_sequences(
 		cur_output->tags.label.len = 0;
 		cur_output->tags.is_forced = 0;
 		cur_output->tags.characteristics.len = 0;
-		cur_output->tags.is_autoselect = 0;
+		cur_output->tags.is_autoselect = 1;
 		cur_output->tags.is_default = -1;
 
 		rc = vod_array_init(&cur_output->tags.roles, request_context->pool, 1, sizeof(vod_str_t));
