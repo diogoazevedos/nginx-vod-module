@@ -984,16 +984,14 @@ m3u8_builder_ext_x_media_tags_write(
 		return p;	// can't happen, just to avoid the warning
 	}
 
-	*p++ = '\n';
-
 	vod_memzero(tracks, sizeof(tracks));
 	tracks[MEDIA_TYPE_VIDEO] = NULL;
 	first_adaptation_set = adaptation_sets->first_by_type[media_type];
 	last_adaptation_set = first_adaptation_set + adaptation_sets->count[media_type];
 	for (adaptation_set = first_adaptation_set; adaptation_set < last_adaptation_set; adaptation_set++)
 	{
-		// take only the first track
-		tracks[media_type] = adaptation_set->first[0];
+		// take the last track assuming higher bitrate
+		tracks[media_type] = adaptation_set->last[-1];
 
 		// output EXT-X-MEDIA
 		if (media_type == MEDIA_TYPE_AUDIO)
@@ -1466,6 +1464,7 @@ m3u8_builder_build_master_playlist(
 
 	// write the header
 	p = vod_copy(result->data, m3u8_header, sizeof(m3u8_header) - 1);
+	*p++ = '\n';
 
 	if (alternative_audio)
 	{
