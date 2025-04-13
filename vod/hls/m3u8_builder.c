@@ -989,8 +989,8 @@ m3u8_builder_ext_x_media_tags_write(
 	last_adaptation_set = first_adaptation_set + adaptation_sets->count[media_type];
 	for (adaptation_set = first_adaptation_set; adaptation_set < last_adaptation_set; adaptation_set++)
 	{
-		// take only the first track
-		tracks[media_type] = adaptation_set->first[0];
+		// take the last track assuming higher bitrate
+		tracks[media_type] = adaptation_set->last[-1];
 
 		// output EXT-X-MEDIA
 		if (media_type == MEDIA_TYPE_AUDIO)
