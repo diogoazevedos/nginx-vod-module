@@ -308,6 +308,10 @@ static dash_codec_info_t dash_codecs[VOD_CODEC_ID_COUNT] = {
 static bool_t
 dash_packager_compare_tracks(uintptr_t bitrate_threshold, const media_info_t* mi1, const media_info_t* mi2)
 {
+	uintptr_t i;
+	vod_str_t* role1;
+	vod_str_t* role2;
+
 	if (mi1->bitrate == 0 ||
 		mi2->bitrate == 0 ||
 		mi1->bitrate + bitrate_threshold <= mi2->bitrate ||
@@ -333,7 +337,37 @@ dash_packager_compare_tracks(uintptr_t bitrate_threshold, const media_info_t* mi
 		return TRUE;
 	}
 
-	return vod_str_equals(mi1->tags.label, mi2->tags.label);
+	if (!vod_str_equals(mi1->tags.label, mi2->tags.label)) {
+		return FALSE;
+	}
+
+	if (mi1->tags.is_forced != mi2->tags.is_forced)
+	{
+		return FALSE;
+	}
+
+	if (!vod_str_equals(mi1->tags.characteristics, mi2->tags.characteristics))
+	{
+		return FALSE;
+	}
+
+	if (mi1->tags.roles.nelts != mi2->tags.roles.nelts)
+	{
+		return FALSE;
+	}
+
+	for (i = 0; i < mi1->tags.roles.nelts; i++)
+	{
+		role1 = (vod_str_t*)mi1->tags.roles.elts + i;
+		role2 = (vod_str_t*)mi2->tags.roles.elts + i;
+
+		if (!vod_str_equals(*role1, *role2))
+		{
+			return FALSE;
+		}
+	}
+
+	return TRUE;
 }
 
 static void

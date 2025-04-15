@@ -6,7 +6,7 @@
 // typedefs
 typedef struct {
 	uint32_t codec_id;
-	vod_str_t label;
+	media_tags_t tags;
 } track_group_key_t;
 
 typedef struct {
@@ -408,21 +408,16 @@ track_group_key_init(
 	uint32_t flags,
 	track_group_key_t* key)
 {
-	uint32_t media_type = track->media_info.media_type;
+	key->codec_id = 0;
+	key->tags = track->media_info.tags;
 
-	switch (media_type)
+	switch (track->media_info.media_type)
 	{
 	case MEDIA_TYPE_VIDEO:
 		if ((flags & ADAPTATION_SETS_FLAG_MULTI_VIDEO_CODEC) != 0)
 		{
 			key->codec_id = track->media_info.codec_id;
 		}
-		else
-		{
-			key->codec_id = 0;
-		}
-
-		key->label.len = 0;
 		break;
 
 	case MEDIA_TYPE_AUDIO:
@@ -430,14 +425,9 @@ track_group_key_init(
 		{
 			key->codec_id = track->media_info.codec_id;
 		}
-		else
-		{
-			key->codec_id = 0;
-		}
 
 		if ((flags & ADAPTATION_SETS_FLAG_MULTI_AUDIO) == 0)
 		{
-			key->label.len = 0;
 			break;
 		}
 
@@ -445,17 +435,13 @@ track_group_key_init(
 		{
 			return FALSE;
 		}
-		key->label = track->media_info.tags.label;
 		break;
 
 	case MEDIA_TYPE_SUBTITLE:
-		key->codec_id = 0;
-
 		if (track->media_info.tags.label.len == 0)
 		{
 			return FALSE;
 		}
-		key->label = track->media_info.tags.label;
 		break;
 
 	default:		// MEDIA_TYPE_NONE
@@ -468,25 +454,87 @@ track_group_key_init(
 static uint32_t
 track_group_key_get_hash(track_group_key_t* key)
 {
-	return key->codec_id + vod_crc32_short(key->label.data, key->label.len);
+	uint32_t hash = key->codec_id + key->tags.is_forced * 31 +
+		vod_crc32_short(key->tags.label.data, key->tags.label.len) +
+		vod_crc32_short(key->tags.characteristics.data, key->tags.characteristics.len);
+
+	vod_str_t* role;
+	for (uintptr_t i = 0; i < key->tags.roles.nelts; i++)
+	{
+		role = (vod_str_t*)key->tags.roles.elts + i;
+		hash += vod_crc32_short(role->data, role->len);
+	}
+
+	return hash;
 }
 
-static int
+static int8_t
 track_group_key_compare(track_group_key_t* key1, track_group_key_t* key2)
 {
+	uintptr_t i;
+	vod_str_t* role1;
+	vod_str_t* role2;
+	int8_t rc;
+
 	if (key1->codec_id != key2->codec_id)
 	{
 		return key1->codec_id < key2->codec_id ? -1 : 1;
 	}
 
-	if (key1->label.len != key2->label.len)
+	if (key1->tags.label.len != key2->tags.label.len)
 	{
-		return key1->label.len < key2->label.len ? -1 : 1;
+		return key1->tags.label.len < key2->tags.label.len ? -1 : 1;
 	}
 
-	if (key1->label.data != key2->label.data)
+	if (key1->tags.label.data != key2->tags.label.data)
 	{
-		return vod_memcmp(key1->label.data, key2->label.data, key1->label.len);
+		rc = vod_memcmp(key1->tags.label.data, key2->tags.label.data, key1->tags.label.len);
+		if (rc != 0)
+		{
+			return rc;
+		}
+	}
+
+	if (key1->tags.is_forced != key2->tags.is_forced)
+	{
+		return key1->tags.is_forced < key2->tags.is_forced ? -1 : 1;
+	}
+
+	if (key1->tags.characteristics.len != key2->tags.characteristics.len)
+	{
+		return key1->tags.characteristics.len < key2->tags.characteristics.len ? -1 : 1;
+	}
+
+	if (key1->tags.characteristics.data != key2->tags.characteristics.data)
+	{
+		rc = vod_memcmp(key1->tags.characteristics.data, key2->tags.characteristics.data,
+			key1->tags.characteristics.len);
+		if (rc != 0)
+		{
+			return rc;
+		}
+	}
+
+	if (key1->tags.roles.nelts != key2->tags.roles.nelts)
+	{
+		return key1->tags.roles.nelts < key2->tags.roles.nelts ? -1 : 1;
+	}
+
+	for (i = 0; i < key1->tags.roles.nelts; i++)
+	{
+		role1 = (vod_str_t*)key1->tags.roles.elts + i;
+		role2 = (vod_str_t*)key2->tags.roles.elts + i;
+
+		if (role1->len != role2->len)
+		{
+			return role1->len < role2->len ? -1 : 1;
+		}
+
+		rc = vod_memcmp(role1->data, role2->data, role1->len);
+		if (rc != 0)
+		{
+			return rc;
+		}
 	}
 
 	return 0;
@@ -500,7 +548,7 @@ track_group_key_match_track(
 {
 	track_group_key_t track_key;
 
-	track_key.label.data = NULL;		// silence gcc warning
+	track_key.tags.label.data = NULL;		// silence gcc warning
 	if (!track_group_key_init(
 		track,
 		flags,
@@ -699,7 +747,7 @@ track_groups_from_media_set(
 	media_track_t* last_track;
 	media_track_t* cur_track;
 	track_groups_t* groups;
-	track_group_key_t key = { 0, vod_null_string };
+	track_group_key_t key;
 	track_group_t* group;
 	vod_status_t rc;
 	uint32_t cur_media_type;
