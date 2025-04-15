@@ -676,12 +676,10 @@ dash_packager_write_frame_rate(
 static u_char*
 dash_packager_write_roles(u_char* p, media_info_t* media_info)
 {
-	vod_str_t* role = media_info->tags.roles.elts;
-	vod_str_t* last_role = role + media_info->tags.roles.nelts;
-
-	for (; role < last_role; role++)
+	for (uintptr_t i = 0; i < media_info->tags.roles.nelts; i++)
 	{
-		p = vod_sprintf(p, VOD_DASH_MANIFEST_ADAPTATION_ROLE, role);
+		p = vod_sprintf(p, VOD_DASH_MANIFEST_ADAPTATION_ROLE,
+			(vod_str_t*)media_info->tags.roles.elts + i);
 	}
 
 	return p;
