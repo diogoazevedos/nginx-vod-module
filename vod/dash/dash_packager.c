@@ -61,6 +61,7 @@
 	"        id=\"%uD\"\n"														\
 	"        group=\"1\"\n"														\
 	"        contentType=\"video\"\n"											\
+	"        lang=\"%V\"\n"														\
 	"        segmentAlignment=\"true\"\n"										\
 	"        maxWidth=\"%uD\"\n"												\
 	"        maxHeight=\"%uD\"\n"												\
@@ -906,6 +907,7 @@ dash_packager_write_mpd_period(
 			p = vod_sprintf(p,
 				VOD_DASH_MANIFEST_ADAPTATION_HEADER_VIDEO,
 				adapt_id++,
+				&reference_track->media_info.tags.lang_str,
 				max_width,
 				max_height,
 				&frame_rate);
@@ -1439,7 +1441,7 @@ dash_packager_build_mpd(
 	base_period_size =
 		sizeof(VOD_DASH_MANIFEST_PERIOD_HEADER_START_DURATION) - 1 + 5 * VOD_INT32_LEN +
 			// video adaptations
-			(sizeof(VOD_DASH_MANIFEST_ADAPTATION_HEADER_VIDEO) - 1 + 3 * VOD_INT32_LEN + VOD_DASH_MAX_FRAME_RATE_LEN +
+			(sizeof(VOD_DASH_MANIFEST_ADAPTATION_HEADER_VIDEO) - 1 + 3 * VOD_INT32_LEN + LANG_ISO639_3_LEN + VOD_DASH_MAX_FRAME_RATE_LEN +
 			(sizeof(VOD_DASH_MANIFEST_ADAPTATION_ROLE) - 1 + MAX_ROLE_SIZE) * 3 +
 			sizeof(VOD_DASH_MANIFEST_ADAPTATION_FOOTER) - 1) * context.adaptation_sets.count[ADAPTATION_TYPE_VIDEO] +
 			// video representations
