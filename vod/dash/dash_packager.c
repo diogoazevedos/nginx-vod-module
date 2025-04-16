@@ -60,6 +60,7 @@
 	"    <AdaptationSet\n"														\
 	"        id=\"%uD\"\n"														\
 	"        group=\"1\"\n"														\
+	"        contentType=\"video\"\n"											\
 	"        segmentAlignment=\"true\"\n"										\
 	"        maxWidth=\"%uD\"\n"												\
 	"        maxHeight=\"%uD\"\n"												\
@@ -84,12 +85,14 @@
 	"    <AdaptationSet\n"														\
 	"        id=\"%uD\"\n"														\
 	"        group=\"2\"\n"														\
+	"        contentType=\"audio\"\n"											\
 	"        segmentAlignment=\"true\">\n"
 
 #define VOD_DASH_MANIFEST_ADAPTATION_HEADER_AUDIO_LANG							\
 	"    <AdaptationSet\n"														\
 	"        id=\"%uD\"\n"														\
 	"        group=\"2\"\n"														\
+	"        contentType=\"audio\"\n"											\
 	"        lang=\"%V\"\n"														\
 	"        segmentAlignment=\"true\">\n"
 
