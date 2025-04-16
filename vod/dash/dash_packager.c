@@ -59,6 +59,7 @@
 #define VOD_DASH_MANIFEST_ADAPTATION_HEADER_VIDEO								\
 	"    <AdaptationSet\n"														\
 	"        id=\"%uD\"\n"														\
+	"        group=\"1\"\n"														\
 	"        segmentAlignment=\"true\"\n"										\
 	"        maxWidth=\"%uD\"\n"												\
 	"        maxHeight=\"%uD\"\n"												\
@@ -82,11 +83,13 @@
 #define VOD_DASH_MANIFEST_ADAPTATION_HEADER_AUDIO								\
 	"    <AdaptationSet\n"														\
 	"        id=\"%uD\"\n"														\
+	"        group=\"2\"\n"														\
 	"        segmentAlignment=\"true\">\n"
 
 #define VOD_DASH_MANIFEST_ADAPTATION_HEADER_AUDIO_LANG							\
 	"    <AdaptationSet\n"														\
 	"        id=\"%uD\"\n"														\
+	"        group=\"2\"\n"														\
 	"        lang=\"%V\"\n"														\
 	"        segmentAlignment=\"true\">\n"
 
@@ -113,6 +116,7 @@
 #define VOD_DASH_MANIFEST_ADAPTATION_HEADER_SUBTITLE_SMPTE_TT					\
 	"    <AdaptationSet\n"														\
 	"        id=\"%uD\"\n"														\
+	"        group=\"3\"\n"														\
 	"        contentType=\"text\"\n"											\
 	"        lang=\"%V\">\n"
 
@@ -130,6 +134,7 @@
 #define VOD_DASH_MANIFEST_ADAPTATION_HEADER_SUBTITLE_VTT						\
 	"    <AdaptationSet\n"														\
 	"        id=\"%uD\"\n"														\
+	"        group=\"3\"\n"														\
 	"        contentType=\"text\"\n"											\
 	"        lang=\"%V\"\n"														\
 	"        mimeType=\"text/vtt\">\n"
