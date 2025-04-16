@@ -87,13 +87,6 @@
 	"        id=\"%uD\"\n"														\
 	"        group=\"2\"\n"														\
 	"        contentType=\"audio\"\n"											\
-	"        segmentAlignment=\"true\">\n"
-
-#define VOD_DASH_MANIFEST_ADAPTATION_HEADER_AUDIO_LANG							\
-	"    <AdaptationSet\n"														\
-	"        id=\"%uD\"\n"														\
-	"        group=\"2\"\n"														\
-	"        contentType=\"audio\"\n"											\
 	"        lang=\"%V\"\n"														\
 	"        segmentAlignment=\"true\">\n"
 
@@ -915,17 +908,9 @@ dash_packager_write_mpd_period(
 
 		case MEDIA_TYPE_AUDIO:
 			reference_track = (*adaptation_set->first) + filtered_clip_offset;
-			if (reference_track->media_info.tags.lang_str.len > 0)
-			{
-				p = vod_sprintf(p, VOD_DASH_MANIFEST_ADAPTATION_HEADER_AUDIO_LANG,
-					adapt_id++,
-					&reference_track->media_info.tags.lang_str);
-			}
-			else
-			{
-				p = vod_sprintf(p, VOD_DASH_MANIFEST_ADAPTATION_HEADER_AUDIO,
-					adapt_id++);
-			}
+			p = vod_sprintf(p, VOD_DASH_MANIFEST_ADAPTATION_HEADER_AUDIO,
+				adapt_id++,
+				&reference_track->media_info.tags.lang_str);
 
 			if (reference_track->media_info.codec_id == VOD_CODEC_ID_EAC3)
 			{
@@ -1448,7 +1433,7 @@ dash_packager_build_mpd(
 			(sizeof(VOD_DASH_MANIFEST_REPRESENTATION_HEADER_VIDEO) - 1 + MAX_TRACK_SPEC_LENGTH + MAX_MIME_TYPE_SIZE + MAX_CODEC_NAME_SIZE + 3 * VOD_INT32_LEN + VOD_DASH_MAX_FRAME_RATE_LEN +
 			sizeof(VOD_DASH_MANIFEST_REPRESENTATION_FOOTER) - 1) * media_set->track_count[MEDIA_TYPE_VIDEO] +
 			// audio adaptations
-			(sizeof(VOD_DASH_MANIFEST_ADAPTATION_HEADER_AUDIO_LANG) - 1 + sizeof(VOD_DASH_MANIFEST_AUDIO_CHANNEL_CONFIG_EAC3) - 1 + 2 * VOD_INT32_LEN +
+			(sizeof(VOD_DASH_MANIFEST_ADAPTATION_HEADER_AUDIO) - 1 + sizeof(VOD_DASH_MANIFEST_AUDIO_CHANNEL_CONFIG_EAC3) - 1 + 2 * VOD_INT32_LEN +
 			(sizeof(VOD_DASH_MANIFEST_ADAPTATION_ROLE) - 1 + MAX_ROLE_SIZE) * 3 +
 			sizeof(VOD_DASH_MANIFEST_ADAPTATION_FOOTER) - 1) * context.adaptation_sets.count[ADAPTATION_TYPE_AUDIO] +
 			// audio representations
