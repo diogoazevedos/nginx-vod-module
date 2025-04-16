@@ -112,6 +112,7 @@
 
 #define VOD_DASH_MANIFEST_ADAPTATION_HEADER_SUBTITLE_SMPTE_TT					\
 	"    <AdaptationSet\n"														\
+	"        id=\"%uD\"\n"														\
 	"        contentType=\"text\"\n"											\
 	"        lang=\"%V\">\n"
 
@@ -128,6 +129,7 @@
 
 #define VOD_DASH_MANIFEST_ADAPTATION_HEADER_SUBTITLE_VTT						\
 	"    <AdaptationSet\n"														\
+	"        id=\"%uD\"\n"														\
 	"        contentType=\"text\"\n"											\
 	"        lang=\"%V\"\n"														\
 	"        mimeType=\"text/vtt\">\n"
@@ -933,6 +935,7 @@ dash_packager_write_mpd_period(
 			{
 				reference_track = (*adaptation_set->first) + filtered_clip_offset;
 				p = vod_sprintf(p, VOD_DASH_MANIFEST_ADAPTATION_HEADER_SUBTITLE_SMPTE_TT,
+					adapt_id++,
 					&reference_track->media_info.tags.lang_str);
 				break;
 			}
@@ -963,6 +966,7 @@ dash_packager_write_mpd_period(
 			}
 
 			p = vod_sprintf(p, VOD_DASH_MANIFEST_ADAPTATION_HEADER_SUBTITLE_VTT,
+				adapt_id++,
 				&cur_track->media_info.tags.lang_str);
 
 			p = dash_packager_write_roles(p, &cur_track->media_info);
@@ -1449,7 +1453,7 @@ dash_packager_build_mpd(
 	case SUBTITLE_FORMAT_WEBVTT:
 		base_period_size +=
 			// subtitle adaptations
-			(sizeof(VOD_DASH_MANIFEST_ADAPTATION_HEADER_SUBTITLE_VTT) - 1 + LANG_ISO639_3_LEN +
+			(sizeof(VOD_DASH_MANIFEST_ADAPTATION_HEADER_SUBTITLE_VTT) - 1 + VOD_INT32_LEN + LANG_ISO639_3_LEN +
 			// subtitle roles
 			(sizeof(VOD_DASH_MANIFEST_ADAPTATION_ROLE) - 1 + MAX_ROLE_SIZE) * 3 +
 			// subtitle representation
@@ -1461,7 +1465,7 @@ dash_packager_build_mpd(
 	default: // SUBTITLE_FORMAT_SMPTE_TT
 		base_period_size +=
 			// subtitle adaptations
-			(sizeof(VOD_DASH_MANIFEST_ADAPTATION_HEADER_SUBTITLE_SMPTE_TT) - 1 + LANG_ISO639_3_LEN +
+			(sizeof(VOD_DASH_MANIFEST_ADAPTATION_HEADER_SUBTITLE_SMPTE_TT) - 1 + VOD_INT32_LEN + LANG_ISO639_3_LEN +
 			sizeof(VOD_DASH_MANIFEST_ADAPTATION_FOOTER) - 1) * context.adaptation_sets.count[ADAPTATION_TYPE_SUBTITLE] +
 			// subtitle representations
 			(sizeof(VOD_DASH_MANIFEST_REPRESENTATION_HEADER_SUBTITLE_SMPTE_TT) - 1 + MAX_TRACK_SPEC_LENGTH +
