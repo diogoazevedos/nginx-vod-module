@@ -88,7 +88,6 @@
 	"    <AdaptationSet\n"														\
 	"        id=\"%uD\"\n"														\
 	"        lang=\"%V\"\n"														\
-	"        label=\"%V\"\n"													\
 	"        segmentAlignment=\"true\">\n"
 
 // TODO: value should be the number of channels ?
@@ -114,8 +113,7 @@
 #define VOD_DASH_MANIFEST_ADAPTATION_HEADER_SUBTITLE_SMPTE_TT					\
 	"    <AdaptationSet\n"														\
 	"        contentType=\"text\"\n"											\
-	"        lang=\"%V\"\n"														\
-	"        label=\"%V\">\n"
+	"        lang=\"%V\">\n"
 
 #define VOD_DASH_MANIFEST_REPRESENTATION_HEADER_SUBTITLE_SMPTE_TT				\
 	"      <Representation\n"													\
@@ -132,10 +130,9 @@
 	"    <AdaptationSet\n"														\
 	"        contentType=\"text\"\n"											\
 	"        lang=\"%V\"\n"														\
-	"        label=\"%V\"\n"													\
 	"        mimeType=\"text/vtt\">\n"
 
-#define VOD_DASH_MANIFEST_REPRESENTATION_SUBTITLE_VTT					\
+#define VOD_DASH_MANIFEST_REPRESENTATION_SUBTITLE_VTT							\
 	"      <Representation\n"													\
 	"          id=\"textstream_%s_%uD\"\n"										\
 	"          bandwidth=\"0\">\n"												\
@@ -906,12 +903,11 @@ dash_packager_write_mpd_period(
 
 		case MEDIA_TYPE_AUDIO:
 			reference_track = (*adaptation_set->first) + filtered_clip_offset;
-			if (reference_track->media_info.tags.lang_str.len > 0 || reference_track->media_info.tags.label.len > 0)
+			if (reference_track->media_info.tags.lang_str.len > 0)
 			{
 				p = vod_sprintf(p, VOD_DASH_MANIFEST_ADAPTATION_HEADER_AUDIO_LANG,
 					adapt_id++,
-					&reference_track->media_info.tags.lang_str,
-					&reference_track->media_info.tags.label);
+					&reference_track->media_info.tags.lang_str);
 			}
 			else
 			{
@@ -937,8 +933,7 @@ dash_packager_write_mpd_period(
 			{
 				reference_track = (*adaptation_set->first) + filtered_clip_offset;
 				p = vod_sprintf(p, VOD_DASH_MANIFEST_ADAPTATION_HEADER_SUBTITLE_SMPTE_TT,
-					&reference_track->media_info.tags.lang_str,
-					&reference_track->media_info.tags.label);
+					&reference_track->media_info.tags.lang_str);
 				break;
 			}
 
@@ -968,8 +963,7 @@ dash_packager_write_mpd_period(
 			}
 
 			p = vod_sprintf(p, VOD_DASH_MANIFEST_ADAPTATION_HEADER_SUBTITLE_VTT,
-				&cur_track->media_info.tags.lang_str,
-				&cur_track->media_info.tags.label);
+				&cur_track->media_info.tags.lang_str);
 
 			p = dash_packager_write_roles(p, &cur_track->media_info);
 
@@ -1455,7 +1449,7 @@ dash_packager_build_mpd(
 	case SUBTITLE_FORMAT_WEBVTT:
 		base_period_size +=
 			// subtitle adaptations
-			(sizeof(VOD_DASH_MANIFEST_ADAPTATION_HEADER_SUBTITLE_VTT) - 1 + LANG_ISO639_3_LEN + VOD_INT32_LEN +
+			(sizeof(VOD_DASH_MANIFEST_ADAPTATION_HEADER_SUBTITLE_VTT) - 1 + LANG_ISO639_3_LEN +
 			// subtitle roles
 			(sizeof(VOD_DASH_MANIFEST_ADAPTATION_ROLE) - 1 + MAX_ROLE_SIZE) * 3 +
 			// subtitle representation
@@ -1467,7 +1461,7 @@ dash_packager_build_mpd(
 	default: // SUBTITLE_FORMAT_SMPTE_TT
 		base_period_size +=
 			// subtitle adaptations
-			(sizeof(VOD_DASH_MANIFEST_ADAPTATION_HEADER_SUBTITLE_SMPTE_TT) - 1 +
+			(sizeof(VOD_DASH_MANIFEST_ADAPTATION_HEADER_SUBTITLE_SMPTE_TT) - 1 + LANG_ISO639_3_LEN +
 			sizeof(VOD_DASH_MANIFEST_ADAPTATION_FOOTER) - 1) * context.adaptation_sets.count[ADAPTATION_TYPE_SUBTITLE] +
 			// subtitle representations
 			(sizeof(VOD_DASH_MANIFEST_REPRESENTATION_HEADER_SUBTITLE_SMPTE_TT) - 1 + MAX_TRACK_SPEC_LENGTH +
