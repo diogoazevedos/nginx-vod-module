@@ -532,16 +532,15 @@ Optional fields:
 * `label` - a friendly string that identifies the sequence. If a language is specified, a default
 	label will be automatically derived by it - e.g. if language is `ita`, by default `italiano`
 	will be used as the label.
-* `roles` - an array of DASH role schemes as defined in ISO/IEC 23009-1 Section 5.8.5.5. For roles
-	such as `caption` or `description`, the label must be explicitly specified. The default label
-	does not take roles into account.
+	> For `roles`, `characteristics`, and `forced`, the label must be explicitly specified. The
+	> default label does not consider them.
+* `roles` - an array of role schemes as defined in [ISO/IEC 23009-1](https://www.iso.org/standard/83314.html)
+	Section 5.8.5.5.
 * `default` - a boolean that sets the value of the DEFAULT attribute of EXT-X-MEDIA tags using this
 	sequence. If not specified, the first EXT-X-MEDIA tag in each group returns DEFAULT=YES.
 * `autoselect` - a boolean that sets the value of the AUTOSELECT attribute of EXT-X-MEDIA tags using
 	this sequence. If not specified, the EXT-X-MEDIA tags return AUTOSELECT=YES.
-* `characteristics` - a string of HLS characteristics as defined in [RFC 8216 Section 4.3.4.1](https://datatracker.ietf.org/doc/html/rfc8216#section-4.3.4.1).
-	For characteristics such as `public.easy-to-read` or `public.accessibility.*`, the label must be
-	explicitly specified. The default label does not take characteristics into account.
+* `characteristics` - a string of characteristics as defined in [RFC 8216 Section 4.3.4.1](https://datatracker.ietf.org/doc/html/rfc8216#section-4.3.4.1).
 * `forced` - a boolean that sets the value of the FORCED attribute of EXT-X-MEDIA tags using this
 	sequence.
 * `bitrate` - an object that can be used to set the bitrate for the different media types,
@@ -550,6 +549,9 @@ Optional fields:
 * `avg_bitrate` - an object that can be used to set the average bitrate for the different media types,
 	in bits per second. See `bitrate` above for a sample object. If specified, the module will use
 	the value to populate the AVERAGE-BANDWIDTH attribute of `#EXT-X-STREAM-INF` in HLS.
+> **Important**: The options `label`, `roles`, `characteristics`, and `forced` are used to group
+> tracks. As HLS does not have the concept of **video** `AdaptationSet`, any use of these options
+> will cause the HLS manifest builder to consider only the **first** video group.
 
 #### Clip (abstract)
 
