@@ -41,8 +41,6 @@
 #define M3U8_VIDEO_RANGE_SDR ",VIDEO-RANGE=SDR"
 #define M3U8_VIDEO_RANGE_PQ ",VIDEO-RANGE=PQ"
 
-#define MAX_CHARACTERISTICS_SIZE (128)
-
 // constants
 static const u_char m3u8_header[] = "#EXTM3U\n";
 static const u_char m3u8_footer[] = "#EXT-X-ENDLIST\n";
@@ -912,7 +910,6 @@ m3u8_builder_ext_x_media_tags_get_size(
 	adaptation_set_t* last_adaptation_set;
 	adaptation_set_t* adaptation_set;
 	media_track_t* cur_track;
-	size_t label_len;
 	size_t result;
 
 	result =
@@ -923,7 +920,7 @@ m3u8_builder_ext_x_media_tags_get_size(
 		sizeof(M3U8_EXT_MEDIA_LANG) - 1 +
 		sizeof(M3U8_EXT_MEDIA_DEFAULT) - 1 +
 		sizeof(M3U8_EXT_MEDIA_AUTOSELECT) - 1 +
-		sizeof(M3U8_EXT_MEDIA_CHARACTERISTICS) - 1 + MAX_CHARACTERISTICS_SIZE +
+		sizeof(M3U8_EXT_MEDIA_CHARACTERISTICS) - 1 +
 		sizeof(M3U8_EXT_MEDIA_FORCED) - 1 +
 		sizeof(M3U8_EXT_MEDIA_CHANNELS) - 1 + VOD_INT32_LEN +
 		sizeof(M3U8_EXT_MEDIA_URI) - 1 +
@@ -936,8 +933,9 @@ m3u8_builder_ext_x_media_tags_get_size(
 	{
 		cur_track = adaptation_set->first[0];
 
-		label_len = cur_track->media_info.tags.label.len;
-		result += vod_max(label_len, default_label.len) + cur_track->media_info.tags.lang_str.len;
+		result += vod_max(cur_track->media_info.tags.label.len, default_label.len) +
+			cur_track->media_info.tags.lang_str.len +
+			cur_track->media_info.tags.characteristics.len;
 
 		if (base_url->len != 0)
 		{

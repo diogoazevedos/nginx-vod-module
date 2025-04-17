@@ -459,9 +459,9 @@ track_group_key_get_hash(track_group_key_t* key)
 		vod_crc32_short(key->tags.characteristics.data, key->tags.characteristics.len);
 
 	vod_str_t* role;
-	for (uintptr_t i = 0; i < key->tags.roles.nelts; i++)
+	for (uint32_t role_index = 0; role_index < key->tags.roles.nelts; role_index++)
 	{
-		role = (vod_str_t*)key->tags.roles.elts + i;
+		role = (vod_str_t*)key->tags.roles.elts + role_index;
 		hash += vod_crc32_short(role->data, role->len);
 	}
 
@@ -471,7 +471,7 @@ track_group_key_get_hash(track_group_key_t* key)
 static int8_t
 track_group_key_compare(track_group_key_t* key1, track_group_key_t* key2)
 {
-	uintptr_t i;
+	uint32_t role_index;
 	vod_str_t* role1;
 	vod_str_t* role2;
 	int8_t rc;
@@ -520,10 +520,10 @@ track_group_key_compare(track_group_key_t* key1, track_group_key_t* key2)
 		return key1->tags.roles.nelts < key2->tags.roles.nelts ? -1 : 1;
 	}
 
-	for (i = 0; i < key1->tags.roles.nelts; i++)
+	for (role_index = 0; role_index < key1->tags.roles.nelts; role_index++)
 	{
-		role1 = (vod_str_t*)key1->tags.roles.elts + i;
-		role2 = (vod_str_t*)key2->tags.roles.elts + i;
+		role1 = (vod_str_t*)key1->tags.roles.elts + role_index;
+		role2 = (vod_str_t*)key2->tags.roles.elts + role_index;
 
 		if (role1->len != role2->len)
 		{
