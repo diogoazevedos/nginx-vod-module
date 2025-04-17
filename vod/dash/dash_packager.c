@@ -787,10 +787,8 @@ dash_packager_write_mpd_period(
 	uint32_t max_framerate_duration = 0;
 	uint32_t segment_count = 0;
 	uint32_t start_number;
-	uint32_t media_type;
 	uint32_t adapt_id = 1;
 	uint32_t subtitle_adapt_id = 0;
-	uint32_t sequence_index;
 
 	frame_rate.data = frame_rate_buffer;
 	representation_id.data = representation_id_buffer;
@@ -863,8 +861,7 @@ dash_packager_write_mpd_period(
 		adaptation_set < context->adaptation_sets.last;
 		adaptation_set++, cur_duration_items++)
 	{
-		media_type = adaptation_set->type;
-		switch (media_type)
+		switch (adaptation_set->type)
 		{
 		case MEDIA_TYPE_VIDEO:
 			// get the max width, height and frame rate
@@ -949,10 +946,10 @@ dash_packager_write_mpd_period(
 			cur_track = (*adaptation_set->first) + filtered_clip_offset;
 			cur_sequence = cur_track->file_info.source->sequence;
 
-			sequence_index = cur_sequence->index;
 			if (context->conf->manifest_format == FORMAT_SEGMENT_LIST)
 			{
-				dash_packager_get_segment_list_base_url(context, cur_track, &cur_base_url, &sequence_index);
+				dash_packager_get_segment_list_base_url(context, cur_track, &cur_base_url,
+					&cur_sequence->index);
 			}
 			else
 			{
@@ -962,7 +959,7 @@ dash_packager_write_mpd_period(
 			dash_packager_get_track_spec(
 				&representation_id,
 				media_set,
-				sequence_index,
+				cur_sequence->index,
 				cur_track->index,
 				cur_track->media_info.media_type);
 
@@ -1011,7 +1008,7 @@ dash_packager_write_mpd_period(
 		case FORMAT_SEGMENT_TEMPLATE:
 			// increment cur_duration_items (don't really need the count)
 			dash_packager_get_cur_clip_segment_count(
-				&context->segment_durations[media_type],
+				&context->segment_durations[adaptation_set->type],
 				cur_duration_items);
 
 			p = dash_packager_write_segment_template(
@@ -1033,7 +1030,7 @@ dash_packager_write_mpd_period(
 				context->clip_start_time,
 				clip_spec,
 				reference_track,
-				&context->segment_durations[media_type],
+				&context->segment_durations[adaptation_set->type],
 				cur_duration_items,
 				&context->base_url);
 			break;
@@ -1042,12 +1039,12 @@ dash_packager_write_mpd_period(
 			if (media_set->use_discontinuity)
 			{
 				segment_count = dash_packager_get_cur_clip_segment_count(
-					&context->segment_durations[media_type],
+					&context->segment_durations[adaptation_set->type],
 					cur_duration_items);
 			}
 			else
 			{
-				segment_count = context->segment_durations[media_type].segment_count;
+				segment_count = context->segment_durations[adaptation_set->type].segment_count;
 			}
 			break;
 		}
@@ -1067,7 +1064,7 @@ dash_packager_write_mpd_period(
 				cur_track->index,
 				cur_track->media_info.media_type);
 
-			switch (media_type)
+			switch (adaptation_set->type)
 			{
 			case MEDIA_TYPE_VIDEO:
 				dash_packager_write_frame_rate(
