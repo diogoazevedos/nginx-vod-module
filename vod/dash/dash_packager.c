@@ -309,7 +309,7 @@ static dash_codec_info_t dash_codecs[VOD_CODEC_ID_COUNT] = {
 static bool_t
 dash_packager_compare_tracks(uintptr_t bitrate_threshold, const media_info_t* mi1, const media_info_t* mi2)
 {
-	uintptr_t i;
+	uint32_t role_index;
 	vod_str_t* role1;
 	vod_str_t* role2;
 
@@ -357,10 +357,10 @@ dash_packager_compare_tracks(uintptr_t bitrate_threshold, const media_info_t* mi
 		return FALSE;
 	}
 
-	for (i = 0; i < mi1->tags.roles.nelts; i++)
+	for (role_index = 0; role_index < mi1->tags.roles.nelts; role_index++)
 	{
-		role1 = (vod_str_t*)mi1->tags.roles.elts + i;
-		role2 = (vod_str_t*)mi2->tags.roles.elts + i;
+		role1 = (vod_str_t*)mi1->tags.roles.elts + role_index;
+		role2 = (vod_str_t*)mi2->tags.roles.elts + role_index;
 
 		if (!vod_str_equals(*role1, *role2))
 		{
@@ -711,10 +711,10 @@ dash_packager_write_frame_rate(
 static u_char*
 dash_packager_write_roles(u_char* p, media_info_t* media_info)
 {
-	for (uintptr_t i = 0; i < media_info->tags.roles.nelts; i++)
+	for (uint32_t role_index = 0; role_index < media_info->tags.roles.nelts; role_index++)
 	{
 		p = vod_sprintf(p, VOD_DASH_MANIFEST_ADAPTATION_ROLE,
-			(vod_str_t*)media_info->tags.roles.elts + i);
+			(vod_str_t*)media_info->tags.roles.elts + role_index);
 	}
 
 	return p;
@@ -1493,7 +1493,7 @@ dash_packager_build_mpd(
 			{
 			case MEDIA_TYPE_AUDIO:
 			case MEDIA_TYPE_SUBTITLE:
-				cur_track = (*adaptation_set->first) + filtered_clip_offset;
+			cur_track = (*adaptation_set->first) + filtered_clip_offset;
 				result_size += cur_track->media_info.tags.label.len + cur_track->media_info.tags.lang_str.len;
 				break;
 			}
