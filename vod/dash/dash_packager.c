@@ -141,7 +141,7 @@
 
 #define VOD_DASH_MANIFEST_REPRESENTATION_SUBTITLE_VTT							\
 	"      <Representation\n"													\
-	"          id=\"textstream_%s_%uD\"\n"										\
+	"          id=\"textstream_%uD\"\n"											\
 	"          bandwidth=\"0\">\n"												\
 	"        <BaseURL>%V%V-%s%V.vtt</BaseURL>\n"								\
 	"      </Representation>\n"
@@ -773,7 +773,6 @@ dash_packager_write_mpd_period(
 	media_track_t** cur_track_ptr;
 	media_track_t* cur_track;
 	media_set_t* media_set = context->media_set;
-	const char* lang_code;
 	vod_str_t representation_id;
 	vod_str_t cur_base_url;
 	vod_str_t frame_rate;
@@ -981,9 +980,7 @@ dash_packager_write_mpd_period(
 
 			p = dash_packager_write_roles(p, &cur_track->media_info);
 
-			lang_code = lang_get_rfc_5646_name(cur_track->media_info.tags.language);
 			p = vod_sprintf(p, VOD_DASH_MANIFEST_REPRESENTATION_SUBTITLE_VTT,
-				lang_code,
 				subtitle_adapt_id++,
 				&cur_base_url,
 				&context->conf->subtitle_file_name_prefix,
@@ -1468,7 +1465,7 @@ dash_packager_build_mpd(
 			(sizeof(VOD_DASH_MANIFEST_ADAPTATION_HEADER_SUBTITLE_VTT) - 1 + VOD_INT32_LEN +
 			sizeof(VOD_DASH_MANIFEST_ADAPTATION_LABEL) - 1 +
 			// subtitle representation
-			sizeof(VOD_DASH_MANIFEST_REPRESENTATION_SUBTITLE_VTT) - 1 + VOD_INT32_LEN + LANG_ISO639_3_LEN + context.base_url.len + conf->subtitle_file_name_prefix.len + MAX_CLIP_SPEC_LENGTH + MAX_TRACK_SPEC_LENGTH +
+			sizeof(VOD_DASH_MANIFEST_REPRESENTATION_SUBTITLE_VTT) - 1 + VOD_INT32_LEN + context.base_url.len + conf->subtitle_file_name_prefix.len + MAX_CLIP_SPEC_LENGTH + MAX_TRACK_SPEC_LENGTH +
 			sizeof(VOD_DASH_MANIFEST_ADAPTATION_FOOTER) - 1) *
 			context.adaptation_sets.count[ADAPTATION_TYPE_SUBTITLE];
 		break;
