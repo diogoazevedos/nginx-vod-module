@@ -5,9 +5,7 @@
 #include <ngx_http.h>
 #include "ngx_http_vod_submodule.h"
 #include "ngx_http_vod_dash_conf.h"
-#include "ngx_http_vod_hds_conf.h"
 #include "ngx_http_vod_hls_conf.h"
-#include "ngx_http_vod_mss_conf.h"
 #include "vod/segmenter.h"
 
 #if (NGX_HAVE_LIB_AV_CODEC)
@@ -112,9 +110,8 @@ struct ngx_http_vod_loc_conf_s {
 
 	// submodules
 	ngx_http_vod_dash_loc_conf_t dash;
-	ngx_http_vod_hds_loc_conf_t hds;
 	ngx_http_vod_hls_loc_conf_t hls;
-	ngx_http_vod_mss_loc_conf_t mss;
+
 
 #if (NGX_HAVE_LIB_AV_CODEC)
 	ngx_http_vod_thumb_loc_conf_t thumb;

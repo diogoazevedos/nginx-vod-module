@@ -1381,9 +1381,7 @@ ngx_command_t ngx_http_vod_commands[] = {
 #endif // NGX_THREADS
 
 #include "ngx_http_vod_dash_commands.h"
-#include "ngx_http_vod_hds_commands.h"
 #include "ngx_http_vod_hls_commands.h"
-#include "ngx_http_vod_mss_commands.h"
 
 #if (NGX_HAVE_LIB_AV_CODEC)
 #include "ngx_http_vod_thumb_commands.h"

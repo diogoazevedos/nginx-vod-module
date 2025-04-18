@@ -171,7 +171,7 @@ typedef struct {
 } sequence_tracks_mask_t;
 
 typedef struct {
-	int64_t segment_time;		// used in mss
+	int64_t segment_time;
 	segment_time_type_t segment_time_type;
 	uint32_t segment_index;
 	uint32_t clip_index;

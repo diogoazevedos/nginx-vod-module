@@ -42,24 +42,6 @@
 			include @NGINX_CONF_PATH@/cors.conf;
 		}
 
-		# serve flavor HDS
-		location /hds/ {
-			vod hds;
-			vod_segment_duration 6000;
-			vod_segment_count_policy last_rounded;
-
-			include @NGINX_CONF_PATH@/cors.conf;
-		}
-
-		# serve flavor MSS
-		location /mss/ {
-			vod mss;
-			vod_segment_duration 4000;
-			vod_manifest_segment_durations_mode accurate;
-
-			include @NGINX_CONF_PATH@/cors.conf;
-		}
-
 		# static files (crossdomain.xml, robots.txt etc.) + fallback to api
 		location / {
 			root   @STATIC_FILES_PATH@;

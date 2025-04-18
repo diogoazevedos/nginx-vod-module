@@ -16,8 +16,6 @@ import os
 # environment specific parameters
 from main_params import *
 
-MSS_BITRATE = 0x41000        # actual bitrate does not matter, only the file index & stream index (both 0)
-
 # nginx config derivatives
 NGINX_LOG_PATH = '/var/log/nginx/error.log'
 NGINX_HOST = 'http://localhost:8001'
@@ -35,19 +33,11 @@ DASH_MANIFEST_FILE = '/manifest.mpd'
 DASH_INIT_FILE = '/init-v1.mp4'
 DASH_FRAGMENT_FILE = '/fragment-1-v1.m4s'
 
-HDS_PREFIX = '/hds'
-HDS_MANIFEST_FILE = '/manifest.f4m'
-HDS_FRAGMENT_FILE = '/frag-Seg1-Frag1'
-
 HLS_PREFIX = '/hls'
 HLS_MASTER_FILE = '/master.m3u8'
 HLS_PLAYLIST_FILE = '/index.m3u8'
 HLS_IFRAMES_FILE = '/iframes.m3u8'
 HLS_SEGMENT_FILE = '/seg-1.ts'
-
-MSS_PREFIX = '/mss'
-MSS_MANIFEST_FILE = '/manifest'
-MSS_FRAGMENT_FILE = '/QualityLevels(%s)/Fragments(video=0)' % MSS_BITRATE
 
 EDASH_PREFIX = '/edash'
 DRM_SERVICE_RESPONSE = '''[{
@@ -89,21 +79,13 @@ DASH_REQUESTS = [
     (DASH_PREFIX, DASH_INIT_FILE, 'video/mp4'),
     (DASH_PREFIX, DASH_FRAGMENT_FILE, 'video/mp4')]
 
-HDS_REQUESTS = [
-    (HDS_PREFIX, HDS_MANIFEST_FILE, 'video/f4m'),
-    (HDS_PREFIX, HDS_FRAGMENT_FILE, 'video/f4f')]
-
 HLS_REQUESTS = [
     (HLS_PREFIX, HLS_MASTER_FILE, 'application/vnd.apple.mpegurl'),
     (HLS_PREFIX, HLS_PLAYLIST_FILE, 'application/vnd.apple.mpegurl'),
     (HLS_PREFIX, HLS_IFRAMES_FILE, 'application/vnd.apple.mpegurl'),
     (HLS_PREFIX, HLS_SEGMENT_FILE, 'video/MP2T')]
 
-MSS_REQUESTS = [
-    (MSS_PREFIX, MSS_MANIFEST_FILE, 'text/xml'),
-    (MSS_PREFIX, MSS_FRAGMENT_FILE, 'video/mp4')]
-
-VOD_REQUESTS = DASH_REQUESTS + HDS_REQUESTS + HLS_REQUESTS + MSS_REQUESTS
+VOD_REQUESTS = DASH_REQUESTS + HLS_REQUESTS
 
 PD_REQUESTS = [
     ('', '', 'video/mp4'),      # '' returns the full file
@@ -394,43 +376,6 @@ class DashTestSuite(ProtocolTestSuite):
         assertRequestFails(self.getUrl('/fragment-1-aabc.m4s'), 400)
         self.logTracker.assertContains('did not consume the whole name')
 
-class HdsTestSuite(ProtocolTestSuite):
-    def __init__(self, getUrl, setupServer):
-        super(HdsTestSuite, self).__init__(getUrl, HDS_PREFIX, setupServer)
-
-    # bad requests
-    def testUnrecognizedRequest(self):
-        assertRequestFails(self.getUrl('/bla'), 400)
-        self.logTracker.assertContains('unidentified request')
-
-    def testBadStreamTypeManifest(self):
-        assertRequestFails(self.getUrl('/manifest-a1-z1.f4m'), 400)
-        self.logTracker.assertContains('did not consume the whole name')
-
-    def testBadStreamIndexManifest(self):
-        assertRequestFails(self.getUrl('/manifest-aabc.f4m'), 400)
-        self.logTracker.assertContains('did not consume the whole name')
-
-    def testNoFragmentIndex(self):
-        assertRequestFails(self.getUrl('/frag-'), 400)
-        self.logTracker.assertContains('failed to parse fragment index')
-
-    def testZeroFragmentIndex(self):
-        assertRequestFails(self.getUrl('/frag-0'), 400)
-        self.logTracker.assertContains('failed to parse fragment index')
-
-    def testNoSegmentFragment(self):
-        assertRequestFails(self.getUrl('/frag-1'), 400)
-        self.logTracker.assertContains('invalid segment / fragment requested')
-
-    def testBadStreamTypeFragment(self):
-        assertRequestFails(self.getUrl('/frag-a1-z1-Seg1-Frag1'), 400)
-        self.logTracker.assertContains('did not consume the whole name')
-
-    def testBadStreamIndexFragment(self):
-        assertRequestFails(self.getUrl('/frag-aabc-Seg1-Frag1'), 400)
-        self.logTracker.assertContains('did not consume the whole name')
-
 class HlsTestSuite(ProtocolTestSuite):
     def __init__(self, getUrl, setupServer):
         super(HlsTestSuite, self).__init__(getUrl, HLS_PREFIX, setupServer)
@@ -456,51 +401,6 @@ class HlsTestSuite(ProtocolTestSuite):
         assertRequestFails(self.getUrl('/bla.m3u8'), 400)
         self.logTracker.assertContains('unidentified m3u8 request')
 
-class MssTestSuite(ProtocolTestSuite):
-    def __init__(self, getUrl, setupServer):
-        super(MssTestSuite, self).__init__(getUrl, MSS_PREFIX, setupServer)
-
-    # bad requests
-    def testUnrecognizedRequest(self):
-        assertRequestFails(self.getUrl('/bla'), 400)
-        self.logTracker.assertContains('unidentified request')
-
-    def testBadStreamType(self):
-        assertRequestFails(self.getUrl('/manifest-a1-z1'), 400)
-        self.logTracker.assertContains('did not consume the whole name')
-
-    def testBadStreamIndex(self):
-        assertRequestFails(self.getUrl('/manifest-aabc'), 400)
-        self.logTracker.assertContains('did not consume the whole name')
-
-    def testBadFragmentRequestQualityLevel(self):
-        assertRequestFails(self.getUrl('/Quality-Levels(2364883)/Fragments(video=0)'), 400)
-        self.logTracker.assertContains('ngx_http_vod_parse_string failed')
-
-    def testBadFragmentRequestBitrate(self):
-        assertRequestFails(self.getUrl('/QualityLevels(a)/Fragments(video=0)'), 400)
-        self.logTracker.assertContains('ngx_http_vod_parse_string failed')
-
-    def testBadFragmentRequestFragments(self):
-        assertRequestFails(self.getUrl('/QualityLevels(2364883)/Frag-ments(video=0)'), 400)
-        self.logTracker.assertContains('ngx_http_vod_parse_string failed')
-
-    def testBadFragmentRequestNoDelim(self):
-        assertRequestFails(self.getUrl('/QualityLevels(2364883)/Fragments(video)'), 400)
-        self.logTracker.assertContains('ngx_http_vod_parse_string failed')
-
-    def testBadFragmentRequestTimestamp(self):
-        assertRequestFails(self.getUrl('/QualityLevels(2364883)/Fragments(video=a)'), 400)
-        self.logTracker.assertContains('ngx_http_vod_parse_string failed')
-
-    def testBadFragmentRequestMediaTypeLength(self):
-        assertRequestFails(self.getUrl('/QualityLevels(2364883)/Fragments(videox=0)'), 400)
-        self.logTracker.assertContains('invalid media type videox')
-
-    def testBadFragmentRequestMediaType(self):
-        assertRequestFails(self.getUrl('/QualityLevels(2364883)/Fragments(xideo=0)'), 400)
-        self.logTracker.assertContains('invalid media type xideo')
-
 class BasicTestSuite(TestSuite):
     def __init__(self, getUrl, setupServer):
         super(BasicTestSuite, self).__init__()
@@ -509,9 +409,7 @@ class BasicTestSuite(TestSuite):
 
     def runChildSuites(self):
         DashTestSuite(self.getUrl, self.prepareTest).run()
-        HdsTestSuite(self.getUrl, self.prepareTest).run()
         HlsTestSuite(self.getUrl, self.prepareTest).run()
-        MssTestSuite(self.getUrl, self.prepareTest).run()
 
     # sanity
     def testHeadRequestSanity(self):
@@ -632,7 +530,6 @@ class BasicTestSuite(TestSuite):
             # with tracks specification
             url = '-a1-v1.'.join(url.rsplit('.', 1))    # replace only the last dot
             withTracksResponse = urllib2.urlopen(url).read()
-            withTracksResponse = withTracksResponse.replace('-a1-v1.f4m</id>', '.f4m</id>')        # align the f4m id tag
 
             assert(noTracksResponse == withTracksResponse)
 

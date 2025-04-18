@@ -251,106 +251,11 @@ def getDashManifestUrls(baseUrl, urlContent, headers):
 	result = filterChunkList(result)
 	return result
 
-def getHdsSegmentIndexes(data):
-	result = []
-	mediaTime = struct.unpack('>Q', data[0x15:0x1d])[0]
-	curPos = 0x5a
-	prevDuration = 0
-	while curPos < len(data):
-		index, timestamp, duration = struct.unpack('>LQL', data[curPos:(curPos + 0x10)])
-		curPos += 0x10
-		if duration == 0:
-			curPos += 1
-
-		if prevDuration != 0:
-			if (index, timestamp, duration) == (0, 0, 0):
-				repeatCount = (mediaTime - prevTimestamp) / prevDuration
-			else:
-				repeatCount = index - prevIndex
-			result += range(prevIndex, prevIndex + repeatCount)
-		(prevIndex, prevTimestamp, prevDuration) = (index, timestamp, duration)
-
-	if prevDuration != 0 and mediaTime > prevTimestamp:
-		repeatCount = (mediaTime - prevTimestamp) / prevDuration
-		result += range(prevIndex, prevIndex + repeatCount)
-	return result
-
-def getHdsManifestUrls(baseUrl, urlContent, headers):
-	result = []
-
-	# parse the xml
-	parsed = parseString(urlContent)
-
-	# get the bootstraps
-	segmentIndexes = {}
-	for node in parsed.getElementsByTagName('bootstrapInfo'):
-		atts = getAttributesDict(node)
-		if atts.has_key('url'):
-			curUrl = getAbsoluteUrl(atts['url'], baseUrl)
-			result.append(curUrl)
-
-			# get the bootstrap info
-			code, _, bootstrapInfo = http_utils.getUrl(curUrl, headers)
-			if code != 200 or len(bootstrapInfo) == 0:
-				continue
-		else:
-			bootstrapInfo = base64.b64decode(node.firstChild.nodeValue)
-		bootstrapId = atts['id']
-		segmentIndexes[bootstrapId] = getHdsSegmentIndexes(bootstrapInfo)
-
-	# add the media urls
-	for node in parsed.getElementsByTagName('media'):
-		atts = getAttributesDict(node)
-		bootstrapId = atts['bootstrapInfoId']
-		if not segmentIndexes.has_key(bootstrapId):
-			continue
-
-		url = atts['url']
-		url = url.split('?')[0]
-		fragments = []
-		for curSeg in segmentIndexes[bootstrapId]:
-			fragments.append(getAbsoluteUrl('%s/%sSeg1-Frag%s' % (baseUrl, url, curSeg)))
-
-		result += filterChunkList(fragments)
-
-	return result
-
-def getMssManifestUrls(baseUrl, urlContent, headers):
-	result = []
-	parsed = parseString(urlContent)
-	for node in parsed.getElementsByTagName('StreamIndex'):
-		# get the bitrates
-		bitrates = set([])
-		for childNode in node.getElementsByTagName('QualityLevel'):
-			bitrates.add(getAttributesDict(childNode)['Bitrate'])
-
-		# get the timestamps
-		timestamps = []
-		curTimestamp = 0
-		for childNode in node.getElementsByTagName('c'):
-			curAtts = getAttributesDict(childNode)
-			if curAtts.has_key('t'):
-				curTimestamp = int(curAtts['t'])
-			duration = int(curAtts['d'])
-			timestamps.append('%s' % curTimestamp)
-			curTimestamp += duration
-
-		# build the final urls
-		atts = getAttributesDict(node)
-		url = atts['Url']
-		for bitrate in bitrates:
-			for timestamp in timestamps:
-				result.append(getAbsoluteUrl('%s/%s' % (baseUrl, url.replace('{bitrate}', bitrate).replace('{start time}', timestamp))))
-
-	result = filterChunkList(result)
-	return result
-
 PARSER_BY_MIME_TYPE = {
 	'application/dash+xml': getDashManifestUrls,
-	'video/f4m': getHdsManifestUrls,
 	'application/vnd.apple.mpegurl': getHlsMasterPlaylistUrls,
 	'application/x-mpegurl': getHlsMasterPlaylistUrls,
-	'text/xml': getMssManifestUrls,
+z
 }
 
 def getManifestUrls(baseUrl, urlContent, mimeType, headers):
