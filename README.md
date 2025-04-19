@@ -534,20 +534,20 @@ Optional fields:
   > default label does not consider them.
 - `roles` - an array of role schemes as defined in
   [ISO/IEC 23009-1](https://www.iso.org/standard/83314.html) Section 5.8.5.5.
-- `default` - a boolean that sets the value of the DEFAULT attribute of EXT-X-MEDIA tags using this
-  sequence. If not specified, the first EXT-X-MEDIA tag in each group returns DEFAULT=YES.
-- `autoselect` - a boolean that sets the value of the AUTOSELECT attribute of EXT-X-MEDIA tags using
-  this sequence. If not specified, the EXT-X-MEDIA tags return AUTOSELECT=YES.
+- `default` - a boolean that sets the value of the `DEFAULT` attribute of `#EXT-X-MEDIA` tags using
+  this sequence. If not specified, the first `#EXT-X-MEDIA` tag in each group returns `DEFAULT=YES`.
+- `autoselect` - a boolean that sets the value of the `AUTOSELECT` attribute of `#EXT-X-MEDIA` tags
+  using this sequence. If not specified, the `#EXT-X-MEDIA` tags return `AUTOSELECT=YES`.
 - `characteristics` - a string of characteristics as defined in
   [RFC 8216 Section 4.3.4.1](https://datatracker.ietf.org/doc/html/rfc8216#section-4.3.4.1).
-- `forced` - a boolean that sets the value of the FORCED attribute of EXT-X-MEDIA tags using this
-  sequence.
+- `forced` - a boolean that sets the value of the `FORCED` attribute of `#EXT-X-MEDIA` tags using
+  this sequence.
 - `bitrate` - an object that can be used to set the bitrate for the different media types,
   in bits per second. For example, `{"v": 900000, "a": 64000}`. If the bitrate is not supplied,
   nginx-vod-module will estimate it based on the last clip in the sequence.
 - `avg_bitrate` - an object that can be used to set the average bitrate for the different media
   types, in bits per second. See `bitrate` above for a sample object. If specified, the module will
-  use the value to populate the AVERAGE-BANDWIDTH attribute of `#EXT-X-STREAM-INF` in HLS.
+  use the value to populate the `AVERAGE-BANDWIDTH` attribute of `#EXT-X-STREAM-INF` in HLS.
 > **Important**: The options `label`, `roles`, `characteristics`, and `forced` are used to group
 > tracks. As HLS does not have the concept of **video*- `AdaptationSet`, any use of these options
 > will cause the HLS manifest builder to consider only the **first*- video group.
