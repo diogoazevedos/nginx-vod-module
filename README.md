@@ -776,7 +776,7 @@ In order to perform the encryption, `nginx-vod-module` needs several parameters,
 `key_id`, these parameters are fetched from an external server via HTTP GET requests. The
 `vod_drm_upstream_location` parameter specifies an NGINX `location` that is used to access the DRM
 server, and the request URI is configured using `vod_drm_request_uri` (this parameter can include
-nginx variables). The response of the DRM server is a JSON with the following format:
+[variables](#nginx-variables)). The response of the DRM server is a JSON with the following format:
 
 ```json
 [
@@ -1054,7 +1054,7 @@ Configures the calculation mode of segment durations within manifest requests:
 
 This parameter provides a way to override portions of the media set JSON (mapped mode only). For
 example, `vod_media_set_override_json '{"clipTo":20000}'` clips the media set to *20 seconds*. The
-parameter value can contain variables.
+parameter value can contain [variables](#nginx-variables).
 
 ### Configuration directives - Upstream
 
@@ -1093,7 +1093,8 @@ Sets the size that is allocated for holding the response headers when issuing up
 - **context**: `http`, `server`, `location`
 
 Extra query string arguments, e.g. `"arg1=value1&arg2=value2&..."`, that should be added to the
-upstream request (`remote` and `mapped` modes only). The parameter value can contain variables.
+upstream request (`remote` and `mapped` modes only). The parameter value can contain
+[variables](#nginx-variables).
 
 #### vod_media_set_map_uri
 
@@ -1101,8 +1102,9 @@ upstream request (`remote` and `mapped` modes only). The parameter value can con
 - **default**: `$vod_suburi`
 - **context**: `http`, `server`, `location`
 
-Sets the URI of media set mapping requests, the parameter value can contain variables. In case of
-multi URI, `$vod_suburi` will be the current sub URI (a separate request is issued per sub URL).
+Sets the URI of media set mapping requests, the parameter value can contain
+[variables](#nginx-variables). In case of multi URI, `$vod_suburi` will be the current sub URI (a
+separate request is issued per sub URL).
 
 #### vod_path_response_prefix
 
@@ -1289,9 +1291,9 @@ Configures the shared memory object name of the performance counters.
 - **context**: `http`, `server`, `location`
 
 Sets the base URL (scheme + domain) that should be returned in manifest responses. The parameter
-value can contain variables. If the parameter evaluates to an empty string relative URLs will be
-used. If the parameter evaluates to a string ending with `/`, it is assumed to be a full URL - the
-module only appends the file name to it, instead of a full URI.
+value can contain [variables](#nginx-variables). If the parameter evaluates to an empty string
+relative URLs will be used. If the parameter evaluates to a string ending with `/`, it is assumed to
+be a full URL - the module only appends the file name to it, instead of a full URI.
 
 When not set the base URL is determined as follows:
 
@@ -1305,8 +1307,8 @@ When not set the base URL is determined as follows:
 - **context**: `http`, `server`, `location`
 
 Sets the base URL (scheme + domain) that should be used for delivering video segments. The parameter
-value can contain variables, if the parameter evaluates to an empty string relative URLs will be
-used. When not set `vod_base_url` will be used. This affects only HLS.
+value can contain [variables](#nginx-variables), if the parameter evaluates to an empty string
+relative URLs will be used. When not set `vod_base_url` will be used. This affects only HLS.
 
 #### vod_multi_uri_suffix
 
@@ -1457,9 +1459,9 @@ clips.
 - **default**: `none`
 - **context**: `http`, `server`, `location`
 
-Sets the URI that should be used to map dynamic clips. The parameter value can contain variables,
-specifically, `$vod_clip_id` contains the ID of the clip that should be mapped. The expected
-response from this URI is a JSON containing a concat clip object.
+Sets the URI that should be used to map dynamic clips. The parameter value can contain
+[variables](#nginx-variables), specifically, `$vod_clip_id` contains the ID of the clip that should
+be mapped. The expected response from this URI is a JSON containing a concat clip object.
 
 #### vod_source_clip_map_uri
 
@@ -1468,9 +1470,9 @@ response from this URI is a JSON containing a concat clip object.
 - **context**: `http`, `server`, `location`
 
 Sets the URI that should be used to map source clips defined using the `clipIds` property of concat.
-The parameter value can contain variables, specifically, `$vod_clip_id` contains the ID of the clip
-that should be mapped. The expected response from this URI is a JSON containing a source clip
-object.
+The parameter value can contain [variables](#nginx-variables), specifically, `$vod_clip_id` contains
+the ID of the clip that should be mapped. The expected response from this URI is a JSON containing a
+source clip object.
 
 #### vod_redirect_segments_url
 
@@ -1489,7 +1491,7 @@ of dynamic clips.
 - **context**: `http`, `server`, `location`
 
 Maps dynamic clips to concat clips using the given expression, previously generated by
-`$vod_dynamic_mapping`. The parameter value can contain variables.
+`$vod_dynamic_mapping`. The parameter value can contain [variables](#nginx-variables).
 
 #### vod_notification_uri
 
@@ -1497,9 +1499,9 @@ Maps dynamic clips to concat clips using the given expression, previously genera
 - **default**: `none`
 - **context**: `http`, `server`, `location`
 
-Sets the URI that should be used to issue notifications. The parameter value can contain variables,
-specifically, `$vod_notification_id` contains the ID of the notification that is being fired. The
-response from this URI is ignored.
+Sets the URI that should be used to issue notifications. The parameter value can contain
+[variables](#nginx-variables), specifically, `$vod_notification_id` contains the ID of the
+notification that is being fired. The response from this URI is ignored.
 
 ### Configuration directives - DRM / Encryption
 
@@ -1510,8 +1512,8 @@ response from this URI is ignored.
 - **context**: `http`, `server`, `location`
 
 Sets the seed that is used to generate the TS encryption key and DASH encryption IVs. The parameter
-value can contain variables, and will usually have the structure `secret-$vod_filepath`. See the
-list of [nginx variables](#nginx-variables) added by this module.
+value can contain [variables](#nginx-variables), and will usually have the structure
+`secret-$vod_filepath`. See the list of [variables](#nginx-variables) added by this module.
 
 #### vod_encryption_iv_seed
 
@@ -1520,7 +1522,7 @@ list of [nginx variables](#nginx-variables) added by this module.
 - **context**: `http`, `server`, `location`
 
 Sets the seed that is used to generate the encryption IV, currently applies only to HLS/fMP4 with
-AES-128 encryption. The parameter value can contain variables.
+AES-128 encryption. The parameter value can contain [variables](#nginx-variables).
 
 #### vod_drm_enabled
 
@@ -1581,8 +1583,9 @@ Configures the size and shared memory object name of the DRM info cache.
 - **default**: `$vod_suburi`
 - **context**: `http`, `server`, `location`
 
-Sets the URI of DRM info requests, the parameter value can contain variables. In case of multi URL,
-`$vod_suburi` will be the current sub URI (a separate DRM info request is issued per sub URL).
+Sets the URI of DRM info requests, the parameter value can contain [variables](#nginx-variables). In
+case of multi URL, `$vod_suburi` will be the current sub URI (a separate DRM info request is issued
+per sub URL).
 
 #### vod_min_single_nalu_per_frame_segment
 
@@ -1813,7 +1816,7 @@ The name of the encryption key file name, only relevant when encryption method i
 - **context**: `http`, `server`, `location`
 
 Sets the value of the URI attribute of `#EXT-X-KEY`, only relevant when encryption method is **not**
-`none`. The parameter value can contain variables.
+`none`. The parameter value can contain [variables](#nginx-variables).
 
 #### vod_hls_encryption_key_format
 
@@ -1874,7 +1877,7 @@ the ID3 frames contains a JSON object like `{"timestamp":1459779115000,"sequence
   (`unix_timestamp x 1000`).
 - `sequenceId` - the ID field of the [sequence](#sequence) object, as specified in the JSON mapping.
   The field is omitted when the sequence ID is empty (not set in the JSON mapping). The parameter
-  value can contain variables.
+  value can contain [variables](#nginx-variables).
 
 #### vod_hls_mpegts_align_pts
 
@@ -1983,7 +1986,8 @@ stream label.
 
 ### NGINX variables
 
-The following nginx variables are added by this module:
+In addition to the built-in [NGINX variables](https://nginx.org/en/docs/varindex.html), this module
+adds the following ones:
 
 - `$vod_suburi` - the current sub URI. For example, the value of `$vod_suburi` would be
   `http://<domain>/<location>/<prefix><middle1><suffix>/<filename>` when processing the first URI of
