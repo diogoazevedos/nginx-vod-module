@@ -524,7 +524,8 @@ Mandatory fields:
 
 Optional fields:
 
-- `id` - a string that identifies the sequence. The ID can be retrieved by `$vod_sequence_id`.
+- `id` - a string that identifies the sequence. The string must **not** contain `-`. The ID can be
+  retrieved by `$vod_sequence_id`.
 - `language` - a 3-letter (ISO-639-2) language code, this field takes priority over any language
   specified on the media file (`mdhd` MP4 atom).
 - `label` - a friendly string that identifies the sequence. If a language is specified, a default
