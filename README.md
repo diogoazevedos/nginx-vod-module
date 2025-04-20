@@ -237,7 +237,7 @@ fields. But first, a couple of definitions:
   - `Mix` - used to merge several audio tracks together, or to merge the audio of source A
     with the video of source B.
 
-- `Clip` - the result of applying zero or more filters on a set of source clips.
+- `Clip` - the result of applying zero or more filters on a set of [source clips](#source-clip).
 - `Dynamic Clip` - a clip whose contents is not known in advance, e.g. targeted ad content.
 - `Sequence` - a set of clips that should be played one after the other.
 - `Set` - several sequences that play together as an adaptive set, each sequence must have the same
@@ -645,8 +645,8 @@ Mandatory fields:
 Optional fields:
 
 - `paths` - an array of strings containing the paths of the MP4 files.
-- `clipIds` - an array of strings, containing the IDs of source clips. The IDs are translated to
-  paths by issuing a request to the URI specified in `vod_source_clip_map_uri`.
+- `clipIds` - an array of strings, containing the IDs of [source clips](#source-clip). The IDs are
+  translated to paths by issuing a request to the URI specified in `vod_source_clip_map_uri`.
 - `tracks` - a string that specifies the tracks that should be used. Defaults to `v1-a1`, which
   means the first video and audio track.
 - `offset` - an integer in milliseconds that indicates the timestamp offset of the first frame in
@@ -670,8 +670,8 @@ Mandatory fields:
 
 - `offset` - an integer in milliseconds that indicates the time in which the notification should be
   fired. When the notification object is contained in the media set, the `offset` is relative to
-  `firstClipTime` (`0` for vod). When the notification object is contained in a concat clip, the
-  `offset` is relative to the beginning of the concat clip.
+  `firstClipTime` (`0` for vod). When the notification object is contained in a
+  [concat clip](#concat-clip), the `offset` is relative to the beginning of that clip.
 - `id` - a string that identifies the notification. This ID can be referenced in
   `vod_notification_uri` using the variable `$vod_notification_id`.
 
@@ -1450,8 +1450,8 @@ matches any MIME type.
 - **default**: `off`
 - **context**: `http`, `server`, `location`
 
-Configures the size and shared memory object name of the cache that stores the mapping of dynamic
-clips.
+Configures the size and shared memory object name of the cache that stores the mapping of
+[dynamic clips](#dynamic-clip).
 
 #### vod_dynamic_clip_map_uri
 
@@ -1459,9 +1459,10 @@ clips.
 - **default**: `none`
 - **context**: `http`, `server`, `location`
 
-Sets the URI that should be used to map dynamic clips. The parameter value can contain
-[variables](#nginx-variables), specifically, `$vod_clip_id` contains the ID of the clip that should
-be mapped. The expected response from this URI is a JSON containing a concat clip object.
+Sets the URI that should be used to map [dynamic clips](#dynamic-clip). The parameter value can
+contain [variables](#nginx-variables), specifically, `$vod_clip_id` contains the ID of the clip that
+should be mapped. The expected response from this URI is a JSON containing a
+[concat clip](#concat-clip) object.
 
 #### vod_source_clip_map_uri
 
@@ -1469,10 +1470,10 @@ be mapped. The expected response from this URI is a JSON containing a concat cli
 - **default**: `none`
 - **context**: `http`, `server`, `location`
 
-Sets the URI that should be used to map source clips defined using the `clipIds` property of concat.
-The parameter value can contain [variables](#nginx-variables), specifically, `$vod_clip_id` contains
-the ID of the clip that should be mapped. The expected response from this URI is a JSON containing a
-source clip object.
+Sets the URI that should be used to map [source clips](#source-clip) defined using the `clipIds`
+property of concat. The parameter value can contain [variables](#nginx-variables), specifically,
+`$vod_clip_id` contains the ID of the clip that should be mapped. The expected response from this
+URI is a JSON containing a [source clip](#source-clip) object.
 
 #### vod_redirect_segments_url
 
@@ -1482,7 +1483,7 @@ source clip object.
 
 Sets a URL to which requests for segments should be redirected. The parameter value can contain
 variables, specifically, `$vod_dynamic_mapping` contains a serialized representation of the mapping
-of dynamic clips.
+of [dynamic clips](#dynamic-clip).
 
 #### vod_apply_dynamic_mapping
 
@@ -1999,13 +2000,13 @@ adds the following ones:
   mapping this variable will be the same as `$vod_suburi`.
 - `$vod_clip_id` - the ID of the current clip. The variable is set during the following phases:
 
-  - Mapping of [dynamic](#dynamic-clip) clips to [concat](#concat-clip) clips.
-  - Mapping of [source](#source-clip) clip to paths.
+  - Mapping of [dynamic clips](#dynamic-clip) to [concat clips](#concat-clip).
+  - Mapping of [source clip](#source-clip) to paths.
 
 - `$vod_notification_id` - the ID of the current notification. This variable is only relevant on
   `vod_notification_uri`.
-- `$vod_dynamic_mapping` - a serialized representation of the mapping of [dynamic](#dynamic-clip)
-  clips to [concat](#concat-clip) clips.
+- `$vod_dynamic_mapping` - a serialized representation of the mapping of
+  [dynamic clips](#dynamic-clip) to [concat clips](#concat-clip).
 - `$vod_request_params` - a serialized representation of the request params, e.g. `12-f2-v1-a1`. The
   variable contains:
 
