@@ -397,28 +397,29 @@ static void
 dash_packager_get_track_spec(
 	vod_str_t* result,
 	media_set_t* media_set,
-	uint32_t sequence_index,
-	uint32_t track_index,
-	uint32_t media_type)
+	media_sequence_t* sequence,
+	media_track_t* track)
 {
 	u_char* p = result->data;
+	u_char media_type_letter[] = { 'v', 'a' };		// must match MEDIA_TYPE_xxx in order
 
-	if (media_set->has_multi_sequences && sequence_index != INVALID_SEQUENCE_INDEX)
+	if (media_set->has_multi_sequences && sequence->index != INVALID_SEQUENCE_INDEX)
 	{
-		p = vod_sprintf(p, "f%uD-", sequence_index + 1);
+		if (sequence->id.len != 0 && sequence->id.len < VOD_INT32_LEN)
+		{
+			p = vod_sprintf(p, "s%V", &sequence->id);
+		}
+		else
+		{
+			p = vod_sprintf(p, "f%uD", sequence->index + 1);
+		}
 	}
 
-	switch (media_type)
+	if (track->media_info.media_type <= MEDIA_TYPE_AUDIO)
 	{
-	case MEDIA_TYPE_VIDEO:
-		p = vod_sprintf(p, "v%uD", track_index + 1);
-		p = vod_copy(p, "-x3", sizeof("-x3") - 1);		// TODO: remove this after deployment
-		break;
-
-	case MEDIA_TYPE_AUDIO:
-		p = vod_sprintf(p, "a%uD", track_index + 1);
-		p = vod_copy(p, "-x3", sizeof("-x3") - 1);		// TODO: remove this after deployment
-		break;
+		*p++ = '-';
+		*p++ = media_type_letter[track->media_info.media_type];
+		p = vod_sprintf(p, "%uD", track->index + 1);
 	}
 
 	result->len = p - result->data;
@@ -629,21 +630,16 @@ dash_packager_write_segment_list(
 	vod_str_t track_spec;
 	vod_str_t cur_base_url;
 	u_char track_spec_buffer[MAX_TRACK_SPEC_LENGTH];
-	uint32_t sequence_index = cur_sequence->index;
 	uint32_t i;
 
 	track_spec.data = track_spec_buffer;
 
 	// build the base url
-	dash_packager_get_segment_list_base_url(context, cur_track, &cur_base_url, &sequence_index);
+	dash_packager_get_segment_list_base_url(context, cur_track, &cur_base_url,
+		&cur_sequence->index);
 
 	// get the track specification
-	dash_packager_get_track_spec(
-		&track_spec,
-		media_set,
-		sequence_index,
-		cur_track->index,
-		cur_track->media_info.media_type);
+	dash_packager_get_track_spec(&track_spec, media_set, cur_sequence, cur_track);
 
 	// write the header
 	p = vod_sprintf(p,
@@ -967,12 +963,8 @@ dash_packager_write_mpd_period(
 				cur_base_url = context->base_url;
 			}
 
-			dash_packager_get_track_spec(
-				&representation_id,
-				media_set,
-				cur_sequence->index,
-				reference_track->index,
-				reference_track->media_info.media_type);
+			dash_packager_get_track_spec(&representation_id, media_set, cur_sequence,
+				reference_track);
 
 			if (representation_id.len > 0 && representation_id.data[representation_id.len - 1] == '-')
 			{
@@ -1070,12 +1062,7 @@ dash_packager_write_mpd_period(
 			cur_track = (*cur_track_ptr) + filtered_clip_offset;
 			cur_sequence = cur_track->file_info.source->sequence;
 
-			dash_packager_get_track_spec(
-				&representation_id,
-				media_set,
-				cur_sequence->index,
-				cur_track->index,
-				cur_track->media_info.media_type);
+			dash_packager_get_track_spec(&representation_id, media_set, cur_sequence, cur_track);
 
 			switch (adaptation_set->type)
 			{
