@@ -100,18 +100,18 @@ Optional recommended settings:
   and `mapped` modes.
 - `--with-threads` - enable asynchronous file open using thread pool (also requires
   `vod_open_file_thread_pool` in `nginx.conf`), relevant only to `local` and `mapped` modes.
-- `--with-cc-opt="-O3 -mpopcnt"` - enable additional compiler optimizations (about 8% reduction
+- `--with-cc-opt='-O3 -mpopcnt'` - enable additional compiler optimizations (about 8% reduction
   noticed in the MP4 parse time and frame processing time compared to the default `-O`).
 
 Debug settings:
 
 - `--with-debug` - enable debug messages (also requires passing `debug` in the `error_log` directive
   in `nginx.conf`).
-- `--with-cc-opt="-O0"` - disable compiler optimizations (for debugging with `gdb`).
+- `--with-cc-opt='-O0'` - disable compiler optimizations (for debugging with `gdb`).
 
 C Macro Configurations:
 
-- `--with-cc-opt="-DNGX_VOD_MAX_TRACK_COUNT=256 -mavx2"` - increase the maximum track count
+- `--with-cc-opt='-DNGX_VOD_MAX_TRACK_COUNT=256 -mavx2'` - increase the maximum track count
   (preferably to multiples of `64`). It's recommended to enable vector extensions (`AVX2`) as well.
 
 If you wish to make use of the following features:
@@ -717,7 +717,7 @@ CDNs, it may be possible to configure the CDN to send a secret header to the ori
 enforce the header using an NGINX `if` statement:
 
 ```lua
-if ($http_x_secret_origin_header != "secret value") {
+if ($http_x_secret_origin_header != 'secret value') {
   return 403;
 }
 ```
@@ -811,7 +811,7 @@ location ~ ^/hls/cbcs/(?<playback_token>[^/]+)/ {
   vod hls;
 
   vod_hls_encryption_method sample-aes;
-  vod_hls_encryption_key_uri "skd://$vod_set_id";
+  vod_hls_encryption_key_uri 'skd://$vod_set_id';
   vod_hls_encryption_key_format 'com.apple.streamingkeydelivery';
   vod_hls_encryption_key_format_versions '1';
 
@@ -841,7 +841,7 @@ location ~ ^/hls/cenc/(?<playback_token>[^/]+)/ {
   vod_hls_encryption_key_format_versions '1';
 
   vod_drm_enabled on;
-  vod_drm_request_uri "/drm/$playback_token";
+  vod_drm_request_uri '/drm/$playback_token';
 
   vod_last_modified_types *;
 
@@ -2107,7 +2107,7 @@ http {
     # vod settings
     vod_mode mapped;
     vod_upstream_location /map;
-    vod_upstream_extra_args "pathOnly=1";
+    vod_upstream_extra_args 'pathOnly=1';
     vod_fallback_upstream_location /fallback;
     vod_last_modified 'Wed, 09 Apr 2025 14:35:00 GMT';
     vod_last_modified_types *;
@@ -2144,7 +2144,7 @@ http {
       # encrypted hls
       vod hls;
 
-      vod_secret_key "secret-$vod_filepath";
+      vod_secret_key 'secret-$vod_filepath';
       vod_hls_encryption_method aes-128;
 
       add_header Access-Control-Allow-Methods 'GET, HEAD, OPTIONS';
@@ -2172,7 +2172,7 @@ http {
     vod_mode mapped;
     vod_upstream_location /map;
     vod_remote_upstream_location /proxy;
-    vod_upstream_extra_args "pathOnly=1";
+    vod_upstream_extra_args 'pathOnly=1';
     vod_last_modified 'Wed, 09 Apr 2025 14:35:00 GMT';
     vod_last_modified_types *;
 
