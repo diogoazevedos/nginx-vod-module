@@ -811,7 +811,7 @@ location ~ ^/hls/cbcs/(?<playback_token>[^/]+)/ {
   vod hls;
 
   vod_hls_encryption_method sample-aes;
-  vod_hls_encryption_key_uri "skd://entry-$2";
+  vod_hls_encryption_key_uri "skd://$vod_set_id";
   vod_hls_encryption_key_format 'com.apple.streamingkeydelivery';
   vod_hls_encryption_key_format_versions '1';
 
@@ -2050,7 +2050,7 @@ http {
     # vod settings
     vod_mode local;
     vod_fallback_upstream_location /fallback;
-    vod_last_modified 'Wed, 9 Apr 2025 14:35:00 GMT';
+    vod_last_modified 'Wed, 09 Apr 2025 14:35:00 GMT';
     vod_last_modified_types *;
 
     # vod caches
@@ -2109,7 +2109,7 @@ http {
     vod_upstream_location /map;
     vod_upstream_extra_args "pathOnly=1";
     vod_fallback_upstream_location /fallback;
-    vod_last_modified 'Wed, 9 Apr 2025 14:35:00 GMT';
+    vod_last_modified 'Wed, 09 Apr 2025 14:35:00 GMT';
     vod_last_modified_types *;
 
     # vod caches
@@ -2173,7 +2173,7 @@ http {
     vod_upstream_location /map;
     vod_remote_upstream_location /proxy;
     vod_upstream_extra_args "pathOnly=1";
-    vod_last_modified 'Wed, 9 Apr 2025 14:35:00 GMT';
+    vod_last_modified 'Wed, 09 Apr 2025 14:35:00 GMT';
     vod_last_modified_types *;
 
     # vod caches
@@ -2250,7 +2250,7 @@ http {
     # vod settings
     vod_mode remote;
     vod_upstream_location /remote;
-    vod_last_modified 'Wed, 9 Apr 2025 14:35:00 GMT';
+    vod_last_modified 'Wed, 09 Apr 2025 14:35:00 GMT';
     vod_last_modified_types *;
 
     # vod caches
