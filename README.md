@@ -550,8 +550,8 @@ Optional fields:
   types, in bits per second. See `bitrate` above for a sample object. If specified, the module will
   use the value to populate the `AVERAGE-BANDWIDTH` attribute of `#EXT-X-STREAM-INF` in HLS.
 > **Important**: The options `label`, `roles`, `characteristics`, and `forced` are used to group
-> tracks. As HLS does not have the concept of **video*- `AdaptationSet`, any use of these options
-> will cause the HLS manifest builder to consider only the **first*- video group.
+> tracks. As HLS does not have the concept of **video** `AdaptationSet`, any use of these options
+> will cause the HLS manifest builder to consider only the **first** video group.
 
 #### Clip (abstract)
 
