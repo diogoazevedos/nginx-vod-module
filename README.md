@@ -123,6 +123,20 @@ If you wish to make use of the following features:
 
 You will also need to install the [`ffmpeg`](https://ffmpeg.org).
 
+#### Quick start
+
+You can build a Docker image using the provided `Dockerfile`, which includes a basic implementation
+of `nginx-vod-module`. The `Dockerfile` sets up and compiles NGINX with this module and its
+dependencies.
+
+```sh
+docker image build -t nginx-vod-module .
+docker container run --rm -it -p 8000:80 nginx-vod-module
+```
+
+The sample configuration files are available in the `sample` folder. You can customize the
+configurations based on your specific requirements.
+
 ### URL structure
 
 #### Basic URL structure
