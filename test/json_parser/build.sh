@@ -1,17 +1,26 @@
 #!/bin/bash
 
-if [ -z "$NGX_ROOT" ]; then
-	echo "NGX_ROOT not set"
+if [ -z "$NGINX_SOURCE_DIR" ]; then
+	echo "NGINX_SOURCE_DIR not set"
 	exit 1
 fi
 
-if [ -z "$VOD_ROOT" ]; then
-	echo "VOD_ROOT not set"
+if [ -z "$NGINX_VOD_MODULE_SOURCE_DIR" ]; then
+	echo "NGINX_VOD_MODULE_SOURCE_DIR not set"
 	exit 1
 fi
 
-if [ -z "$CC" ]; then
-	CC=cc
-fi
-
-$CC -Wall -g -ojsontest $VOD_ROOT/vod/json_parser.c $VOD_ROOT/vod/parse_utils.c $VOD_ROOT/test/json_parser/main.c $NGX_ROOT/src/core/ngx_string.c $NGX_ROOT/src/core/ngx_hash.c $NGX_ROOT/src/core/ngx_palloc.c $NGX_ROOT/src/os/unix/ngx_alloc.c -I $NGX_ROOT/src/core  -I $NGX_ROOT/src/event -I $NGX_ROOT/src/event/modules -I $NGX_ROOT/src/os/unix -I $NGX_ROOT/objs -I $VOD_ROOT
+cc -Wall -g -ojson_parser_test \
+	$NGINX_VOD_MODULE_SOURCE_DIR/vod/json_parser.c \
+	$NGINX_VOD_MODULE_SOURCE_DIR/vod/parse_utils.c \
+	$NGINX_VOD_MODULE_SOURCE_DIR/test/json_parser/main.c \
+	$NGINX_SOURCE_DIR/src/core/ngx_string.c \
+	$NGINX_SOURCE_DIR/src/core/ngx_hash.c \
+	$NGINX_SOURCE_DIR/src/core/ngx_palloc.c \
+	$NGINX_SOURCE_DIR/src/os/unix/ngx_alloc.c \
+	-I $NGINX_SOURCE_DIR/src/core \
+	-I $NGINX_SOURCE_DIR/src/event \
+	-I $NGINX_SOURCE_DIR/src/event/modules \
+	-I $NGINX_SOURCE_DIR/src/os/unix \
+	-I $NGINX_SOURCE_DIR/objs \
+	-I $NGINX_VOD_MODULE_SOURCE_DIR

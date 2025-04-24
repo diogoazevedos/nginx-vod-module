@@ -50,18 +50,27 @@ can be executed after running main.py and verify_test_entries.py to get a sense 
 
 ### buffer_cache
 
-this folder contains a stress test for the buffer cache module. in order to execute the test, run:
- * NGX_ROOT=/path/to/nginx/sources VOD_ROOT=/path/to/nginx/vod bash build.sh
- * ./bctest
+Stress test for the buffer cache module. To execute the test, run:
+
+```sh
+NGINX_SOURCE_DIR=/path/to/nginx NGINX_VOD_MODULE_SOURCE_DIR=/path/to/nginx-vod-module ./build.sh
+./buffer_cache_test
+```
 
 ### json_parser
 
-this folder contains tests for the json parser module. in order to execute the test, run:
- * NGX_ROOT=/path/to/nginx/sources VOD_ROOT=/path/to/nginx/vod bash build.sh
- * ./jsontest
+Test for the JSON parser module. To execute the test, run:
+
+```sh
+NGINX_SOURCE_DIR=/path/to/nginx NGINX_VOD_MODULE_SOURCE_DIR=/path/to/nginx-vod-module ./build.sh
+./json_parser_test
+```
 
 ### bitset
 
-this folder contains tests for the light bitset implementation. in order to execute the test, run:
- * NGX_ROOT=/path/to/nginx/sources VOD_ROOT=/path/to/nginx/vod bash build.sh
- * ./bitsettest
+Test for the light bitset implementation. To execute the test, run:
+
+```sh
+NGINX_SOURCE_DIR=/path/to/nginx NGINX_VOD_MODULE_SOURCE_DIR=/path/to/nginx-vod-module ./build.sh
+./bitset_test
+```

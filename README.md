@@ -1,5 +1,5 @@
 # NGINX-based VOD Packager
-## nginx-vod-module [![CI](https://github.com/diogoazevedos/nginx-vod-module/actions/workflows/ci.yml/badge.svg)](https://github.com/diogoazevedos/nginx-vod-module/actions/workflows/ci.yml)
+## nginx-vod-module [![CI](https://github.com/diogoazevedos/nginx-vod-module/actions/workflows/main.yml/badge.svg)](https://github.com/diogoazevedos/nginx-vod-module/actions/workflows/main.yml)
 
 ### Features
 
@@ -103,6 +103,7 @@ Optional recommended settings:
   `vod_open_file_thread_pool` in `nginx.conf`), relevant only to `local` and `mapped` modes.
 - `--with-cc-opt='-O3 -mpopcnt'` - enable additional compiler optimizations (about 8% reduction
   noticed in the MP4 parse time and frame processing time compared to the default `-O`).
+  > The `-mpopcnt` is only available on `x86_64` architectures.
 
 Debug settings:
 
@@ -121,6 +122,20 @@ If you wish to make use of the following features:
 - Playback rate change - 0.5x up to 2x
 
 You will also need to install the [`ffmpeg`](https://ffmpeg.org).
+
+#### Quick start
+
+You can build a Docker image using the provided `Dockerfile`, which includes a basic implementation
+of `nginx-vod-module`. The `Dockerfile` sets up and compiles NGINX with this module and its
+dependencies.
+
+```sh
+docker image build -t nginx-vod-module .
+docker container run --rm -it -p 8000:80 nginx-vod-module
+```
+
+The sample configuration files are available in the `sample` folder. You can customize the
+configurations based on your specific requirements.
 
 ### URL structure
 

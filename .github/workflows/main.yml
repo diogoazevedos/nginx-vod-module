@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  build:
+    name: Build using ${{ matrix.build-mode }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        build-mode:
+          - --add-module
+          - --add-dynamic-module
+    steps:
+      - run: sudo apt-get update -qq
+      - run: |
+          sudo apt-get install -y \
+            curl \
+            build-essential \
+            libfdk-aac-dev \
+            libssl-dev \
+            libavcodec-dev \
+            libavfilter-dev \
+            libswscale-dev \
+            libxml2-dev
+      - uses: actions/checkout@v4
+        with:
+          path: nginx-vod-module
+      - run: mkdir nginx
+      - run: curl -s https://nginx.org/download/nginx-1.27.5.tar.gz | tar -xz --strip-components 1 -C nginx
+      - working-directory: nginx
+        run: |
+          ../nginx-vod-module/scripts/build_basic.sh \
+            ${{ matrix.build-mode }}=../nginx-vod-module \
+            --with-cc-opt='-O3 -mpopcnt'
+          sudo make install
+      - run: /opt/nginx/sbin/nginx -V
+      - working-directory: nginx-vod-module/test
+        env:
+          NGINX_SOURCE_DIR: ../../nginx
+          NGINX_VOD_MODULE_SOURCE_DIR: ../
+        run: |
+          ./bitset/build.sh
+          ./bitset_test
