@@ -1,5 +1,5 @@
 # NGINX-based VOD Packager
-## nginx-vod-module [![CI](https://github.com/diogoazevedos/nginx-vod-module/actions/workflows/ci.yml/badge.svg)](https://github.com/diogoazevedos/nginx-vod-module/actions/workflows/ci.yml)
+## nginx-vod-module [![CI](https://github.com/diogoazevedos/nginx-vod-module/actions/workflows/main.yml/badge.svg)](https://github.com/diogoazevedos/nginx-vod-module/actions/workflows/main.yml)
 
 ### Features
 
@@ -103,6 +103,7 @@ Optional recommended settings:
   `vod_open_file_thread_pool` in `nginx.conf`), relevant only to `local` and `mapped` modes.
 - `--with-cc-opt='-O3 -mpopcnt'` - enable additional compiler optimizations (about 8% reduction
   noticed in the MP4 parse time and frame processing time compared to the default `-O`).
+  > The `-mpopcnt` is only available on `x86_64` architectures.
 
 Debug settings:
 
