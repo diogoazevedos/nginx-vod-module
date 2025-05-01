@@ -61,7 +61,7 @@ RUN apk --no-cache add \
 	&& mkdir /var/spool/nginx
 
 COPY --from=build /opt/nginx /opt/nginx
-COPY sample/nginx.conf sample/cache.conf sample/proxy.conf /opt/nginx/conf/
+COPY sample/* /opt/nginx/conf/
 COPY static/* /opt/nginx/html/
 
 EXPOSE 80
