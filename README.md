@@ -125,17 +125,29 @@ You will also need to install the [`ffmpeg`](https://ffmpeg.org).
 
 #### Quick start
 
-You can build a Docker image using the provided `Dockerfile`, which includes a basic implementation
-of `nginx-vod-module`. The `Dockerfile` sets up and compiles NGINX with this module and its
-dependencies.
+You can build and run a Docker image using the provided `Dockerfile`, which includes a basic
+implementation of `nginx-vod-module` with all required dependencies.
 
 ```sh
 docker image build -t nginx-vod-module .
 docker container run --rm -it -p 8000:80 nginx-vod-module
 ```
 
-The sample configuration files are available in the [`sample` folder](./sample). You can customize
-the configurations based on your specific requirements.
+> [!TIP]
+> The sample configuration files are available in the [`sample` folder](./sample). You can customize
+> the configurations based on your specific requirements.
+
+```sh
+npx http-server demo -p 8080 -g --cors
+```
+
+Watch the demo content in your browser by visiting
+[Tears of Steel demo](https://shaka-player-demo.appspot.com/demo/#assetBase64=eyJtYW5pZmVzdFVyaSI6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMC9obHMvY2xlYXIvdGVhcnMtb2Ytc3RlZWwvLm0zdTgifQ).
+
+> [!TIP]
+> Download the sample media files
+> [`tears-of-steel.zip`](https://media-sample-storage.s3.eu-central-1.amazonaws.com/tears-of-steel.zip)
+> and extract them at `demo/storage/tears-of-steel`.
 
 ### URL structure
 
