@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1-labs
+
 FROM alpine:3.21.3 AS build
 
 RUN apk --no-cache add \
@@ -11,7 +13,7 @@ RUN apk --no-cache add \
 	&& mkdir /nginx \
 	&& wget -qO- https://nginx.org/download/nginx-1.27.5.tar.gz | tar -xz --strip-components 1 -C /nginx
 
-COPY . /nginx-vod-module
+COPY --exclude=sample . /nginx-vod-module
 
 WORKDIR /nginx
 
@@ -59,7 +61,7 @@ RUN apk --no-cache add \
 	&& mkdir /var/spool/nginx
 
 COPY --from=build /opt/nginx /opt/nginx
-COPY sample/nginx.conf sample/cache.conf sample/proxy.conf /opt/nginx/conf/
+COPY sample/* /opt/nginx/conf/
 COPY static/* /opt/nginx/html/
 
 EXPOSE 80
