@@ -44,6 +44,7 @@
 // constants
 static const u_char m3u8_header[] = "#EXTM3U\n";
 static const u_char m3u8_footer[] = "#EXT-X-ENDLIST\n";
+static const u_char m3u8_independent_segments[] = "#EXT-X-INDEPENDENT-SEGMENTS\n";
 static const char m3u8_stream_inf_video[] = "#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=%uD,RESOLUTION=%uDx%uD,FRAME-RATE=%uD.%03uD,CODECS=\"%V";
 static const char m3u8_stream_inf_audio[] = "#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=%uD,CODECS=\"%V";
 static const char m3u8_average_bandwidth[] = ",AVERAGE-BANDWIDTH=%uD";
@@ -544,6 +545,11 @@ m3u8_builder_build_index_playlist(
 		}
 	}
 
+	if (media_set->segmenter_conf->align_to_key_frames)
+	{
+		result_size += sizeof(m3u8_independent_segments) - 1;
+	}
+
 	// allocate the buffer
 	result->data = vod_alloc(request_context->pool, result_size);
 	if (result->data == NULL)
@@ -665,6 +671,11 @@ m3u8_builder_build_index_playlist(
 		M3U8_HEADER_PART2,
 		container_format == HLS_CONTAINER_FMP4 ? 6 : conf->m3u8_version,
 		segment_durations.items[0].segment_index + 1);
+
+	if (media_set->segmenter_conf->align_to_key_frames)
+	{
+		p = vod_copy(p, m3u8_independent_segments, sizeof(m3u8_independent_segments) - 1);
+	}
 
 	if (container_format == HLS_CONTAINER_FMP4)
 	{
@@ -1359,6 +1370,11 @@ m3u8_builder_build_master_playlist(
 
 	result_size = sizeof(m3u8_header);
 
+	if (media_set->segmenter_conf->align_to_key_frames)
+	{
+		result_size += sizeof(m3u8_independent_segments) - 1;
+	}
+
 	max_video_stream_inf =
 		sizeof(m3u8_stream_inf_video) - 1 + 5 * VOD_INT32_LEN + MAX_CODEC_NAME_SIZE +
 		MAX_CODEC_NAME_SIZE + 1 +		// 1 = ,
@@ -1462,6 +1478,12 @@ m3u8_builder_build_master_playlist(
 
 	// write the header
 	p = vod_copy(result->data, m3u8_header, sizeof(m3u8_header) - 1);
+
+	if (media_set->segmenter_conf->align_to_key_frames)
+	{
+		p = vod_copy(p, m3u8_independent_segments, sizeof(m3u8_independent_segments) - 1);
+	}
+
 	*p++ = '\n';
 
 	if (alternative_audio)
