@@ -1572,10 +1572,11 @@ m3u8_builder_init_config(
 	uint32_t max_segment_duration,
 	hls_encryption_type_t encryption_method)
 {
-	if (encryption_method == HLS_ENC_SAMPLE_AES ||
-		encryption_method == HLS_ENC_SAMPLE_AES_CENC ||
-		conf->encryption_key_format.len != 0 ||
-		conf->encryption_key_format_versions.len != 0)
+	if (encryption_method == HLS_ENC_SAMPLE_AES_CENC)
+	{
+		conf->m3u8_version = 6;
+	}
+	else if (encryption_method == HLS_ENC_SAMPLE_AES)
 	{
 		conf->m3u8_version = 5;
 	}
