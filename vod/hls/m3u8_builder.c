@@ -45,8 +45,8 @@
 static const u_char m3u8_header[] = "#EXTM3U\n";
 static const u_char m3u8_footer[] = "#EXT-X-ENDLIST\n";
 static const u_char m3u8_independent_segments[] = "#EXT-X-INDEPENDENT-SEGMENTS\n";
-static const char m3u8_stream_inf_video[] = "#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=%uD,RESOLUTION=%uDx%uD,FRAME-RATE=%uD.%03uD,CODECS=\"%V";
-static const char m3u8_stream_inf_audio[] = "#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=%uD,CODECS=\"%V";
+static const char m3u8_stream_inf_video[] = "#EXT-X-STREAM-INF:BANDWIDTH=%uD,RESOLUTION=%uDx%uD,FRAME-RATE=%uD.%03uD,CODECS=\"%V";
+static const char m3u8_stream_inf_audio[] = "#EXT-X-STREAM-INF:BANDWIDTH=%uD,CODECS=\"%V";
 static const char m3u8_average_bandwidth[] = ",AVERAGE-BANDWIDTH=%uD";
 static const char m3u8_iframe_stream_inf[] = "#EXT-X-I-FRAME-STREAM-INF:BANDWIDTH=%uD,RESOLUTION=%uDx%uD,CODECS=\"%V\",URI=\"";
 static const u_char m3u8_discontinuity[] = "#EXT-X-DISCONTINUITY\n";
