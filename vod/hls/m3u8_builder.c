@@ -8,10 +8,9 @@
 #endif // NGX_HAVE_OPENSSL_EVP
 
 // macros
-#define M3U8_HEADER_PART1 "#EXTM3U\n#EXT-X-TARGETDURATION:%uL\n"
+#define M3U8_HEADER "#EXTM3U\n#EXT-X-VERSION:%d\n#EXT-X-TARGETDURATION:%uL\n#EXT-X-MEDIA-SEQUENCE:%uD\n"
 #define M3U8_HEADER_VOD "#EXT-X-PLAYLIST-TYPE:VOD\n"
 #define M3U8_HEADER_EVENT "#EXT-X-PLAYLIST-TYPE:EVENT\n"
-#define M3U8_HEADER_PART2 "#EXT-X-VERSION:%d\n#EXT-X-MEDIA-SEQUENCE:%uD\n"
 
 #define M3U8_EXT_MEDIA_BASE "#EXT-X-MEDIA:TYPE=%s,GROUP-ID=\"%s%uD\",NAME=\"%V\","
 #define M3U8_EXT_MEDIA_LANG "LANGUAGE=\"%V\","
@@ -474,9 +473,8 @@ m3u8_builder_build_index_playlist(
 		segments_base_url->len + conf->segment_file_name_prefix.len + 1 + vod_get_int_print_len(last_segment_index) + name_suffix.len;
 
 	result_size =
-		sizeof(M3U8_HEADER_PART1) + VOD_INT64_LEN +
+		sizeof(M3U8_HEADER) + VOD_INT32_LEN + VOD_INT64_LEN + VOD_INT64_LEN +
 		sizeof(M3U8_HEADER_EVENT) +
-		sizeof(M3U8_HEADER_PART2) + VOD_INT64_LEN + VOD_INT32_LEN +
 		segment_length * segment_durations.segment_count +
 		segment_durations.discontinuities * (sizeof(m3u8_discontinuity) - 1) +
 		(sizeof(m3u8_map_prefix) - 1 +
@@ -583,8 +581,10 @@ m3u8_builder_build_index_playlist(
 	// write the header
 	p = vod_sprintf(
 		result->data,
-		M3U8_HEADER_PART1,
-		max_segment_duration);
+		M3U8_HEADER,
+		container_format == HLS_CONTAINER_FMP4 ? 6 : conf->m3u8_version,
+		max_segment_duration,
+		segment_durations.items[0].segment_index + 1);
 
 	if (media_set->type == MEDIA_SET_VOD)
 	{
@@ -593,6 +593,11 @@ m3u8_builder_build_index_playlist(
 	else if (media_set->is_live_event)
 	{
 		p = vod_copy(p, M3U8_HEADER_EVENT, sizeof(M3U8_HEADER_EVENT) - 1);
+	}
+
+	if (media_set->segmenter_conf->align_to_key_frames)
+	{
+		p = vod_copy(p, m3u8_independent_segments, sizeof(m3u8_independent_segments) - 1);
 	}
 
 	if (encryption_type != HLS_ENC_NONE)
@@ -663,17 +668,6 @@ m3u8_builder_build_index_playlist(
 		}
 
 		*p++ = '\n';
-	}
-
-	p = vod_sprintf(
-		p,
-		M3U8_HEADER_PART2,
-		container_format == HLS_CONTAINER_FMP4 ? 6 : conf->m3u8_version,
-		segment_durations.items[0].segment_index + 1);
-
-	if (media_set->segmenter_conf->align_to_key_frames)
-	{
-		p = vod_copy(p, m3u8_independent_segments, sizeof(m3u8_independent_segments) - 1);
 	}
 
 	if (container_format == HLS_CONTAINER_FMP4)
