@@ -8,10 +8,9 @@
 #endif // NGX_HAVE_OPENSSL_EVP
 
 // macros
-#define M3U8_HEADER_PART1 "#EXTM3U\n#EXT-X-TARGETDURATION:%uL\n#EXT-X-ALLOW-CACHE:YES\n"
+#define M3U8_HEADER "#EXTM3U\n#EXT-X-VERSION:%d\n#EXT-X-TARGETDURATION:%uL\n#EXT-X-MEDIA-SEQUENCE:%uD\n"
 #define M3U8_HEADER_VOD "#EXT-X-PLAYLIST-TYPE:VOD\n"
 #define M3U8_HEADER_EVENT "#EXT-X-PLAYLIST-TYPE:EVENT\n"
-#define M3U8_HEADER_PART2 "#EXT-X-VERSION:%d\n#EXT-X-MEDIA-SEQUENCE:%uD\n"
 
 #define M3U8_EXT_MEDIA_BASE "#EXT-X-MEDIA:TYPE=%s,GROUP-ID=\"%s%uD\",NAME=\"%V\","
 #define M3U8_EXT_MEDIA_LANG "LANGUAGE=\"%V\","
@@ -45,8 +44,8 @@
 static const u_char m3u8_header[] = "#EXTM3U\n";
 static const u_char m3u8_footer[] = "#EXT-X-ENDLIST\n";
 static const u_char m3u8_independent_segments[] = "#EXT-X-INDEPENDENT-SEGMENTS\n";
-static const char m3u8_stream_inf_video[] = "#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=%uD,RESOLUTION=%uDx%uD,FRAME-RATE=%uD.%03uD,CODECS=\"%V";
-static const char m3u8_stream_inf_audio[] = "#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=%uD,CODECS=\"%V";
+static const char m3u8_stream_inf_video[] = "#EXT-X-STREAM-INF:BANDWIDTH=%uD,RESOLUTION=%uDx%uD,FRAME-RATE=%uD.%03uD,CODECS=\"%V";
+static const char m3u8_stream_inf_audio[] = "#EXT-X-STREAM-INF:BANDWIDTH=%uD,CODECS=\"%V";
 static const char m3u8_average_bandwidth[] = ",AVERAGE-BANDWIDTH=%uD";
 static const char m3u8_iframe_stream_inf[] = "#EXT-X-I-FRAME-STREAM-INF:BANDWIDTH=%uD,RESOLUTION=%uDx%uD,CODECS=\"%V\",URI=\"";
 static const u_char m3u8_discontinuity[] = "#EXT-X-DISCONTINUITY\n";
@@ -411,7 +410,7 @@ m3u8_builder_build_index_playlist(
 	uint32_t segment_index;
 	uint32_t last_segment_index;
 	uint32_t clip_index = 0;
-	uint32_t scale;
+	uint32_t scale = 1000;
 	size_t segment_length;
 	size_t result_size;
 	vod_status_t rc;
@@ -474,9 +473,8 @@ m3u8_builder_build_index_playlist(
 		segments_base_url->len + conf->segment_file_name_prefix.len + 1 + vod_get_int_print_len(last_segment_index) + name_suffix.len;
 
 	result_size =
-		sizeof(M3U8_HEADER_PART1) + VOD_INT64_LEN +
+		sizeof(M3U8_HEADER) + VOD_INT32_LEN + VOD_INT64_LEN + VOD_INT64_LEN +
 		sizeof(M3U8_HEADER_EVENT) +
-		sizeof(M3U8_HEADER_PART2) + VOD_INT64_LEN + VOD_INT32_LEN +
 		segment_length * segment_durations.segment_count +
 		segment_durations.discontinuities * (sizeof(m3u8_discontinuity) - 1) +
 		(sizeof(m3u8_map_prefix) - 1 +
@@ -570,7 +568,6 @@ m3u8_builder_build_index_playlist(
 	}
 
 	// Note: scaling first to 'scale' so that target duration will always be round(max(manifest durations))
-	scale = conf->m3u8_version >= 3 ? 1000 : 1;
 	max_segment_duration = rescale_time(max_segment_duration, segment_durations.timescale, scale);
 	max_segment_duration = rescale_time(max_segment_duration, scale, 1);
 
@@ -584,8 +581,10 @@ m3u8_builder_build_index_playlist(
 	// write the header
 	p = vod_sprintf(
 		result->data,
-		M3U8_HEADER_PART1,
-		max_segment_duration);
+		M3U8_HEADER,
+		container_format == HLS_CONTAINER_FMP4 ? 6 : conf->m3u8_version,
+		max_segment_duration,
+		segment_durations.items[0].segment_index + 1);
 
 	if (media_set->type == MEDIA_SET_VOD)
 	{
@@ -594,6 +593,11 @@ m3u8_builder_build_index_playlist(
 	else if (media_set->is_live_event)
 	{
 		p = vod_copy(p, M3U8_HEADER_EVENT, sizeof(M3U8_HEADER_EVENT) - 1);
+	}
+
+	if (media_set->segmenter_conf->align_to_key_frames)
+	{
+		p = vod_copy(p, m3u8_independent_segments, sizeof(m3u8_independent_segments) - 1);
 	}
 
 	if (encryption_type != HLS_ENC_NONE)
@@ -664,17 +668,6 @@ m3u8_builder_build_index_playlist(
 		}
 
 		*p++ = '\n';
-	}
-
-	p = vod_sprintf(
-		p,
-		M3U8_HEADER_PART2,
-		container_format == HLS_CONTAINER_FMP4 ? 6 : conf->m3u8_version,
-		segment_durations.items[0].segment_index + 1);
-
-	if (media_set->segmenter_conf->align_to_key_frames)
-	{
-		p = vod_copy(p, m3u8_independent_segments, sizeof(m3u8_independent_segments) - 1);
 	}
 
 	if (container_format == HLS_CONTAINER_FMP4)
@@ -1573,16 +1566,17 @@ m3u8_builder_init_config(
 	uint32_t max_segment_duration,
 	hls_encryption_type_t encryption_method)
 {
-	if (encryption_method == HLS_ENC_SAMPLE_AES ||
-		encryption_method == HLS_ENC_SAMPLE_AES_CENC ||
-		conf->encryption_key_format.len != 0 ||
-		conf->encryption_key_format_versions.len != 0)
+	if (encryption_method == HLS_ENC_SAMPLE_AES_CENC)
+	{
+		conf->m3u8_version = 6;
+	}
+	else if (encryption_method == HLS_ENC_SAMPLE_AES)
 	{
 		conf->m3u8_version = 5;
 	}
 	else
 	{
-		conf->m3u8_version = 3;
+		conf->m3u8_version = 4;
 	}
 
 	conf->iframes_m3u8_header_len = vod_snprintf(
