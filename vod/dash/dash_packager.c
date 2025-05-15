@@ -205,7 +205,6 @@
 #define MAX_INDEX_SHIFT_LENGTH (sizeof("i-") + VOD_INT32_LEN)
 #define MAX_MIME_TYPE_SIZE (sizeof("video/webm") - 1)
 #define MAX_FILE_EXT_SIZE (sizeof("webm") - 1)
-#define MAX_ROLE_SIZE (32)
 
 static vod_str_t unknown_lang = vod_string("und");
 
