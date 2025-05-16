@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0](https://github.com/diogoazevedos/nginx-vod-module/compare/v1.0.0...v1.1.0) (2025-05-16)
+
+### Features
+
+- Update minimum HLS version ([#26](https://github.com/diogoazevedos/nginx-vod-module/pull/26))
+- Add HLS independent segments tag ([#25](https://github.com/diogoazevedos/nginx-vod-module/pull/25))
+
+### Bug Fixes
+
+- Ensure that DASH request version is correct ([#28](https://github.com/diogoazevedos/nginx-vod-module/pull/28))
+
 ## [1.0.0](https://github.com/diogoazevedos/nginx-vod-module/compare/26f06877b0f2a2336e59cda93a3de18d7b23a3e2...v1.0.0) (2025-05-06)
 
 ### ⚠ BREAKING CHANGES
