@@ -25,7 +25,6 @@ RUN /nginx-vod-module/scripts/build_basic.sh \
 		--without-http_mirror_module \
 		--without-http_autoindex_module \
 		--without-http_geo_module \
-		--without-http_map_module \
 		--without-http_split_clients_module \
 		--without-http_referer_module \
 		--without-http_fastcgi_module \
