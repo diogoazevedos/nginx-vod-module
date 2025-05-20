@@ -927,6 +927,8 @@ location ~ ^/hls/cenc/(?<playback_token>[^/]+)/ {
 - Enable gzip compression on manifest responses -
   `gzip_types application/vnd.apple.mpegurl application/dash+xml text/xml text/vtt`.
 - Apply common NGINX performance best practices, such as `tcp_nodelay on`, `client_header_timeout`.
+- Tweak common Kernel parameters for high-throughput, such as `net.core.*`, `net.ipv4.*`,
+  `vm.swappiness`, as well as file descriptor limits.
 
 ### Configuration directives - Basic
 
