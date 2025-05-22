@@ -482,7 +482,7 @@ Optional fields:
   can have severe performance implications for long sequences (`nginx-vod-module` has to read the
   media info of all clips included in the mapping in order to generate the MPD).
 - `referenceClipIndex` - an integer that sets the (*1-based*) index of the clip that should be used
-  to retrieve the video metadata for manifest requests (codec, width, height etc.) If
+  to retrieve the video metadata for manifest requests (such as codec, width, height) If
   `consistentSequenceMediaInfo` is set to `false`, this parameter has no effect - all clips are
   parsed. If this parameter is not specified, `nginx-vod-module` uses the last clip by default.
 - `notifications` - an array of [notification](#notification) objects, when a segment is requested,
@@ -795,7 +795,7 @@ Media encryption reduces the problem of securing the media to the need to secure
 The media segment URLs (which compose the vast majority of the traffic) can be completely
 unprotected, and easily cacheable by any proxies between the client and servers (unlike
 tokenization). The encryption key request can then be protected using one of the methods mentioned
-above (CDN tokens, NGINX access rules etc.).
+above (CDN tokens, NGINX access rules).
 
 In addition, it is possible to configure the `nginx-vod-module` to return the encryption key over
 HTTPS while having the segments delivered over HTTP. The way to configure this is to set
@@ -895,7 +895,7 @@ location ~ ^/hls/cenc/(?<playback_token>[^/]+)/ {
 
 - Do not allow customers to play the content directly from `nginx-vod-module`. As all the different
   streaming protocols supported are HTTP based, so they can be cached by standard HTTP CDNs (such as
-  Akamai, CloudFront, Fastly etc.).
+  Akamai, CloudFront, Fastly).
 - Keep the `nginx-vod-module` as close as possible to where the source MP4 files are stored.
 - Enable `nginx-vod-module` cache mechanisms:
   - `vod_metadata_cache` - saves the video metadata avoiding the need to re-read them for every
@@ -926,8 +926,9 @@ location ~ ^/hls/cenc/(?<playback_token>[^/]+)/ {
   - HLS - set `vod_hls_mpegts_align_frames` to `off` and `vod_hls_mpegts_interleave_frames` to `on`.
 - Enable gzip compression on manifest responses -
   `gzip_types application/vnd.apple.mpegurl application/dash+xml text/xml text/vtt`.
-- Apply common NGINX performance best practices, such as `tcp_nodelay on`, `client_header_timeout`
-  etc.
+- Apply common NGINX performance best practices, such as `tcp_nodelay on`, `client_header_timeout`.
+- Tweak common Kernel parameters for high-throughput, such as `net.core.*`, `net.ipv4.*`,
+  `vm.swappiness`, as well as file descriptor limits.
 
 ### Configuration directives - Basic
 
@@ -1229,8 +1230,8 @@ only).
 - **context**: `http`, `server`, `location`
 
 Configures the size and shared memory object name of the response cache. The response cache holds
-manifests and other non-video content (like DASH init segment, HLS encryption key etc.). Video
-segments are not cached.
+manifests and other non-video content (like DASH init segment, HLS encryption key). Video segments
+are not cached.
 
 #### vod_live_response_cache
 
@@ -1643,8 +1644,7 @@ layout of the segment can be calculated in advance, allowing the module to:
 
 - Output segment buffers as they are generated (it doesn't have to wait for the whole segment to
   complete).
-- Avoid frame processing for requests that do not need the segment data (e.g. `HEAD`, `Range 0-0`,
-  etc.).
+- Avoid frame processing for requests that do not need the segment data (e.g. `HEAD`, `Range 0-0`).
 
 ### Configuration directives - DASH
 
