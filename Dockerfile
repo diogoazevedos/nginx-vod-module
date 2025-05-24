@@ -11,7 +11,7 @@ RUN apk --no-cache add \
 		fdk-aac-dev \
 		openssl-dev \
 	&& mkdir /nginx \
-	&& wget -qO- https://nginx.org/download/nginx-1.27.5.tar.gz | tar -xz --strip-components 1 -C /nginx
+	&& wget -qO- https://nginx.org/download/nginx-1.28.0.tar.gz | tar -xz --strip-components 1 -C /nginx
 
 COPY --exclude=sample . /nginx-vod-module
 
