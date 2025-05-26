@@ -8,7 +8,6 @@
 #endif // NGX_HAVE_OPENSSL_EVP
 
 // macros
-#define M3U8_HEADER "#EXTM3U\n#EXT-X-VERSION:%d\n#EXT-X-TARGETDURATION:%uL\n#EXT-X-MEDIA-SEQUENCE:%uD\n"
 #define M3U8_HEADER_VOD "#EXT-X-PLAYLIST-TYPE:VOD\n"
 #define M3U8_HEADER_EVENT "#EXT-X-PLAYLIST-TYPE:EVENT\n"
 
@@ -41,7 +40,8 @@
 #define M3U8_VIDEO_RANGE_PQ ",VIDEO-RANGE=PQ"
 
 // constants
-static const u_char m3u8_header[] = "#EXTM3U\n";
+static const char m3u8_header_base[] = "#EXTM3U\n#EXT-X-VERSION:%uD\n";
+static const char m3u8_header_index[] = "#EXT-X-TARGETDURATION:%uL\n#EXT-X-MEDIA-SEQUENCE:%uD\n";
 static const u_char m3u8_footer[] = "#EXT-X-ENDLIST\n";
 static const u_char m3u8_independent_segments[] = "#EXT-X-INDEPENDENT-SEGMENTS\n";
 static const char m3u8_stream_inf_video[] = "#EXT-X-STREAM-INF:BANDWIDTH=%uD,RESOLUTION=%uDx%uD,FRAME-RATE=%uD.%03uD,CODECS=\"%V";
@@ -54,7 +54,6 @@ static const u_char m3u8_url_suffix[] = ".m3u8";
 static const u_char m3u8_map_prefix[] = "#EXT-X-MAP:URI=\"";
 static const u_char m3u8_map_suffix[] = ".mp4\"\n";
 static const char m3u8_clip_index[] = "-c%uD";
-
 
 static const char encryption_key_tag_method[] = "#EXT-X-KEY:METHOD=";
 static const char encryption_key_tag_uri[] = ",URI=\"";
@@ -473,7 +472,8 @@ m3u8_builder_build_index_playlist(
 		segments_base_url->len + conf->segment_file_name_prefix.len + 1 + vod_get_int_print_len(last_segment_index) + name_suffix.len;
 
 	result_size =
-		sizeof(M3U8_HEADER) - 1 + VOD_INT32_LEN + VOD_INT64_LEN + VOD_INT64_LEN +
+		sizeof(m3u8_header_base) - 1 + VOD_INT32_LEN +
+		sizeof(m3u8_header_index) - 1 + VOD_INT64_LEN + VOD_INT64_LEN +
 		sizeof(M3U8_HEADER_EVENT) - 1 +
 		segment_length * segment_durations.segment_count +
 		segment_durations.discontinuities * (sizeof(m3u8_discontinuity) - 1) +
@@ -581,8 +581,12 @@ m3u8_builder_build_index_playlist(
 	// write the header
 	p = vod_sprintf(
 		result->data,
-		M3U8_HEADER,
-		container_format == HLS_CONTAINER_FMP4 ? 6 : conf->m3u8_version,
+		m3u8_header_base,
+		container_format == HLS_CONTAINER_FMP4 ? 6 : conf->m3u8_version);
+
+	p = vod_sprintf(
+		p,
+		m3u8_header_index,
 		max_segment_duration,
 		segment_durations.items[0].segment_index + 1);
 
@@ -1361,7 +1365,7 @@ m3u8_builder_build_master_playlist(
 	base_url_len = base_url->len + 1 + conf->index_file_name_prefix.len +			// 1 = /
 		MANIFEST_UTILS_TRACKS_SPEC_MAX_SIZE + sizeof(m3u8_url_suffix) - 1;
 
-	result_size = sizeof(m3u8_header) - 1;
+	result_size = sizeof(m3u8_header_base) - 1 + VOD_INT32_LEN;
 
 	if (media_set->segmenter_conf->align_to_key_frames)
 	{
@@ -1470,7 +1474,7 @@ m3u8_builder_build_master_playlist(
 	}
 
 	// write the header
-	p = vod_copy(result->data, m3u8_header, sizeof(m3u8_header) - 1);
+	p = vod_sprintf(result->data, m3u8_header_base, conf->m3u8_version);
 
 	if (media_set->segmenter_conf->align_to_key_frames)
 	{
