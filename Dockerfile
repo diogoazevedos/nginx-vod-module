@@ -43,7 +43,6 @@ RUN /nginx-vod-module/scripts/build_basic.sh \
 		--with-http_stub_status_module \
 		--add-module=/nginx-vod-module \
 		--with-cc-opt='-O0' \
-	&& make -j $(nproc) \
 	&& make install
 
 FROM alpine:3.21.3
