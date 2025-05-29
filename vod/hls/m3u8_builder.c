@@ -8,9 +8,6 @@
 #endif // NGX_HAVE_OPENSSL_EVP
 
 // macros
-#define M3U8_HEADER_VOD "#EXT-X-PLAYLIST-TYPE:VOD\n"
-#define M3U8_HEADER_EVENT "#EXT-X-PLAYLIST-TYPE:EVENT\n"
-
 #define M3U8_EXT_MEDIA_BASE "#EXT-X-MEDIA:TYPE=%s,GROUP-ID=\"%s%uD\",NAME=\"%V\","
 #define M3U8_EXT_MEDIA_LANG "LANGUAGE=\"%V\","
 #define M3U8_EXT_MEDIA_DEFAULT "DEFAULT=YES,"
@@ -42,6 +39,8 @@
 // constants
 static const char m3u8_header_base[] = "#EXTM3U\n#EXT-X-VERSION:%uD\n";
 static const char m3u8_header_index[] = "#EXT-X-TARGETDURATION:%uL\n#EXT-X-MEDIA-SEQUENCE:%uD\n";
+static const u_char m3u8_playlist_vod[] = "#EXT-X-PLAYLIST-TYPE:VOD\n";
+static const u_char m3u8_playlist_event[] = "#EXT-X-PLAYLIST-TYPE:EVENT\n";
 static const u_char m3u8_footer[] = "#EXT-X-ENDLIST\n";
 static const u_char m3u8_independent_segments[] = "#EXT-X-INDEPENDENT-SEGMENTS\n";
 static const char m3u8_stream_inf_video[] = "#EXT-X-STREAM-INF:BANDWIDTH=%uD,RESOLUTION=%uDx%uD,FRAME-RATE=%uD.%03uD,CODECS=\"%V";
@@ -476,7 +475,7 @@ m3u8_builder_build_index_playlist(
 	result_size =
 		sizeof(m3u8_header_base) - 1 + VOD_INT32_LEN +
 		sizeof(m3u8_header_index) - 1 + VOD_INT64_LEN + VOD_INT64_LEN +
-		sizeof(M3U8_HEADER_EVENT) - 1 +
+		sizeof(m3u8_playlist_event) - 1 +
 		segment_length * segment_durations.segment_count +
 		segment_durations.discontinuities * (sizeof(m3u8_discontinuity) - 1) +
 		(sizeof(m3u8_map_prefix) - 1 +
@@ -598,11 +597,11 @@ m3u8_builder_build_index_playlist(
 
 	if (media_set->type == MEDIA_SET_VOD)
 	{
-		p = vod_copy(p, M3U8_HEADER_VOD, sizeof(M3U8_HEADER_VOD) - 1);
+		p = vod_copy(p, m3u8_playlist_vod, sizeof(m3u8_playlist_vod) - 1);
 	}
 	else if (media_set->is_live_event)
 	{
-		p = vod_copy(p, M3U8_HEADER_EVENT, sizeof(M3U8_HEADER_EVENT) - 1);
+		p = vod_copy(p, m3u8_playlist_event, sizeof(m3u8_playlist_event) - 1);
 	}
 
 	if (media_set->segmenter_conf->align_to_key_frames &&
