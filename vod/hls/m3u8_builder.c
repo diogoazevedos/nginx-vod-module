@@ -7,27 +7,6 @@
 #include "../mp4/mp4_defs.h"
 #endif // NGX_HAVE_OPENSSL_EVP
 
-// macros
-#define M3U8_EXT_MEDIA_BASE "#EXT-X-MEDIA:TYPE=%s,GROUP-ID=\"%s%uD\",NAME=\"%V\","
-#define M3U8_EXT_MEDIA_LANG "LANGUAGE=\"%V\","
-#define M3U8_EXT_MEDIA_DEFAULT "DEFAULT=YES,"
-#define M3U8_EXT_MEDIA_NON_DEFAULT "DEFAULT=NO,"
-#define M3U8_EXT_MEDIA_AUTOSELECT "AUTOSELECT=YES,"
-#define M3U8_EXT_MEDIA_FORCED "FORCED=YES,"
-#define M3U8_EXT_MEDIA_CHARACTERISTICS "CHARACTERISTICS=\"%V\","
-#define M3U8_EXT_MEDIA_URI "URI=\""
-#define M3U8_EXT_MEDIA_INSTREAM_ID "INSTREAM-ID=\"%V\""
-
-#define M3U8_EXT_MEDIA_CHANNELS "CHANNELS=\"%uD\","
-
-#define M3U8_EXT_MEDIA_TYPE_AUDIO "AUDIO"
-#define M3U8_EXT_MEDIA_TYPE_SUBTITLES "SUBTITLES"
-#define M3U8_EXT_MEDIA_TYPE_CLOSED_CAPTIONS "CLOSED-CAPTIONS"
-
-#define M3U8_EXT_MEDIA_GROUP_ID_AUDIO "audio"
-#define M3U8_EXT_MEDIA_GROUP_ID_SUBTITLES "subs"
-#define M3U8_EXT_MEDIA_GROUP_ID_CLOSED_CAPTIONS "cc"
-
 // constants
 static const char m3u8_header_base[] = "#EXTM3U\n#EXT-X-VERSION:%uD\n";
 static const char m3u8_header_index[] = "#EXT-X-TARGETDURATION:%uL\n#EXT-X-MEDIA-SEQUENCE:%uD\n";
@@ -41,6 +20,24 @@ static const u_char m3u8_url_suffix[] = ".m3u8";
 static const u_char m3u8_map_prefix[] = "#EXT-X-MAP:URI=\"";
 static const u_char m3u8_map_suffix[] = ".mp4\"\n";
 static const char m3u8_clip_index[] = "-c%uD";
+
+static const u_char m3u8_group_id_audio[] = "audio";
+static const u_char m3u8_group_id_subtitles[] = "subs";
+static const u_char m3u8_group_id_closed_captions[] = "cc";
+
+static const char m3u8_media_base[] = "#EXT-X-MEDIA:TYPE=%s,GROUP-ID=\"%s%uD\",NAME=\"%V\"";
+static const u_char m3u8_media_type_audio[] = "AUDIO";
+static const u_char m3u8_media_type_subtitles[] = "SUBTITLES";
+static const u_char m3u8_media_type_closed_captions[] = "CLOSED-CAPTIONS";
+static const char m3u8_media_channels[] = ",CHANNELS=\"%uD\"";
+static const char m3u8_media_language[] = ",LANGUAGE=\"%V\"";
+static const u_char m3u8_media_default[] = ",DEFAULT=YES";
+static const u_char m3u8_media_non_default[] = ",DEFAULT=NO";
+static const u_char m3u8_media_autoselect[] = ",AUTOSELECT=YES";
+static const u_char m3u8_media_forced[] = ",FORCED=YES";
+static const char m3u8_media_characteristics[] = ",CHARACTERISTICS=\"%V\"";
+static const char m3u8_media_instream_id[] = ",INSTREAM-ID=\"%V\"";
+static const u_char m3u8_media_uri[] = ",URI=\"";
 
 static const char m3u8_stream_inf_video[] = "#EXT-X-STREAM-INF:BANDWIDTH=%uD,RESOLUTION=%uDx%uD,FRAME-RATE=%uD.%03uD,CODECS=\"%V";
 static const char m3u8_stream_inf_audio[] = "#EXT-X-STREAM-INF:BANDWIDTH=%uD,CODECS=\"%V";
@@ -142,7 +139,12 @@ m3u8_builder_append_extinf_tag(u_char* p, uint32_t duration, uint32_t scale)
 }
 
 static void
-m3u8_builder_append_iframe_string(void* context, uint32_t segment_index, uint32_t frame_duration, uint32_t frame_start, uint32_t frame_size)
+m3u8_builder_append_iframe_string(
+	void* context,
+	uint32_t segment_index,
+	uint32_t frame_duration,
+	uint32_t frame_start,
+	uint32_t frame_size)
 {
 	write_segment_context_t* ctx = (write_segment_context_t*)context;
 
@@ -511,7 +513,8 @@ m3u8_builder_build_index_playlist(
 				return rc;
 			}
 
-			result_size += sizeof(m3u8_key_uri_sample_aes_cenc_prefix) + vod_base64_encoded_length(psshs.len);
+			result_size += sizeof(m3u8_key_uri_sample_aes_cenc_prefix) +
+				vod_base64_encoded_length(psshs.len);
 		}
 #endif // NGX_HAVE_OPENSSL_EVP
 		else
@@ -832,21 +835,19 @@ m3u8_builder_append_index_url(
 }
 
 static size_t
-m3u8_builder_closed_captions_get_size(
+m3u8_builder_get_closed_captions_size(
 	media_set_t* media_set,
 	request_context_t* request_context)
 {
 	media_closed_captions_t* closed_captions;
 	size_t result = 0;
-	size_t base;
-
-	base =
-		sizeof(M3U8_EXT_MEDIA_BASE) - 1 +
-		sizeof(M3U8_EXT_MEDIA_TYPE_CLOSED_CAPTIONS) - 1 +
-		sizeof(M3U8_EXT_MEDIA_GROUP_ID_CLOSED_CAPTIONS) - 1 + VOD_INT32_LEN +
-		sizeof(M3U8_EXT_MEDIA_LANG) - 1 +
-		sizeof(M3U8_EXT_MEDIA_INSTREAM_ID) - 1 +
-		sizeof(M3U8_EXT_MEDIA_DEFAULT) - 1;
+	size_t base =
+		sizeof(m3u8_media_base) - 1 +
+		sizeof(m3u8_media_type_closed_captions) - 1 +
+		sizeof(m3u8_group_id_closed_captions) - 1 + VOD_INT32_LEN +
+		sizeof(m3u8_media_language) - 1 +
+		sizeof(m3u8_media_instream_id) - 1 +
+		sizeof(m3u8_media_default) - 1;
 
 	for (closed_captions = media_set->closed_captions; closed_captions < media_set->closed_captions_end; closed_captions++)
 	{
@@ -857,7 +858,7 @@ m3u8_builder_closed_captions_get_size(
 }
 
 static u_char*
-m3u8_builder_closed_captions_write(
+m3u8_builder_write_closed_captions(
 	u_char* p,
 	media_set_t* media_set)
 {
@@ -867,15 +868,15 @@ m3u8_builder_closed_captions_write(
 
 	for (closed_captions = media_set->closed_captions; closed_captions < media_set->closed_captions_end; closed_captions++)
 	{
-		p = vod_sprintf(p, M3U8_EXT_MEDIA_BASE,
-			M3U8_EXT_MEDIA_TYPE_CLOSED_CAPTIONS,
-			M3U8_EXT_MEDIA_GROUP_ID_CLOSED_CAPTIONS,
+		p = vod_sprintf(p, m3u8_media_base,
+			m3u8_media_type_closed_captions,
+			m3u8_group_id_closed_captions,
 			index,
 			&closed_captions->label);
 
 		if (closed_captions->language.len != 0)
 		{
-			p = vod_sprintf(p, M3U8_EXT_MEDIA_LANG, &closed_captions->language);
+			p = vod_sprintf(p, m3u8_media_language, &closed_captions->language);
 		}
 
 		is_default = closed_captions->is_default;
@@ -886,14 +887,14 @@ m3u8_builder_closed_captions_write(
 
 		if (is_default)
 		{
-			p = vod_copy(p, M3U8_EXT_MEDIA_DEFAULT, sizeof(M3U8_EXT_MEDIA_DEFAULT) - 1);
+			p = vod_copy(p, m3u8_media_default, sizeof(m3u8_media_default) - 1);
 		}
 		else
 		{
-			p = vod_copy(p, M3U8_EXT_MEDIA_NON_DEFAULT, sizeof(M3U8_EXT_MEDIA_NON_DEFAULT) - 1);
+			p = vod_copy(p, m3u8_media_non_default, sizeof(m3u8_media_non_default) - 1);
 		}
 
-		p = vod_sprintf(p, M3U8_EXT_MEDIA_INSTREAM_ID, (vod_str_t*) &closed_captions->id);
+		p = vod_sprintf(p, m3u8_media_instream_id, (vod_str_t*) &closed_captions->id);
 
 		*p++ = '\n';
 	}
@@ -904,7 +905,7 @@ m3u8_builder_closed_captions_write(
 }
 
 static size_t
-m3u8_builder_ext_x_media_tags_get_size(
+m3u8_builder_get_media_size(
 	adaptation_sets_t* adaptation_sets,
 	vod_str_t* base_url,
 	size_t base_url_len,
@@ -915,20 +916,14 @@ m3u8_builder_ext_x_media_tags_get_size(
 	adaptation_set_t* last_adaptation_set;
 	adaptation_set_t* adaptation_set;
 	media_track_t* cur_track;
-	size_t result;
-
-	result =
+	size_t result =
 		sizeof("\n\n") - 1 +
-		(sizeof(M3U8_EXT_MEDIA_BASE) - 1 + VOD_INT32_LEN +
-		sizeof(M3U8_EXT_MEDIA_TYPE_SUBTITLES) - 1 +
-		sizeof(M3U8_EXT_MEDIA_GROUP_ID_AUDIO) - 1 +
-		sizeof(M3U8_EXT_MEDIA_LANG) - 1 +
-		sizeof(M3U8_EXT_MEDIA_DEFAULT) - 1 +
-		sizeof(M3U8_EXT_MEDIA_AUTOSELECT) - 1 +
-		sizeof(M3U8_EXT_MEDIA_CHARACTERISTICS) - 1 +
-		sizeof(M3U8_EXT_MEDIA_FORCED) - 1 +
-		sizeof(M3U8_EXT_MEDIA_CHANNELS) - 1 + VOD_INT32_LEN +
-		sizeof(M3U8_EXT_MEDIA_URI) - 1 +
+		(sizeof(m3u8_media_base) - 1 + VOD_INT32_LEN +
+		sizeof(m3u8_media_type_subtitles) - 1 +
+		sizeof(m3u8_group_id_audio) - 1 +
+		sizeof(m3u8_media_language) - 1 +
+		sizeof(m3u8_media_default) - 1 +
+		sizeof(m3u8_media_uri) - 1 +
 		base_url_len +
 		sizeof("\"\n") - 1) * (adaptation_sets->count[media_type]);
 
@@ -939,8 +934,28 @@ m3u8_builder_ext_x_media_tags_get_size(
 		cur_track = adaptation_set->first[0];
 
 		result += vod_max(cur_track->media_info.tags.label.len, default_label.len) +
-			cur_track->media_info.tags.lang_str.len +
-			cur_track->media_info.tags.characteristics.len;
+			cur_track->media_info.tags.lang_str.len;
+
+		if (cur_track->media_info.tags.characteristics.len != 0)
+		{
+			result += sizeof(m3u8_media_characteristics) - 1 +
+				cur_track->media_info.tags.characteristics.len;
+		}
+
+		if (cur_track->media_info.tags.is_autoselect > 0)
+		{
+			result += sizeof(m3u8_media_autoselect) - 1;
+		}
+
+		if (cur_track->media_info.tags.is_forced > 0 && media_type == MEDIA_TYPE_SUBTITLE)
+		{
+			result += sizeof(m3u8_media_forced) - 1;
+		}
+
+		if (media_type == MEDIA_TYPE_AUDIO)
+		{
+			result += sizeof(m3u8_media_channels) - 1 + VOD_INT32_LEN;
+		}
 
 		if (base_url->len != 0)
 		{
@@ -952,7 +967,7 @@ m3u8_builder_ext_x_media_tags_get_size(
 }
 
 static u_char*
-m3u8_builder_ext_x_media_tags_write(
+m3u8_builder_write_media(
 	u_char* p,
 	adaptation_sets_t* adaptation_sets,
 	m3u8_config_t* conf,
@@ -968,23 +983,23 @@ m3u8_builder_ext_x_media_tags_write(
 	uint32_t group_index = 0;
 	uint32_t last_group_index = UINT_MAX;
 	bool_t is_default;
-	char* group_id;
-	char* type;
+	const u_char* group_id;
+	const u_char* type;
 
 	switch (media_type)
 	{
 	case MEDIA_TYPE_AUDIO:
-		type = M3U8_EXT_MEDIA_TYPE_AUDIO;
-		group_id = M3U8_EXT_MEDIA_GROUP_ID_AUDIO;
+		type = m3u8_media_type_audio;
+		group_id = m3u8_group_id_audio;
 		break;
 
 	case MEDIA_TYPE_SUBTITLE:
-		type = M3U8_EXT_MEDIA_TYPE_SUBTITLES;
-		group_id = M3U8_EXT_MEDIA_GROUP_ID_SUBTITLES;
+		type = m3u8_media_type_subtitles;
+		group_id = m3u8_group_id_subtitles;
 		break;
 
 	default:
-		return p;	// can't happen, just to avoid the warning
+		return p; // can't happen, just to avoid the warning
 	}
 
 	vod_memzero(tracks, sizeof(tracks));
@@ -1008,15 +1023,11 @@ m3u8_builder_ext_x_media_tags_write(
 			label = &default_label;
 		}
 
-		p = vod_sprintf(p, M3U8_EXT_MEDIA_BASE,
-			type,
-			group_id,
-			group_index,
-			label);
+		p = vod_sprintf(p, m3u8_media_base, type, group_id, group_index, label);
 
 		if (tracks[media_type]->media_info.tags.lang_str.len > 0)
 		{
-			p = vod_sprintf(p, M3U8_EXT_MEDIA_LANG,
+			p = vod_sprintf(p, m3u8_media_language,
 				&tracks[media_type]->media_info.tags.lang_str);
 		}
 
@@ -1029,40 +1040,38 @@ m3u8_builder_ext_x_media_tags_write(
 
 		if (is_default)
 		{
-			p = vod_copy(p, M3U8_EXT_MEDIA_DEFAULT, sizeof(M3U8_EXT_MEDIA_DEFAULT) - 1);
+			p = vod_copy(p, m3u8_media_default, sizeof(m3u8_media_default) - 1);
 		}
 
 		if (tracks[media_type]->media_info.tags.is_autoselect > 0)
 		{
-			p = vod_copy(p, M3U8_EXT_MEDIA_AUTOSELECT, sizeof(M3U8_EXT_MEDIA_AUTOSELECT) - 1);
+			p = vod_copy(p, m3u8_media_autoselect, sizeof(m3u8_media_autoselect) - 1);
 		}
 
 		if (tracks[media_type]->media_info.tags.characteristics.len != 0)
 		{
-			p = vod_sprintf(p, M3U8_EXT_MEDIA_CHARACTERISTICS,
+			p = vod_sprintf(p, m3u8_media_characteristics,
 				&tracks[media_type]->media_info.tags.characteristics);
 		}
 
 		if (tracks[media_type]->media_info.tags.is_forced > 0 && media_type == MEDIA_TYPE_SUBTITLE)
 		{
-			p = vod_copy(p, M3U8_EXT_MEDIA_FORCED, sizeof(M3U8_EXT_MEDIA_FORCED) - 1);
+			p = vod_copy(p, m3u8_media_forced, sizeof(m3u8_media_forced) - 1);
 		}
 
 		if (media_type == MEDIA_TYPE_AUDIO)
 		{
-			p = vod_sprintf(p, M3U8_EXT_MEDIA_CHANNELS,
+			p = vod_sprintf(p, m3u8_media_channels,
 				(uint32_t)tracks[media_type]->media_info.u.audio.channels);
 		}
 
-		p = vod_copy(p, M3U8_EXT_MEDIA_URI, sizeof(M3U8_EXT_MEDIA_URI) - 1);
-
+		p = vod_copy(p, m3u8_media_uri, sizeof(m3u8_media_uri) - 1);
 		p = m3u8_builder_append_index_url(
 			p,
 			&conf->index_file_name_prefix,
 			media_set,
 			tracks,
 			base_url);
-
 		*p++ = '"';
 		*p++ = '\n';
 	}
@@ -1226,7 +1235,6 @@ m3u8_builder_write_variants(
 			media_set,
 			tracks,
 			base_url);
-
 		*p++ = '\n';
 	}
 
@@ -1389,7 +1397,7 @@ m3u8_builder_build_master_playlist(
 		// alternative audio
 		// Note: in case of audio only, the first track is printed twice - once as #EXT-X-STREAM-INF
 		//		and once as #EXT-X-MEDIA
-		result_size += m3u8_builder_ext_x_media_tags_get_size(
+		result_size += m3u8_builder_get_media_size(
 			&adaptation_sets,
 			base_url,
 			base_url_len,
@@ -1414,7 +1422,7 @@ m3u8_builder_build_master_playlist(
 		m3u8_version = vod_max(5, m3u8_version);
 
 		// subtitles
-		result_size += m3u8_builder_ext_x_media_tags_get_size(
+		result_size += m3u8_builder_get_media_size(
 			&adaptation_sets,
 			base_url,
 			base_url_len,
@@ -1430,7 +1438,7 @@ m3u8_builder_build_master_playlist(
 
 		if (media_set->closed_captions < media_set->closed_captions_end)
 		{
-			result_size += m3u8_builder_closed_captions_get_size(media_set, request_context);
+			result_size += m3u8_builder_get_closed_captions_size(media_set, request_context);
 
 			max_video_stream_inf += sizeof(m3u8_stream_inf_closed_captions_group) - 1;
 		}
@@ -1497,7 +1505,7 @@ m3u8_builder_build_master_playlist(
 	if (alternative_audio)
 	{
 		// output alternative audio
-		p = m3u8_builder_ext_x_media_tags_write(
+		p = m3u8_builder_write_media(
 			p,
 			&adaptation_sets,
 			conf,
@@ -1509,7 +1517,7 @@ m3u8_builder_build_master_playlist(
 	if (adaptation_sets.count[ADAPTATION_TYPE_SUBTITLE] > 0)
 	{
 		// output subtitles
-		p = m3u8_builder_ext_x_media_tags_write(
+		p = m3u8_builder_write_media(
 			p,
 			&adaptation_sets,
 			conf,
@@ -1520,7 +1528,7 @@ m3u8_builder_build_master_playlist(
 
 	if (media_set->closed_captions < media_set->closed_captions_end)
 	{
-		p = m3u8_builder_closed_captions_write(p, media_set);
+		p = m3u8_builder_write_closed_captions(p, media_set);
 	}
 
 	// output variants
