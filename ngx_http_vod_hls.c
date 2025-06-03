@@ -1119,6 +1119,7 @@ ngx_http_vod_hls_create_loc_conf(
 	conf->output_iv = NGX_CONF_UNSET;
 	conf->m3u8_config.output_iframes_playlist = NGX_CONF_UNSET;
 	conf->m3u8_config.force_unmuxed_segments = NGX_CONF_UNSET;
+	conf->m3u8_config.m3u8_version = NGX_CONF_UNSET;
 	conf->m3u8_config.container_format = NGX_CONF_UNSET_UINT;
 }
 
@@ -1149,6 +1150,7 @@ ngx_http_vod_hls_merge_loc_conf(
 		conf->encryption_key_uri = prev->encryption_key_uri;
 	}
 	ngx_conf_merge_value(conf->m3u8_config.force_unmuxed_segments, prev->m3u8_config.force_unmuxed_segments, 0);
+	ngx_conf_merge_value(conf->m3u8_config.m3u8_version, prev->m3u8_config.m3u8_version, 4);
 	ngx_conf_merge_uint_value(conf->m3u8_config.container_format, prev->m3u8_config.container_format, HLS_CONTAINER_AUTO);
 
 	ngx_conf_merge_value(conf->interleave_frames, prev->interleave_frames, 0);
@@ -1162,34 +1164,31 @@ ngx_http_vod_hls_merge_loc_conf(
 
 	ngx_conf_merge_uint_value(conf->encryption_method, prev->encryption_method, HLS_ENC_NONE);
 
-	m3u8_builder_init_config(
-		&conf->m3u8_config,
-		base->segmenter.max_segment_duration,
-		conf->encryption_method);
+	m3u8_builder_init_config(&conf->m3u8_config, base->segmenter.max_segment_duration);
 
-	switch (conf->encryption_method)
+	if (conf->encryption_method != HLS_ENC_NONE && !base->drm_enabled)
 	{
-	case HLS_ENC_NONE:
-		break;
+		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
+			"\"vod_drm_enabled\" must be set when \"vod_hls_encryption_method\" is not none");
+		return NGX_CONF_ERROR;
+	}
 
-	case HLS_ENC_SAMPLE_AES_CENC:
-		if (!base->drm_enabled)
-		{
-			ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
-				"drm must be enabled when \"vod_hls_encryption_method\" is sample-aes-cenc");
-			return NGX_CONF_ERROR;
-		}
-		break;
+	if (conf->encryption_method == HLS_ENC_SAMPLE_AES && conf->m3u8_config.m3u8_version < 5)
+	{
+		ngx_conf_log_error(NGX_LOG_WARN, cf, 0,
+			"\"vod_hls_version\" must be at least 5 when \"vod_hls_encryption_method\" is sample-aes");
+	}
 
-	default:
-		if (base->secret_key == NULL &&
-			!base->drm_enabled)
-		{
-			ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
-				"\"vod_secret_key\" must be set when \"vod_hls_encryption_method\" is not none");
-			return NGX_CONF_ERROR;
-		}
-		break;
+	if (conf->encryption_method == HLS_ENC_SAMPLE_AES_CENC && conf->m3u8_config.m3u8_version < 6)
+	{
+		ngx_conf_log_error(NGX_LOG_WARN, cf, 0,
+			"\"vod_hls_version\" must be at least 6 when \"vod_hls_encryption_method\" is sample-aes-cenc");
+	}
+
+	if (conf->m3u8_config.container_format == HLS_CONTAINER_FMP4 && conf->m3u8_config.m3u8_version < 6)
+	{
+		ngx_conf_log_error(NGX_LOG_WARN, cf, 0,
+			"\"vod_hls_version\" must be at least 6 when \"vod_hls_container_format\" is fmp4");
 	}
 
 	return NGX_CONF_OK;
