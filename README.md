@@ -1757,6 +1757,25 @@ Sets the encryption method of HLS segments.
 When enabled the server returns the audio stream in separate segments than the ones used by the
 video stream (using `#EXT-X-MEDIA`).
 
+#### vod_hls_version
+
+- **syntax**: `vod_hls_version :version`
+- **default**: `4`
+- **context**: `http`, `server`, `location`
+
+Sets the version of the manifest. See
+[RFC 8216 Section 7](https://datatracker.ietf.org/doc/html/rfc8216#section-7) for protocol version
+compatibility.
+
+> [!IMPORTANT]
+> The mimimum version required by this module is `3`.
+
+> [!TIP]
+> For maximum compatibility, set the version to the lowest value that allows the required features
+> for playback. While this is not strictly spec-compliant, most clients are lenient and will ignore
+> unknown or unsupported tags. However, advanced features (such as fMP4) may not be recognized or
+> used by clients unless the version is set to the minimum required for those features.
+
 #### vod_hls_container_format
 
 - **syntax**: `vod_hls_container_format mpegts | fmp4 | auto`

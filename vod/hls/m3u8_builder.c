@@ -415,7 +415,6 @@ m3u8_builder_build_index_playlist(
 	size_t result_size;
 	vod_status_t rc;
 	u_char* p;
-	uint8_t m3u8_version = conf->m3u8_version;
 
 #if (NGX_HAVE_OPENSSL_EVP)
 	vod_str_t base64;
@@ -438,7 +437,6 @@ m3u8_builder_build_index_playlist(
 	}
 	else
 	{
-		m3u8_version = 3;
 		encryption_type = HLS_ENC_NONE;
 		container_format = HLS_CONTAINER_MPEGTS;		// do not output any fmp4-specific tags
 		suffix = &m3u8_vtt_suffix;
@@ -550,14 +548,7 @@ m3u8_builder_build_index_playlist(
 	if (media_set->segmenter_conf->align_to_key_frames &&
 		(media_set->track_count[MEDIA_TYPE_VIDEO] != 0 || media_set->track_count[MEDIA_TYPE_AUDIO] != 0))
 	{
-		m3u8_version = vod_max(m3u8_version, 6);
-
 		result_size += sizeof(m3u8_independent_segments) - 1;
-	}
-
-	if (container_format == HLS_CONTAINER_FMP4)
-	{
-		m3u8_version = vod_max(m3u8_version, 6);
 	}
 
 	// allocate the buffer
@@ -591,7 +582,7 @@ m3u8_builder_build_index_playlist(
 	}
 
 	// write the header
-	p = vod_sprintf(result->data, m3u8_header_base, m3u8_version);
+	p = vod_sprintf(result->data, m3u8_header_base, conf->m3u8_version);
 	p = vod_sprintf(
 		p,
 		m3u8_header_index,
@@ -1341,7 +1332,6 @@ m3u8_builder_build_master_playlist(
 	size_t result_size;
 	u_char* p;
 	bool_t alternative_audio;
-	uint8_t m3u8_version = conf->m3u8_version;
 
 	// get the adaptations sets
 	flags = ADAPTATION_SETS_FLAG_SINGLE_LANG_TRACK | ADAPTATION_SETS_FLAG_MULTI_AUDIO_CODEC;
@@ -1376,8 +1366,6 @@ m3u8_builder_build_master_playlist(
 
 	if (media_set->segmenter_conf->align_to_key_frames)
 	{
-		m3u8_version = vod_max(6, m3u8_version);
-
 		result_size += sizeof(m3u8_independent_segments) - 1;
 	}
 
@@ -1392,8 +1380,6 @@ m3u8_builder_build_master_playlist(
 
 	if (alternative_audio)
 	{
-		m3u8_version = vod_max(4, m3u8_version);
-
 		// alternative audio
 		// Note: in case of audio only, the first track is printed twice - once as #EXT-X-STREAM-INF
 		//		and once as #EXT-X-MEDIA
@@ -1419,8 +1405,6 @@ m3u8_builder_build_master_playlist(
 
 	if (adaptation_sets.count[ADAPTATION_TYPE_SUBTITLE] > 0)
 	{
-		m3u8_version = vod_max(5, m3u8_version);
-
 		// subtitles
 		result_size += m3u8_builder_get_media_size(
 			&adaptation_sets,
@@ -1434,8 +1418,6 @@ m3u8_builder_build_master_playlist(
 
 	if (media_set->closed_captions != NULL)
 	{
-		m3u8_version = vod_max(4, m3u8_version);
-
 		if (media_set->closed_captions < media_set->closed_captions_end)
 		{
 			result_size += m3u8_builder_get_closed_captions_size(media_set, request_context);
@@ -1475,8 +1457,6 @@ m3u8_builder_build_master_playlist(
 	// iframe playlist
 	if (iframe_playlist)
 	{
-		m3u8_version = vod_max(4, m3u8_version);
-
 		result_size +=
 			(sizeof(m3u8_iframe_stream_inf) - 1 + 3 * VOD_INT32_LEN + MAX_CODEC_NAME_SIZE + sizeof("\"\n\n") - 1 +
 				base_url_len - conf->index_file_name_prefix.len + conf->iframes_file_name_prefix.len +
@@ -1493,7 +1473,7 @@ m3u8_builder_build_master_playlist(
 	}
 
 	// write the header
-	p = vod_sprintf(result->data, m3u8_header_base, m3u8_version);
+	p = vod_sprintf(result->data, m3u8_header_base, conf->m3u8_version);
 
 	if (media_set->segmenter_conf->align_to_key_frames)
 	{
@@ -1584,24 +1564,8 @@ m3u8_builder_build_master_playlist(
 }
 
 void
-m3u8_builder_init_config(
-	m3u8_config_t* conf,
-	uint32_t max_segment_duration,
-	hls_encryption_type_t encryption_method)
+m3u8_builder_init_config(m3u8_config_t* conf, uint32_t max_segment_duration)
 {
-	if (encryption_method == HLS_ENC_SAMPLE_AES_CENC)
-	{
-		conf->m3u8_version = 6;
-	}
-	else if (encryption_method == HLS_ENC_SAMPLE_AES)
-	{
-		conf->m3u8_version = 5;
-	}
-	else
-	{
-		conf->m3u8_version = 3;
-	}
-
 	conf->iframes_m3u8_header_len = vod_snprintf(
 		conf->iframes_m3u8_header,
 		sizeof(conf->iframes_m3u8_header) - 1,

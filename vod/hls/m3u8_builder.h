@@ -19,7 +19,7 @@ enum {
 };
 
 typedef struct {
-	uint8_t m3u8_version;
+	int8_t m3u8_version;
 	vod_uint_t container_format;
 	u_char iframes_m3u8_header[MAX_IFRAMES_M3U8_HEADER_SIZE];
 	size_t iframes_m3u8_header_len;
@@ -61,9 +61,6 @@ vod_status_t m3u8_builder_build_iframe_playlist(
 	media_set_t* media_set,
 	vod_str_t* result);
 
-void m3u8_builder_init_config(
-	m3u8_config_t* conf,
-	uint32_t max_segment_duration,
-	hls_encryption_type_t encryption_method);
+void m3u8_builder_init_config(m3u8_config_t* conf, uint32_t max_segment_duration);
 
 #endif // __M3U8_BUILDER_H__
