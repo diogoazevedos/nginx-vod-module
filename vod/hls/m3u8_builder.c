@@ -1416,18 +1416,15 @@ m3u8_builder_build_master_playlist(
 		max_video_stream_inf += sizeof(m3u8_stream_inf_subtitles_group) - 1 + VOD_INT32_LEN;
 	}
 
-	if (media_set->closed_captions != NULL)
+	if (media_set->closed_captions < media_set->closed_captions_end)
 	{
-		if (media_set->closed_captions < media_set->closed_captions_end)
-		{
-			result_size += m3u8_builder_get_closed_captions_size(media_set, request_context);
+		result_size += m3u8_builder_get_closed_captions_size(media_set, request_context);
 
-			max_video_stream_inf += sizeof(m3u8_stream_inf_closed_captions_group) - 1;
-		}
-		else
-		{
-			max_video_stream_inf += sizeof(m3u8_stream_inf_no_closed_captions) - 1;
-		}
+		max_video_stream_inf += sizeof(m3u8_stream_inf_closed_captions_group) - 1;
+	}
+	else if (media_set->closed_captions != NULL)
+	{
+		max_video_stream_inf += sizeof(m3u8_stream_inf_no_closed_captions) - 1;
 	}
 
 	// variants
