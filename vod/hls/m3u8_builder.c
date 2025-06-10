@@ -654,12 +654,12 @@ m3u8_builder_build_index_playlist(
 
 		if (conf->encryption_key_format.len != 0)
 		{
-			p = vod_sprintf(p, m3u8_key_keyformat, conf->encryption_key_format);
+			p = vod_sprintf(p, m3u8_key_keyformat, &conf->encryption_key_format);
 		}
 
 		if (conf->encryption_key_format_versions.len != 0)
 		{
-			p = vod_sprintf(p, m3u8_key_keyformatversions, conf->encryption_key_format_versions);
+			p = vod_sprintf(p, m3u8_key_keyformatversions, &conf->encryption_key_format_versions);
 		}
 
 		*p++ = '\n';
