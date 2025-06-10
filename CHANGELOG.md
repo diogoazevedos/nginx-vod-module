@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0](https://github.com/diogoazevedos/nginx-vod-module/compare/v1.1.0...v1.2.0) (2025-06-10)
+
+### Features
+
+- Allow HLS version tuning ([#34](https://github.com/diogoazevedos/nginx-vod-module/pull/34))
+- Improve HLS builder memory usage and constants ([#33](https://github.com/diogoazevedos/nginx-vod-module/pull/33))
+- Set HLS version based on feature ([#32](https://github.com/diogoazevedos/nginx-vod-module/pull/32))
+
+### Bug Fixes
+
+- Fix regression in DRM-enabled HLS builder ([#36](https://github.com/diogoazevedos/nginx-vod-module/pull/36))
+- Fix HLS version merge ([#35](https://github.com/diogoazevedos/nginx-vod-module/pull/35))
+
 ## [1.1.0](https://github.com/diogoazevedos/nginx-vod-module/compare/v1.0.0...v1.1.0) (2025-05-16)
 
 ### Features
