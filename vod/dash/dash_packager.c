@@ -206,7 +206,7 @@
 #define MAX_MIME_TYPE_SIZE (sizeof("video/webm") - 1)
 #define MAX_FILE_EXT_SIZE (sizeof("webm") - 1)
 
-static vod_str_t unknown_lang = vod_string("und");
+static const vod_str_t unknown_lang = vod_string("und");
 
 //typedefs
 typedef struct {
@@ -769,7 +769,7 @@ dash_packager_write_mpd_period(
 	media_track_t** cur_track_ptr;
 	media_track_t* cur_track;
 	media_set_t* media_set = context->media_set;
-	vod_str_t* lang_str;
+	const vod_str_t* lang_str;
 	vod_str_t representation_id;
 	vod_str_t cur_base_url;
 	vod_str_t frame_rate;
