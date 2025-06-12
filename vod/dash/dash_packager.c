@@ -9,34 +9,34 @@
 // constants
 #define VOD_DASH_MAX_FRAME_RATE_LEN (1 + 2 * VOD_INT32_LEN)
 
-#define VOD_DASH_MANIFEST_HEADER_VOD											\
-	"<?xml version=\"1.0\"?>\n"													\
-	"<MPD\n"																	\
-	"    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"				\
-	"    xmlns=\"urn:mpeg:dash:schema:mpd:2011\"\n"								\
-	"    xsi:schemaLocation=\"urn:mpeg:dash:schema:mpd:2011 http://standards.iso.org/ittf/PubliclyAvailableStandards/MPEG-DASH_schema_files/DASH-MPD.xsd\"\n"	\
-	"    type=\"static\"\n"														\
-	"    mediaPresentationDuration=\"PT%uD.%03uDS\"\n"							\
-	"    minBufferTime=\"PT%uDS\"\n"											\
-	"    profiles=\"%V\">\n"
+static const char mpd_header_vod[] =
+	"<?xml version=\"1.0\"?>\n"
+	"<MPD\n"
+	"    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+	"    xmlns=\"urn:mpeg:dash:schema:mpd:2011\"\n"
+	"    xsi:schemaLocation=\"urn:mpeg:dash:schema:mpd:2011 http://standards.iso.org/ittf/PubliclyAvailableStandards/MPEG-DASH_schema_files/DASH-MPD.xsd\"\n"
+	"    type=\"static\"\n"
+	"    mediaPresentationDuration=\"PT%uD.%03uDS\"\n"
+	"    minBufferTime=\"PT%uDS\"\n"
+	"    profiles=\"%V\">\n";
 
-#define VOD_DASH_MANIFEST_HEADER_LIVE											\
-	"<?xml version=\"1.0\"?>\n"													\
-	"<MPD\n"																	\
-	"    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"				\
-	"    xmlns=\"urn:mpeg:dash:schema:mpd:2011\"\n"								\
-	"    xsi:schemaLocation=\"urn:mpeg:dash:schema:mpd:2011 http://standards.iso.org/ittf/PubliclyAvailableStandards/MPEG-DASH_schema_files/DASH-MPD.xsd\"\n"	\
-	"    type=\"dynamic\"\n"													\
-	"    minimumUpdatePeriod=\"PT%uD.%03uDS\"\n"								\
-	"    availabilityStartTime=\"%04d-%02d-%02dT%02d:%02d:%02dZ\"\n"			\
-	"    publishTime=\"%04d-%02d-%02dT%02d:%02d:%02dZ\"\n"						\
-	"    timeShiftBufferDepth=\"PT%uD.%03uDS\"\n"								\
-	"    minBufferTime=\"PT%uD.%03uDS\"\n"										\
-	"    suggestedPresentationDelay=\"PT%uD.%03uDS\"\n"							\
-	"    profiles=\"%V\">\n"													\
-	"  <UTCTiming\n"															\
-	"    schemeIdUri=\"urn:mpeg:dash:utc:direct:2014\"\n"						\
-	"    value=\"%04d-%02d-%02dT%02d:%02d:%02dZ\"/>\n"
+static const char mpd_header_live[] =
+	"<?xml version=\"1.0\"?>\n"
+	"<MPD\n"
+	"    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+	"    xmlns=\"urn:mpeg:dash:schema:mpd:2011\"\n"
+	"    xsi:schemaLocation=\"urn:mpeg:dash:schema:mpd:2011 http://standards.iso.org/ittf/PubliclyAvailableStandards/MPEG-DASH_schema_files/DASH-MPD.xsd\"\n"
+	"    type=\"dynamic\"\n"
+	"    minimumUpdatePeriod=\"PT%uD.%03uDS\"\n"
+	"    availabilityStartTime=\"%04d-%02d-%02dT%02d:%02d:%02dZ\"\n"
+	"    publishTime=\"%04d-%02d-%02dT%02d:%02d:%02dZ\"\n"
+	"    timeShiftBufferDepth=\"PT%uD.%03uDS\"\n"
+	"    minBufferTime=\"PT%uD.%03uDS\"\n"
+	"    suggestedPresentationDelay=\"PT%uD.%03uDS\"\n"
+	"    profiles=\"%V\">\n"
+	"  <UTCTiming\n"
+	"    schemeIdUri=\"urn:mpeg:dash:utc:direct:2014\"\n"
+	"    value=\"%04d-%02d-%02dT%02d:%02d:%02dZ\"/>\n";
 
 #define VOD_DASH_MANIFEST_BASEURL												\
 	"  <BaseURL>%V</BaseURL>\n"
@@ -197,8 +197,8 @@
 #define VOD_DASH_MANIFEST_PERIOD_FOOTER											\
 	"  </Period>\n"
 
-#define VOD_DASH_MANIFEST_FOOTER												\
-	"</MPD>\n"
+static const u_char mpd_footer[] =
+	"</MPD>\n";
 
 #define MAX_TRACK_SPEC_LENGTH (sizeof("f-v-p") + 3 * VOD_INT32_LEN)
 #define MAX_CLIP_SPEC_LENGTH (sizeof("c-") + VOD_INT32_LEN)
@@ -1480,15 +1480,16 @@ dash_packager_build_mpd(
 	switch (media_set->type)
 	{
 	case MEDIA_SET_VOD:
-		result_size += sizeof(VOD_DASH_MANIFEST_HEADER_VOD) - 1 + 3 * VOD_INT32_LEN + conf->profiles.len;
+		result_size += sizeof(mpd_header_vod) - 1 + 3 * VOD_INT32_LEN + conf->profiles.len;
 		break;
 
 	case MEDIA_SET_LIVE:
-		result_size += sizeof(VOD_DASH_MANIFEST_HEADER_LIVE) - 1 + 8 * VOD_INT32_LEN + 18 * VOD_INT64_LEN + conf->profiles.len;
+		result_size += sizeof(mpd_header_live) - 1 + 8 * VOD_INT32_LEN + 18 * VOD_INT64_LEN +
+			conf->profiles.len;
 		break;
 	}
 
-	result_size += base_period_size * period_count + sizeof(VOD_DASH_MANIFEST_FOOTER);
+	result_size += base_period_size * period_count + sizeof(mpd_footer);
 
 	for (clip_index = 0; clip_index < period_count; clip_index++)
 	{
@@ -1625,8 +1626,7 @@ dash_packager_build_mpd(
 	switch (media_set->type)
 	{
 	case MEDIA_SET_VOD:
-		p = vod_sprintf(result->data,
-			VOD_DASH_MANIFEST_HEADER_VOD,
+		p = vod_sprintf(result->data, mpd_header_vod,
 			(uint32_t)(media_set->timing.total_duration / 1000),
 			(uint32_t)(media_set->timing.total_duration % 1000),
 			(uint32_t)(segmenter_conf->max_segment_duration / 1000),
@@ -1650,8 +1650,7 @@ dash_packager_build_mpd(
 			(uint64_t)current_time * 1000,
 			&context.segment_durations[media_type]);
 
-		p = vod_sprintf(result->data,
-			VOD_DASH_MANIFEST_HEADER_LIVE,
+		p = vod_sprintf(result->data, mpd_header_live,
 			(uint32_t)(min_update_period / 1000),
 			(uint32_t)(min_update_period % 1000),
 			avail_time_gmt.vod_tm_year, avail_time_gmt.vod_tm_mon, avail_time_gmt.vod_tm_mday,
@@ -1690,7 +1689,7 @@ dash_packager_build_mpd(
 		context.clip_start_time = media_set->timing.times[context.clip_index];
 	}
 
-	p = vod_copy(p, VOD_DASH_MANIFEST_FOOTER, sizeof(VOD_DASH_MANIFEST_FOOTER) - 1);
+	p = vod_copy(p, mpd_footer, sizeof(mpd_footer) - 1);
 
 	result->len = p - result->data;
 
