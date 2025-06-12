@@ -38,8 +38,8 @@ static const char mpd_header_live[] =
 	"    schemeIdUri=\"urn:mpeg:dash:utc:direct:2014\"\n"
 	"    value=\"%04d-%02d-%02dT%02d:%02d:%02dZ\"/>\n";
 
-#define VOD_DASH_MANIFEST_BASEURL												\
-	"  <BaseURL>%V</BaseURL>\n"
+static const char mpd_baseurl[] =
+	"  <BaseURL>%V</BaseURL>\n";
 
 #define VOD_DASH_MANIFEST_PERIOD_HEADER											\
 	"  <Period>\n"
@@ -1412,7 +1412,7 @@ dash_packager_build_mpd(
 	{
 		if (conf->use_base_url_tag)
 		{
-			result_size += sizeof(VOD_DASH_MANIFEST_BASEURL) - 1 + base_url->len;
+			result_size += sizeof(mpd_baseurl) - 1 + base_url->len;
 			context.base_url.data = NULL;
 			context.base_url.len = 0;
 		}
@@ -1671,7 +1671,7 @@ dash_packager_build_mpd(
 
 	if (conf->use_base_url_tag && base_url->len != 0)
 	{
-		p = vod_sprintf(p, VOD_DASH_MANIFEST_BASEURL, base_url);
+		p = vod_sprintf(p, mpd_baseurl, base_url);
 	}
 
 	for (;;)
