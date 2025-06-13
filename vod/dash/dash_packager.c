@@ -70,8 +70,8 @@ static const char mpd_period_header_start_duration[] =
 static const char mpd_label[] =
 	"      <Label>%V</Label>\n";
 
-#define VOD_DASH_MANIFEST_ADAPTATION_ROLE										\
-	"      <Role schemeIdUri=\"urn:mpeg:dash:role:2011\" value=\"%V\"/>\n"
+static const char mpd_role[] =
+	"      <Role schemeIdUri=\"urn:mpeg:dash:role:2011\" value=\"%V\"/>\n";
 
 #define VOD_DASH_MANIFEST_REPRESENTATION_HEADER_VIDEO							\
 	"      <Representation\n"													\
@@ -712,8 +712,7 @@ dash_packager_write_roles(u_char* p, media_info_t* media_info)
 {
 	for (uint32_t role_index = 0; role_index < media_info->tags.roles.nelts; role_index++)
 	{
-		p = vod_sprintf(p, VOD_DASH_MANIFEST_ADAPTATION_ROLE,
-			(vod_str_t*)media_info->tags.roles.elts + role_index);
+		p = vod_sprintf(p, mpd_role, (vod_str_t*)media_info->tags.roles.elts + role_index);
 	}
 
 	return p;
@@ -1499,7 +1498,7 @@ dash_packager_build_mpd(
 			for (role_index = 0; role_index < cur_track->media_info.tags.roles.nelts; role_index++)
 			{
 				role = (vod_str_t*)cur_track->media_info.tags.roles.elts + role_index;
-				result_size += sizeof(VOD_DASH_MANIFEST_ADAPTATION_ROLE) - 1 + role->len;
+				result_size += sizeof(mpd_role) - 1 + role->len;
 			}
 		}
 	}
