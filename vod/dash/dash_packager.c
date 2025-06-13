@@ -41,20 +41,20 @@ static const char mpd_header_live[] =
 static const char mpd_baseurl[] =
 	"  <BaseURL>%V</BaseURL>\n";
 
-#define VOD_DASH_MANIFEST_PERIOD_HEADER											\
-	"  <Period>\n"
+static const u_char mpd_period_header[] =
+	"  <Period>\n";
 
-#define VOD_DASH_MANIFEST_PERIOD_HEADER_DURATION								\
-	"  <Period id=\"%uD\" duration=\"PT%uD.%03uDS\">\n"
+static const char mpd_period_header_duration[] =
+	"  <Period id=\"%uD\" duration=\"PT%uD.%03uDS\">\n";
 
-#define VOD_DASH_MANIFEST_PERIOD_HEADER_START									\
-	"  <Period id=\"%uD\" start=\"PT%uD.%03uDS\">\n"
+static const char mpd_period_header_start[] =
+	"  <Period id=\"%uD\" start=\"PT%uD.%03uDS\">\n";
 
-#define VOD_DASH_MANIFEST_PERIOD_HEADER_START_ZERO								\
-	"  <Period id=\"0\" start=\"PT0S\">\n"
+static const u_char mpd_period_header_start_zero[] =
+	"  <Period id=\"0\" start=\"PT0S\">\n";
 
-#define VOD_DASH_MANIFEST_PERIOD_HEADER_START_DURATION							\
-	"  <Period id=\"%uD\" start=\"PT%uD.%03uDS\" duration=\"PT%uD.%03uDS\">\n"
+static const char mpd_period_header_start_duration[] =
+	"  <Period id=\"%uD\" start=\"PT%uD.%03uDS\" duration=\"PT%uD.%03uDS\">\n";
 
 #define VOD_DASH_MANIFEST_ADAPTATION_HEADER_VIDEO								\
 	"    <AdaptationSet\n"														\
@@ -194,8 +194,8 @@ static const char mpd_baseurl[] =
 #define VOD_DASH_MANIFEST_SEGMENT_LIST_FOOTER									\
 	"      </SegmentList>\n"
 
-#define VOD_DASH_MANIFEST_PERIOD_FOOTER											\
-	"  </Period>\n"
+static const u_char mpd_period_footer[] =
+	"  </Period>\n";
 
 static const u_char mpd_footer[] =
 	"</MPD>\n";
@@ -796,8 +796,7 @@ dash_packager_write_mpd_period(
 		switch (media_set->type)
 		{
 		case MEDIA_SET_VOD:
-			p = vod_sprintf(p,
-				VOD_DASH_MANIFEST_PERIOD_HEADER_DURATION,
+			p = vod_sprintf(p, mpd_period_header_duration,
 				media_set->initial_clip_index + context->clip_index,
 				clip_duration / 1000,
 				clip_duration % 1000);
@@ -813,8 +812,7 @@ dash_packager_write_mpd_period(
 				// there is a gap after this clip, output start time and duration
 				clip_duration += media_set->timing.times[context->clip_index] - context->clip_start_time;
 
-				p = vod_sprintf(p,
-					VOD_DASH_MANIFEST_PERIOD_HEADER_START_DURATION,
+				p = vod_sprintf(p, mpd_period_header_start_duration,
 					media_set->initial_clip_index + context->clip_index,
 					clip_start_offset / 1000,
 					clip_start_offset % 1000,
@@ -824,8 +822,7 @@ dash_packager_write_mpd_period(
 			else
 			{
 				// last clip / no gap, output only the start time
-				p = vod_sprintf(p,
-					VOD_DASH_MANIFEST_PERIOD_HEADER_START,
+				p = vod_sprintf(p, mpd_period_header_start,
 					media_set->initial_clip_index + context->clip_index,
 					clip_start_offset / 1000,
 					clip_start_offset % 1000);
@@ -838,11 +835,11 @@ dash_packager_write_mpd_period(
 		switch (media_set->type)
 		{
 		case MEDIA_SET_VOD:
-			p = vod_copy(p, VOD_DASH_MANIFEST_PERIOD_HEADER, sizeof(VOD_DASH_MANIFEST_PERIOD_HEADER) - 1);
+			p = vod_copy(p, mpd_period_header, sizeof(mpd_period_header) - 1);
 			break;
 
 		case MEDIA_SET_LIVE:
-			p = vod_copy(p, VOD_DASH_MANIFEST_PERIOD_HEADER_START_ZERO, sizeof(VOD_DASH_MANIFEST_PERIOD_HEADER_START_ZERO) - 1);
+			p = vod_copy(p, mpd_period_header_start_zero, sizeof(mpd_period_header_start_zero) - 1);
 			break;
 		}
 	}
@@ -1132,7 +1129,7 @@ dash_packager_write_mpd_period(
 		p = vod_copy(p, VOD_DASH_MANIFEST_ADAPTATION_FOOTER, sizeof(VOD_DASH_MANIFEST_ADAPTATION_FOOTER) - 1);
 	}
 
-	p = vod_copy(p, VOD_DASH_MANIFEST_PERIOD_FOOTER, sizeof(VOD_DASH_MANIFEST_PERIOD_FOOTER) - 1);
+	p = vod_copy(p, mpd_period_footer, sizeof(mpd_period_footer) - 1);
 
 	return p;
 }
@@ -1433,7 +1430,7 @@ dash_packager_build_mpd(
 		conf->fragment_file_name_prefix.len;
 
 	base_period_size =
-		sizeof(VOD_DASH_MANIFEST_PERIOD_HEADER_START_DURATION) - 1 + 5 * VOD_INT32_LEN +
+		sizeof(mpd_period_header_start_duration) - 1 + 5 * VOD_INT32_LEN +
 			// video adaptations
 			(sizeof(VOD_DASH_MANIFEST_ADAPTATION_HEADER_VIDEO) - 1 + 3 * VOD_INT32_LEN + VOD_DASH_MAX_FRAME_RATE_LEN +
 			sizeof(VOD_DASH_MANIFEST_ADAPTATION_LABEL) - 1 +
@@ -1448,7 +1445,7 @@ dash_packager_build_mpd(
 			// audio representations
 			(sizeof(VOD_DASH_MANIFEST_REPRESENTATION_HEADER_AUDIO) - 1 + MAX_TRACK_SPEC_LENGTH + MAX_MIME_TYPE_SIZE + MAX_CODEC_NAME_SIZE + 2 * VOD_INT32_LEN +
 			sizeof(VOD_DASH_MANIFEST_REPRESENTATION_FOOTER) - 1) * media_set->track_count[MEDIA_TYPE_AUDIO] +
-		sizeof(VOD_DASH_MANIFEST_PERIOD_FOOTER) - 1 +
+		sizeof(mpd_period_footer) - 1 +
 		extensions->representation.size +
 		extensions->adaptation_set.size;
 
