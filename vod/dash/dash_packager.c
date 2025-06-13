@@ -67,8 +67,8 @@ static const char mpd_period_header_start_duration[] =
 	"        maxHeight=\"%uD\"\n"												\
 	"        maxFrameRate=\"%V\">\n"
 
-#define VOD_DASH_MANIFEST_ADAPTATION_LABEL										\
-	"      <Label>%V</Label>\n"
+static const char mpd_label[] =
+	"      <Label>%V</Label>\n";
 
 #define VOD_DASH_MANIFEST_ADAPTATION_ROLE										\
 	"      <Role schemeIdUri=\"urn:mpeg:dash:role:2011\" value=\"%V\"/>\n"
@@ -906,8 +906,7 @@ dash_packager_write_mpd_period(
 
 			if (reference_track->media_info.tags.label.len > 0)
 			{
-				p = vod_sprintf(p, VOD_DASH_MANIFEST_ADAPTATION_LABEL,
-					&reference_track->media_info.tags.label);
+				p = vod_sprintf(p, mpd_label, &reference_track->media_info.tags.label);
 			}
 			break;
 
@@ -916,8 +915,7 @@ dash_packager_write_mpd_period(
 
 			if (reference_track->media_info.tags.label.len > 0)
 			{
-				p = vod_sprintf(p, VOD_DASH_MANIFEST_ADAPTATION_LABEL,
-					&reference_track->media_info.tags.label);
+				p = vod_sprintf(p, mpd_label, &reference_track->media_info.tags.label);
 			}
 
 			if (reference_track->media_info.codec_id == VOD_CODEC_ID_EAC3)
@@ -941,8 +939,7 @@ dash_packager_write_mpd_period(
 
 				if (reference_track->media_info.tags.label.len > 0)
 				{
-					p = vod_sprintf(p, VOD_DASH_MANIFEST_ADAPTATION_LABEL,
-						&reference_track->media_info.tags.label);
+					p = vod_sprintf(p, mpd_label, &reference_track->media_info.tags.label);
 				}
 				break;
 			}
@@ -971,8 +968,7 @@ dash_packager_write_mpd_period(
 
 			if (reference_track->media_info.tags.label.len > 0)
 			{
-				p = vod_sprintf(p, VOD_DASH_MANIFEST_ADAPTATION_LABEL,
-					&reference_track->media_info.tags.label);
+				p = vod_sprintf(p, mpd_label, &reference_track->media_info.tags.label);
 			}
 
 			p = dash_packager_write_roles(p, &reference_track->media_info);
@@ -1433,14 +1429,14 @@ dash_packager_build_mpd(
 		sizeof(mpd_period_header_start_duration) - 1 + 5 * VOD_INT32_LEN +
 			// video adaptations
 			(sizeof(VOD_DASH_MANIFEST_ADAPTATION_HEADER_VIDEO) - 1 + 3 * VOD_INT32_LEN + VOD_DASH_MAX_FRAME_RATE_LEN +
-			sizeof(VOD_DASH_MANIFEST_ADAPTATION_LABEL) - 1 +
+			sizeof(mpd_label) - 1 +
 			sizeof(VOD_DASH_MANIFEST_ADAPTATION_FOOTER) - 1) * context.adaptation_sets.count[ADAPTATION_TYPE_VIDEO] +
 			// video representations
 			(sizeof(VOD_DASH_MANIFEST_REPRESENTATION_HEADER_VIDEO) - 1 + MAX_TRACK_SPEC_LENGTH + MAX_MIME_TYPE_SIZE + MAX_CODEC_NAME_SIZE + 3 * VOD_INT32_LEN + VOD_DASH_MAX_FRAME_RATE_LEN +
 			sizeof(VOD_DASH_MANIFEST_REPRESENTATION_FOOTER) - 1) * media_set->track_count[MEDIA_TYPE_VIDEO] +
 			// audio adaptations
 			(sizeof(VOD_DASH_MANIFEST_ADAPTATION_HEADER_AUDIO) - 1 + sizeof(VOD_DASH_MANIFEST_AUDIO_CHANNEL_CONFIG_EAC3) - 1 + 2 * VOD_INT32_LEN +
-			sizeof(VOD_DASH_MANIFEST_ADAPTATION_LABEL) - 1 +
+			sizeof(mpd_label) - 1 +
 			sizeof(VOD_DASH_MANIFEST_ADAPTATION_FOOTER) - 1) * context.adaptation_sets.count[ADAPTATION_TYPE_AUDIO] +
 			// audio representations
 			(sizeof(VOD_DASH_MANIFEST_REPRESENTATION_HEADER_AUDIO) - 1 + MAX_TRACK_SPEC_LENGTH + MAX_MIME_TYPE_SIZE + MAX_CODEC_NAME_SIZE + 2 * VOD_INT32_LEN +
@@ -1455,7 +1451,7 @@ dash_packager_build_mpd(
 		base_period_size +=
 			// subtitle adaptations
 			(sizeof(VOD_DASH_MANIFEST_ADAPTATION_HEADER_SUBTITLE_VTT) - 1 + VOD_INT32_LEN +
-			sizeof(VOD_DASH_MANIFEST_ADAPTATION_LABEL) - 1 +
+			sizeof(mpd_label) - 1 +
 			// subtitle representation
 			sizeof(VOD_DASH_MANIFEST_REPRESENTATION_SUBTITLE_VTT) - 1 + VOD_INT32_LEN + context.base_url.len + conf->subtitle_file_name_prefix.len + MAX_CLIP_SPEC_LENGTH + MAX_TRACK_SPEC_LENGTH +
 			sizeof(VOD_DASH_MANIFEST_ADAPTATION_FOOTER) - 1) *
@@ -1466,7 +1462,7 @@ dash_packager_build_mpd(
 		base_period_size +=
 			// subtitle adaptations
 			(sizeof(VOD_DASH_MANIFEST_ADAPTATION_HEADER_SUBTITLE_SMPTE_TT) - 1 + VOD_INT32_LEN +
-			sizeof(VOD_DASH_MANIFEST_ADAPTATION_LABEL) - 1 +
+			sizeof(mpd_label) - 1 +
 			sizeof(VOD_DASH_MANIFEST_ADAPTATION_FOOTER) - 1) * context.adaptation_sets.count[ADAPTATION_TYPE_SUBTITLE] +
 			// subtitle representations
 			(sizeof(VOD_DASH_MANIFEST_REPRESENTATION_HEADER_SUBTITLE_SMPTE_TT) - 1 + MAX_TRACK_SPEC_LENGTH +
