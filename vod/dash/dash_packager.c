@@ -56,16 +56,38 @@ static const u_char mpd_period_header_start_zero[] =
 static const char mpd_period_header_start_duration[] =
 	"  <Period id=\"%uD\" start=\"PT%uD.%03uDS\" duration=\"PT%uD.%03uDS\">\n";
 
-#define VOD_DASH_MANIFEST_ADAPTATION_HEADER_VIDEO								\
-	"    <AdaptationSet\n"														\
-	"        id=\"%uD\"\n"														\
-	"        group=\"1\"\n"														\
-	"        contentType=\"video\"\n"											\
-	"        lang=\"%V\"\n"														\
-	"        segmentAlignment=\"true\"\n"										\
-	"        maxWidth=\"%uD\"\n"												\
-	"        maxHeight=\"%uD\"\n"												\
-	"        maxFrameRate=\"%V\">\n"
+static const char mpd_adaptation_header_video[] =
+	"    <AdaptationSet\n"
+	"        id=\"%uD\"\n"
+	"        group=\"1\"\n"
+	"        contentType=\"video\"\n"
+	"        segmentAlignment=\"true\"\n"
+	"        maxWidth=\"%uD\"\n"
+	"        maxHeight=\"%uD\"\n"
+	"        maxFrameRate=\"%V\">\n";
+
+static const char mpd_adaptation_header_audio[] =
+	"    <AdaptationSet\n"
+	"        id=\"%uD\"\n"
+	"        group=\"2\"\n"
+	"        contentType=\"audio\"\n"
+	"        lang=\"%V\"\n"
+	"        segmentAlignment=\"true\">\n";
+
+static const char mpd_adaptation_header_subtitle_smpte_tt[] =
+	"    <AdaptationSet\n"
+	"        id=\"%uD\"\n"
+	"        group=\"3\"\n"
+	"        contentType=\"text\"\n"
+	"        lang=\"%V\">\n";
+
+static const char mpd_adaptation_header_subtitle_vtt[] =
+	"    <AdaptationSet\n"
+	"        id=\"%uD\"\n"
+	"        group=\"3\"\n"
+	"        contentType=\"text\"\n"
+	"        lang=\"%V\"\n"
+	"        mimeType=\"text/vtt\">\n";
 
 static const char mpd_label[] =
 	"      <Label>%V</Label>\n";
@@ -84,14 +106,6 @@ static const char mpd_role[] =
 	"          sar=\"1:1\"\n"													\
 	"          startWithSAP=\"1\"\n"											\
 	"          bandwidth=\"%uD\">\n"
-
-#define VOD_DASH_MANIFEST_ADAPTATION_HEADER_AUDIO								\
-	"    <AdaptationSet\n"														\
-	"        id=\"%uD\"\n"														\
-	"        group=\"2\"\n"														\
-	"        contentType=\"audio\"\n"											\
-	"        lang=\"%V\"\n"														\
-	"        segmentAlignment=\"true\">\n"
 
 // TODO: value should be the number of channels ?
 #define VOD_DASH_MANIFEST_AUDIO_CHANNEL_CONFIG									\
@@ -113,13 +127,6 @@ static const char mpd_role[] =
 	"          startWithSAP=\"1\"\n"											\
 	"          bandwidth=\"%uD\">\n"
 
-#define VOD_DASH_MANIFEST_ADAPTATION_HEADER_SUBTITLE_SMPTE_TT					\
-	"    <AdaptationSet\n"														\
-	"        id=\"%uD\"\n"														\
-	"        group=\"3\"\n"														\
-	"        contentType=\"text\"\n"											\
-	"        lang=\"%V\">\n"
-
 #define VOD_DASH_MANIFEST_REPRESENTATION_HEADER_SUBTITLE_SMPTE_TT				\
 	"      <Representation\n"													\
 	"          id=\"%V\"\n"														\
@@ -131,23 +138,12 @@ static const char mpd_role[] =
 #define VOD_DASH_MANIFEST_REPRESENTATION_FOOTER									\
 	"      </Representation>\n"
 
-#define VOD_DASH_MANIFEST_ADAPTATION_HEADER_SUBTITLE_VTT						\
-	"    <AdaptationSet\n"														\
-	"        id=\"%uD\"\n"														\
-	"        group=\"3\"\n"														\
-	"        contentType=\"text\"\n"											\
-	"        lang=\"%V\"\n"														\
-	"        mimeType=\"text/vtt\">\n"
-
 #define VOD_DASH_MANIFEST_REPRESENTATION_SUBTITLE_VTT							\
 	"      <Representation\n"													\
 	"          id=\"textstream_%uD\"\n"											\
 	"          bandwidth=\"0\">\n"												\
 	"        <BaseURL>%V%V-%s%V.vtt</BaseURL>\n"								\
 	"      </Representation>\n"
-
-#define VOD_DASH_MANIFEST_ADAPTATION_FOOTER										\
-	"    </AdaptationSet>\n"
 
 // SegmentTemplate
 #define VOD_DASH_MANIFEST_SEGMENT_TEMPLATE_FIXED								\
@@ -193,6 +189,9 @@ static const char mpd_role[] =
 
 #define VOD_DASH_MANIFEST_SEGMENT_LIST_FOOTER									\
 	"      </SegmentList>\n"
+
+static const u_char mpd_adaptation_footer[] =
+	"    </AdaptationSet>\n";
 
 static const u_char mpd_period_footer[] =
 	"  </Period>\n";
@@ -895,8 +894,7 @@ dash_packager_write_mpd_period(
 				DASH_TIMESCALE,
 				&frame_rate);
 
-			p = vod_sprintf(p,
-				VOD_DASH_MANIFEST_ADAPTATION_HEADER_VIDEO,
+			p = vod_sprintf(p, mpd_adaptation_header_video,
 				adapt_id++,
 				lang_str,
 				max_width,
@@ -910,7 +908,7 @@ dash_packager_write_mpd_period(
 			break;
 
 		case MEDIA_TYPE_AUDIO:
-			p = vod_sprintf(p, VOD_DASH_MANIFEST_ADAPTATION_HEADER_AUDIO, adapt_id++, lang_str);
+			p = vod_sprintf(p, mpd_adaptation_header_audio, adapt_id++, lang_str);
 
 			if (reference_track->media_info.tags.label.len > 0)
 			{
@@ -932,9 +930,7 @@ dash_packager_write_mpd_period(
 		case MEDIA_TYPE_SUBTITLE:
 			if (context->conf->subtitle_format == SUBTITLE_FORMAT_SMPTE_TT)
 			{
-				p = vod_sprintf(p, VOD_DASH_MANIFEST_ADAPTATION_HEADER_SUBTITLE_SMPTE_TT,
-					adapt_id++,
-					lang_str);
+				p = vod_sprintf(p, mpd_adaptation_header_subtitle_smpte_tt, adapt_id++, lang_str);
 
 				if (reference_track->media_info.tags.label.len > 0)
 				{
@@ -962,8 +958,7 @@ dash_packager_write_mpd_period(
 				representation_id.len--;
 			}
 
-			p = vod_sprintf(p, VOD_DASH_MANIFEST_ADAPTATION_HEADER_SUBTITLE_VTT, adapt_id++,
-				lang_str);
+			p = vod_sprintf(p, mpd_adaptation_header_subtitle_vtt, adapt_id++, lang_str);
 
 			if (reference_track->media_info.tags.label.len > 0)
 			{
@@ -979,7 +974,7 @@ dash_packager_write_mpd_period(
 				clip_spec,
 				&representation_id);
 
-			p = vod_sprintf(p, VOD_DASH_MANIFEST_ADAPTATION_FOOTER);
+			p = vod_copy(p, mpd_adaptation_footer, sizeof(mpd_adaptation_footer) - 1);
 
 			continue;
 		}
@@ -1121,7 +1116,7 @@ dash_packager_write_mpd_period(
 		}
 
 		// print the footer
-		p = vod_copy(p, VOD_DASH_MANIFEST_ADAPTATION_FOOTER, sizeof(VOD_DASH_MANIFEST_ADAPTATION_FOOTER) - 1);
+		p = vod_copy(p, mpd_adaptation_footer, sizeof(mpd_adaptation_footer) - 1);
 	}
 
 	p = vod_copy(p, mpd_period_footer, sizeof(mpd_period_footer) - 1);
@@ -1427,16 +1422,20 @@ dash_packager_build_mpd(
 	base_period_size =
 		sizeof(mpd_period_header_start_duration) - 1 + 5 * VOD_INT32_LEN +
 			// video adaptations
-			(sizeof(VOD_DASH_MANIFEST_ADAPTATION_HEADER_VIDEO) - 1 + 3 * VOD_INT32_LEN + VOD_DASH_MAX_FRAME_RATE_LEN +
+			(sizeof(mpd_adaptation_header_video) - 1 + 3 * VOD_INT32_LEN +
+				VOD_DASH_MAX_FRAME_RATE_LEN +
 			sizeof(mpd_label) - 1 +
-			sizeof(VOD_DASH_MANIFEST_ADAPTATION_FOOTER) - 1) * context.adaptation_sets.count[ADAPTATION_TYPE_VIDEO] +
+			sizeof(mpd_adaptation_footer) - 1) *
+				context.adaptation_sets.count[ADAPTATION_TYPE_VIDEO] +
 			// video representations
 			(sizeof(VOD_DASH_MANIFEST_REPRESENTATION_HEADER_VIDEO) - 1 + MAX_TRACK_SPEC_LENGTH + MAX_MIME_TYPE_SIZE + MAX_CODEC_NAME_SIZE + 3 * VOD_INT32_LEN + VOD_DASH_MAX_FRAME_RATE_LEN +
 			sizeof(VOD_DASH_MANIFEST_REPRESENTATION_FOOTER) - 1) * media_set->track_count[MEDIA_TYPE_VIDEO] +
 			// audio adaptations
-			(sizeof(VOD_DASH_MANIFEST_ADAPTATION_HEADER_AUDIO) - 1 + sizeof(VOD_DASH_MANIFEST_AUDIO_CHANNEL_CONFIG_EAC3) - 1 + 2 * VOD_INT32_LEN +
+			(sizeof(mpd_adaptation_header_audio) - 1 +
+				sizeof(VOD_DASH_MANIFEST_AUDIO_CHANNEL_CONFIG_EAC3) - 1 + 2 * VOD_INT32_LEN +
 			sizeof(mpd_label) - 1 +
-			sizeof(VOD_DASH_MANIFEST_ADAPTATION_FOOTER) - 1) * context.adaptation_sets.count[ADAPTATION_TYPE_AUDIO] +
+			sizeof(mpd_adaptation_footer) - 1) *
+				context.adaptation_sets.count[ADAPTATION_TYPE_AUDIO] +
 			// audio representations
 			(sizeof(VOD_DASH_MANIFEST_REPRESENTATION_HEADER_AUDIO) - 1 + MAX_TRACK_SPEC_LENGTH + MAX_MIME_TYPE_SIZE + MAX_CODEC_NAME_SIZE + 2 * VOD_INT32_LEN +
 			sizeof(VOD_DASH_MANIFEST_REPRESENTATION_FOOTER) - 1) * media_set->track_count[MEDIA_TYPE_AUDIO] +
@@ -1449,20 +1448,21 @@ dash_packager_build_mpd(
 	case SUBTITLE_FORMAT_WEBVTT:
 		base_period_size +=
 			// subtitle adaptations
-			(sizeof(VOD_DASH_MANIFEST_ADAPTATION_HEADER_SUBTITLE_VTT) - 1 + VOD_INT32_LEN +
+			(sizeof(mpd_adaptation_header_subtitle_vtt) - 1 + VOD_INT32_LEN +
 			sizeof(mpd_label) - 1 +
 			// subtitle representation
 			sizeof(VOD_DASH_MANIFEST_REPRESENTATION_SUBTITLE_VTT) - 1 + VOD_INT32_LEN + context.base_url.len + conf->subtitle_file_name_prefix.len + MAX_CLIP_SPEC_LENGTH + MAX_TRACK_SPEC_LENGTH +
-			sizeof(VOD_DASH_MANIFEST_ADAPTATION_FOOTER) - 1) *
-			context.adaptation_sets.count[ADAPTATION_TYPE_SUBTITLE];
+			sizeof(mpd_adaptation_footer) - 1) *
+				context.adaptation_sets.count[ADAPTATION_TYPE_SUBTITLE];
 		break;
 
 	default: // SUBTITLE_FORMAT_SMPTE_TT
 		base_period_size +=
 			// subtitle adaptations
-			(sizeof(VOD_DASH_MANIFEST_ADAPTATION_HEADER_SUBTITLE_SMPTE_TT) - 1 + VOD_INT32_LEN +
+			(sizeof(mpd_adaptation_header_subtitle_smpte_tt) - 1 + VOD_INT32_LEN +
 			sizeof(mpd_label) - 1 +
-			sizeof(VOD_DASH_MANIFEST_ADAPTATION_FOOTER) - 1) * context.adaptation_sets.count[ADAPTATION_TYPE_SUBTITLE] +
+			sizeof(mpd_adaptation_footer) - 1) *
+				context.adaptation_sets.count[ADAPTATION_TYPE_SUBTITLE] +
 			// subtitle representations
 			(sizeof(VOD_DASH_MANIFEST_REPRESENTATION_HEADER_SUBTITLE_SMPTE_TT) - 1 + MAX_TRACK_SPEC_LENGTH +
 			sizeof(VOD_DASH_MANIFEST_REPRESENTATION_FOOTER) - 1) * media_set->track_count[MEDIA_TYPE_SUBTITLE];
