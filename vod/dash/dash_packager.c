@@ -92,6 +92,17 @@ static const char mpd_adaptation_header_subtitle_vtt[] =
 static const char mpd_label[] =
 	"      <Label>%V</Label>\n";
 
+// TODO: value should be the number of channels ?
+static const u_char mpd_audio_channel_config[] =
+	"      <AudioChannelConfiguration\n"
+	"          schemeIdUri=\"urn:mpeg:dash:23003:3:audio_channel_configuration:2011\"\n"
+	"          value=\"1\"/>\n";
+
+static const char mpd_audio_channel_config_eac3[] =
+	"      <AudioChannelConfiguration\n"
+	"          schemeIdUri=\"tag:dolby.com,2014:dash:audio_channel_configuration:2011\"\n"
+	"          value=\"%uxD\"/>\n";
+
 static const char mpd_role[] =
 	"      <Role schemeIdUri=\"urn:mpeg:dash:role:2011\" value=\"%V\"/>\n";
 
@@ -106,17 +117,6 @@ static const char mpd_role[] =
 	"          sar=\"1:1\"\n"													\
 	"          startWithSAP=\"1\"\n"											\
 	"          bandwidth=\"%uD\">\n"
-
-// TODO: value should be the number of channels ?
-#define VOD_DASH_MANIFEST_AUDIO_CHANNEL_CONFIG									\
-	"      <AudioChannelConfiguration\n"										\
-	"          schemeIdUri=\"urn:mpeg:dash:23003:3:audio_channel_configuration:2011\"\n"	\
-	"          value=\"1\"/>\n"
-
-#define VOD_DASH_MANIFEST_AUDIO_CHANNEL_CONFIG_EAC3								\
-	"      <AudioChannelConfiguration\n"										\
-	"          schemeIdUri=\"tag:dolby.com,2014:dash:audio_channel_configuration:2011\"\n"	\
-	"          value=\"%uxD\"/>\n"
 
 #define VOD_DASH_MANIFEST_REPRESENTATION_HEADER_AUDIO							\
 	"      <Representation\n"													\
@@ -917,13 +917,12 @@ dash_packager_write_mpd_period(
 
 			if (reference_track->media_info.codec_id == VOD_CODEC_ID_EAC3)
 			{
-				p = vod_sprintf(p, VOD_DASH_MANIFEST_AUDIO_CHANNEL_CONFIG_EAC3,
+				p = vod_sprintf(p, mpd_audio_channel_config_eac3,
 					dash_packager_get_eac3_channel_config(&reference_track->media_info));
 			}
 			else
 			{
-				p = vod_copy(p, VOD_DASH_MANIFEST_AUDIO_CHANNEL_CONFIG,
-					sizeof(VOD_DASH_MANIFEST_AUDIO_CHANNEL_CONFIG) - 1);
+				p = vod_copy(p, mpd_audio_channel_config, sizeof(mpd_audio_channel_config) - 1);
 			}
 			break;
 
@@ -1431,8 +1430,8 @@ dash_packager_build_mpd(
 			(sizeof(VOD_DASH_MANIFEST_REPRESENTATION_HEADER_VIDEO) - 1 + MAX_TRACK_SPEC_LENGTH + MAX_MIME_TYPE_SIZE + MAX_CODEC_NAME_SIZE + 3 * VOD_INT32_LEN + VOD_DASH_MAX_FRAME_RATE_LEN +
 			sizeof(VOD_DASH_MANIFEST_REPRESENTATION_FOOTER) - 1) * media_set->track_count[MEDIA_TYPE_VIDEO] +
 			// audio adaptations
-			(sizeof(mpd_adaptation_header_audio) - 1 +
-				sizeof(VOD_DASH_MANIFEST_AUDIO_CHANNEL_CONFIG_EAC3) - 1 + 2 * VOD_INT32_LEN +
+			(sizeof(mpd_adaptation_header_audio) - 1 + sizeof(mpd_audio_channel_config_eac3) - 1 +
+				2 * VOD_INT32_LEN +
 			sizeof(mpd_label) - 1 +
 			sizeof(mpd_adaptation_footer) - 1) *
 				context.adaptation_sets.count[ADAPTATION_TYPE_AUDIO] +
