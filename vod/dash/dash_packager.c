@@ -145,39 +145,38 @@ static const char mpd_representation_subtitle_vtt[] =
 	"        <BaseURL>%V%V-%s%V.vtt</BaseURL>\n"
 	"      </Representation>\n";
 
-// SegmentTemplate
-#define VOD_DASH_MANIFEST_SEGMENT_TEMPLATE_FIXED								\
-	"      <SegmentTemplate\n"													\
-	"          timescale=\"1000\"\n"											\
-	"          media=\"%V%V-$Number$-%s$RepresentationID$.%V\"\n"				\
-	"          initialization=\"%V%V-%s$RepresentationID$.%V\"\n"				\
-	"          duration=\"%ui\"\n"												\
-	"          startNumber=\"%uD\">\n"											\
-	"      </SegmentTemplate>\n"
+static const char mpd_segment_template_fixed[] =
+	"      <SegmentTemplate\n"
+	"          timescale=\"1000\"\n"
+	"          media=\"%V%V-$Number$-%s$RepresentationID$.%V\"\n"
+	"          initialization=\"%V%V-%s$RepresentationID$.%V\"\n"
+	"          duration=\"%ui\"\n"
+	"          startNumber=\"%uD\">\n"
+	"      </SegmentTemplate>\n";
 
-#define VOD_DASH_MANIFEST_SEGMENT_TEMPLATE_HEADER								\
-	"      <SegmentTemplate\n"													\
-	"          timescale=\"1000\"\n"											\
-	"          media=\"%V%V-$Number$-$RepresentationID$.%V\"\n"					\
-	"          initialization=\"%V%V-%s$RepresentationID$.%V\"\n"				\
-	"          startNumber=\"%uD\">\n"											\
-	"        <SegmentTimeline>\n"
+static const char mpd_segment_template_header[] =
+	"      <SegmentTemplate\n"
+	"          timescale=\"1000\"\n"
+	"          media=\"%V%V-$Number$-$RepresentationID$.%V\"\n"
+	"          initialization=\"%V%V-%s$RepresentationID$.%V\"\n"
+	"          startNumber=\"%uD\">\n"
+	"        <SegmentTimeline>\n";
 
-#define VOD_DASH_MANIFEST_SEGMENT_REPEAT										\
-	"          <S d=\"%uD\" r=\"%uD\"/>\n"
+static const char mpd_segment_repeat[] =
+	"          <S d=\"%uD\" r=\"%uD\"/>\n";
 
-#define VOD_DASH_MANIFEST_SEGMENT												\
-	"          <S d=\"%uD\"/>\n"
+static const char mpd_segment[] =
+	"          <S d=\"%uD\"/>\n";
 
-#define VOD_DASH_MANIFEST_SEGMENT_REPEAT_TIME									\
-	"          <S t=\"%uL\" d=\"%uD\" r=\"%uD\"/>\n"
+static const char mpd_segment_repeat_time[] =
+	"          <S t=\"%uL\" d=\"%uD\" r=\"%uD\"/>\n";
 
-#define VOD_DASH_MANIFEST_SEGMENT_TIME											\
-	"          <S t=\"%uL\" d=\"%uD\"/>\n"
+static const char mpd_segment_time[] =
+	"          <S t=\"%uL\" d=\"%uD\"/>\n";
 
-#define VOD_DASH_MANIFEST_SEGMENT_TEMPLATE_FOOTER								\
-	"        </SegmentTimeline>\n"												\
-	"      </SegmentTemplate>\n"
+static const u_char mpd_segment_template_footer[] =
+	"        </SegmentTimeline>\n"
+	"      </SegmentTemplate>\n";
 
 // SegmentList
 #define VOD_DASH_MANIFEST_SEGMENT_LIST_HEADER									\
@@ -479,8 +478,7 @@ dash_packager_write_segment_template(
 
 	// Note: SegmentTemplate is currently printed in the adaptation set level, so it is not possible
 	//		to mix mp4 and webm representations for the same media type
-	p = vod_sprintf(p,
-		VOD_DASH_MANIFEST_SEGMENT_TEMPLATE_FIXED,
+	p = vod_sprintf(p, mpd_segment_template_fixed,
 		base_url,
 		&conf->fragment_file_name_prefix,
 		index_shift_str,
@@ -524,8 +522,7 @@ dash_packager_write_segment_timeline(
 
 	// Note: SegmentTemplate is currently printed in the adaptation set level, so it is not possible
 	//		to mix mp4 and webm representations for the same media type
-	p = vod_sprintf(p,
-		VOD_DASH_MANIFEST_SEGMENT_TEMPLATE_HEADER,
+	p = vod_sprintf(p, mpd_segment_template_header,
 		base_url,
 		&conf->fragment_file_name_prefix,
 		&dash_codecs[reference_track->media_info.codec_id].frag_file_ext,
@@ -550,11 +547,14 @@ dash_packager_write_segment_timeline(
 			// output the time
 			if (cur_item->repeat_count == 1)
 			{
-				p = vod_sprintf(p, VOD_DASH_MANIFEST_SEGMENT_TIME, start_time, duration);
+				p = vod_sprintf(p, mpd_segment_time, start_time, duration);
 			}
 			else if (cur_item->repeat_count > 1)
 			{
-				p = vod_sprintf(p, VOD_DASH_MANIFEST_SEGMENT_REPEAT_TIME, start_time, duration, cur_item->repeat_count - 1);
+				p = vod_sprintf(p, mpd_segment_repeat_time,
+					start_time,
+					duration,
+					cur_item->repeat_count - 1);
 			}
 		}
 		else
@@ -562,11 +562,11 @@ dash_packager_write_segment_timeline(
 			// don't output the time
 			if (cur_item->repeat_count == 1)
 			{
-				p = vod_sprintf(p, VOD_DASH_MANIFEST_SEGMENT, duration);
+				p = vod_sprintf(p, mpd_segment, duration);
 			}
 			else if (cur_item->repeat_count > 1)
 			{
-				p = vod_sprintf(p, VOD_DASH_MANIFEST_SEGMENT_REPEAT, duration, cur_item->repeat_count - 1);
+				p = vod_sprintf(p, mpd_segment_repeat, duration, cur_item->repeat_count - 1);
 			}
 		}
 
@@ -575,7 +575,7 @@ dash_packager_write_segment_timeline(
 
 	*cur_item_ptr = cur_item;
 
-	p = vod_copy(p, VOD_DASH_MANIFEST_SEGMENT_TEMPLATE_FOOTER, sizeof(VOD_DASH_MANIFEST_SEGMENT_TEMPLATE_FOOTER) - 1);
+	p = vod_copy(p, mpd_segment_template_footer, sizeof(mpd_segment_template_footer) - 1);
 
 	return p;
 }
@@ -1508,7 +1508,8 @@ dash_packager_build_mpd(
 		switch (conf->subtitle_format)
 		{
 		case SUBTITLE_FORMAT_WEBVTT:
-			adaptation_count = context.adaptation_sets.count[MEDIA_TYPE_VIDEO] + context.adaptation_sets.count[MEDIA_TYPE_AUDIO];
+			adaptation_count = context.adaptation_sets.count[MEDIA_TYPE_VIDEO] +
+				context.adaptation_sets.count[MEDIA_TYPE_AUDIO];
 			break;
 
 		default: // SUBTITLE_FORMAT_SMPTE_TT
@@ -1517,7 +1518,7 @@ dash_packager_build_mpd(
 		}
 
 		result_size +=
-			(sizeof(VOD_DASH_MANIFEST_SEGMENT_TEMPLATE_FIXED) - 1 + VOD_INT32_LEN + VOD_INT64_LEN +
+			(sizeof(mpd_segment_template_fixed) - 1 + VOD_INT32_LEN + VOD_INT64_LEN +
 				MAX_INDEX_SHIFT_LENGTH + urls_length) * adaptation_count * period_count;
 		break;
 
@@ -1542,10 +1543,11 @@ dash_packager_build_mpd(
 			}
 
 			result_size +=
-				((sizeof(VOD_DASH_MANIFEST_SEGMENT_TEMPLATE_HEADER) - 1 + VOD_INT32_LEN + urls_length +
-				sizeof(VOD_DASH_MANIFEST_SEGMENT_TEMPLATE_FOOTER) - 1 +
-				sizeof(VOD_DASH_MANIFEST_SEGMENT_REPEAT_TIME) - 1 + VOD_INT64_LEN) * period_count +
-				(sizeof(VOD_DASH_MANIFEST_SEGMENT_REPEAT) - 1 + 2 * VOD_INT32_LEN) * context.segment_durations[media_type].item_count) *
+				((sizeof(mpd_segment_template_header) - 1 + VOD_INT32_LEN + urls_length +
+				sizeof(mpd_segment_template_footer) - 1 +
+				sizeof(mpd_segment_repeat_time) - 1 + VOD_INT64_LEN) * period_count +
+				(sizeof(mpd_segment_repeat) - 1 + 2 * VOD_INT32_LEN) *
+					context.segment_durations[media_type].item_count) *
 				context.adaptation_sets.count[media_type];
 		}
 		break;
