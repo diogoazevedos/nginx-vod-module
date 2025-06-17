@@ -178,16 +178,15 @@ static const u_char mpd_segment_template_footer[] =
 	"        </SegmentTimeline>\n"
 	"      </SegmentTemplate>\n";
 
-// SegmentList
-#define VOD_DASH_MANIFEST_SEGMENT_LIST_HEADER									\
-	"      <SegmentList timescale=\"1000\" duration=\"%ui\" startNumber=\"%uD\">\n"	\
-	"        <Initialization sourceURL=\"%V%V-%s%V.%V\"/>\n"
+static const char mpd_segment_list_header[] =
+	"      <SegmentList timescale=\"1000\" duration=\"%ui\" startNumber=\"%uD\">\n"
+	"        <Initialization sourceURL=\"%V%V-%s%V.%V\"/>\n";
 
-#define VOD_DASH_MANIFEST_SEGMENT_URL											\
-	"        <SegmentURL media=\"%V%V-%uD-%V.%V\"/>\n"
+static const char mpd_segment_url[] =
+	"        <SegmentURL media=\"%V%V-%uD-%V.%V\"/>\n";
 
-#define VOD_DASH_MANIFEST_SEGMENT_LIST_FOOTER									\
-	"      </SegmentList>\n"
+static const u_char mpd_segment_list_footer[] =
+	"      </SegmentList>\n";
 
 static const u_char mpd_adaptation_footer[] =
 	"    </AdaptationSet>\n";
@@ -639,8 +638,7 @@ dash_packager_write_segment_list(
 	dash_packager_get_track_spec(&track_spec, media_set, cur_sequence, cur_track);
 
 	// write the header
-	p = vod_sprintf(p,
-		VOD_DASH_MANIFEST_SEGMENT_LIST_HEADER,
+	p = vod_sprintf(p, mpd_segment_list_header,
 		media_set->segmenter_conf->segment_duration,
 		context->clip_index == 0 ? media_set->initial_segment_clip_relative_index + 1 : 1,
 		&cur_base_url,
@@ -652,8 +650,7 @@ dash_packager_write_segment_list(
 	// write the urls
 	for (i = 0; i < segment_count; i++)
 	{
-		p = vod_sprintf(p,
-			VOD_DASH_MANIFEST_SEGMENT_URL,
+		p = vod_sprintf(p, mpd_segment_url,
 			&cur_base_url,
 			&conf->fragment_file_name_prefix,
 			start_number + i + 1,
@@ -661,7 +658,7 @@ dash_packager_write_segment_list(
 			&dash_codecs[cur_track->media_info.codec_id].frag_file_ext);
 	}
 
-	p = vod_copy(p, VOD_DASH_MANIFEST_SEGMENT_LIST_FOOTER, sizeof(VOD_DASH_MANIFEST_SEGMENT_LIST_FOOTER) - 1);
+	p = vod_copy(p, mpd_segment_list_footer, sizeof(mpd_segment_list_footer) - 1);
 
 	return p;
 }
@@ -1201,10 +1198,13 @@ dash_packager_get_segment_list_total_size(
 				}
 
 				result +=
-					sizeof(VOD_DASH_MANIFEST_SEGMENT_LIST_HEADER) - 1 + VOD_INT64_LEN + VOD_INT32_LEN +
-					base_url_len + conf->init_file_name_prefix.len + MAX_CLIP_SPEC_LENGTH + MAX_TRACK_SPEC_LENGTH + MAX_FILE_EXT_SIZE +
-					(sizeof(VOD_DASH_MANIFEST_SEGMENT_URL) - 1 + base_url_len + conf->fragment_file_name_prefix.len + VOD_INT32_LEN + MAX_TRACK_SPEC_LENGTH + MAX_FILE_EXT_SIZE) * segment_count +
-					sizeof(VOD_DASH_MANIFEST_SEGMENT_LIST_FOOTER) - 1;
+					sizeof(mpd_segment_list_header) - 1 + VOD_INT64_LEN + VOD_INT32_LEN +
+					base_url_len + conf->init_file_name_prefix.len + MAX_CLIP_SPEC_LENGTH +
+						MAX_TRACK_SPEC_LENGTH + MAX_FILE_EXT_SIZE +
+					(sizeof(mpd_segment_url) - 1 + base_url_len +
+						conf->fragment_file_name_prefix.len + VOD_INT32_LEN +
+						MAX_TRACK_SPEC_LENGTH + MAX_FILE_EXT_SIZE) * segment_count +
+					sizeof(mpd_segment_list_footer) - 1;
 			}
 		}
 	}
