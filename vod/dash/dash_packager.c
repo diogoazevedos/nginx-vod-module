@@ -1199,7 +1199,7 @@ dash_packager_get_segment_list_total_size(
 
 				result +=
 					sizeof(mpd_segment_list_header) - 1 + VOD_INT64_LEN + VOD_INT32_LEN +
-					base_url_len + conf->init_file_name_prefix.len + MAX_CLIP_SPEC_LENGTH +
+						base_url_len + conf->init_file_name_prefix.len + MAX_CLIP_SPEC_LENGTH +
 						MAX_TRACK_SPEC_LENGTH + MAX_FILE_EXT_SIZE +
 					(sizeof(mpd_segment_url) - 1 + base_url_len +
 						conf->fragment_file_name_prefix.len + VOD_INT32_LEN +
