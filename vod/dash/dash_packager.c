@@ -61,6 +61,7 @@ static const char mpd_adaptation_header_video[] =
 	"        id=\"%uD\"\n"
 	"        group=\"1\"\n"
 	"        contentType=\"video\"\n"
+	"        lang=\"%V\"\n"
 	"        segmentAlignment=\"true\"\n"
 	"        maxWidth=\"%uD\"\n"
 	"        maxHeight=\"%uD\"\n"
