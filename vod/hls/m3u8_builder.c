@@ -47,6 +47,7 @@ static const char m3u8_stream_inf_subtitles_group[] = ",SUBTITLES=\"subs%uD\"";
 static const char m3u8_stream_inf_closed_captions_group[] = ",CLOSED-CAPTIONS=\"cc%uD\"";
 static const u_char m3u8_stream_inf_no_closed_captions[] = ",CLOSED-CAPTIONS=NONE";
 static const u_char m3u8_stream_inf_video_range_sdr[] = ",VIDEO-RANGE=SDR";
+static const u_char m3u8_stream_inf_video_range_hlg[] = ",VIDEO-RANGE=HLG";
 static const u_char m3u8_stream_inf_video_range_pq[] = ",VIDEO-RANGE=PQ";
 
 static const char m3u8_iframe_stream_inf[] = "#EXT-X-I-FRAME-STREAM-INF:BANDWIDTH=%uD,RESOLUTION=%uDx%uD,CODECS=\"%V\",URI=\"";
@@ -1084,12 +1085,19 @@ m3u8_builder_write_video_range(u_char* p, media_info_t* media_info)
 	switch (media_info->u.video.transfer_characteristics)
 	{
 	case 1:
-		p = vod_copy(p, m3u8_stream_inf_video_range_sdr, sizeof(m3u8_stream_inf_video_range_sdr) - 1);
+		p = vod_copy(p,
+			m3u8_stream_inf_video_range_sdr,
+			sizeof(m3u8_stream_inf_video_range_sdr) - 1);
 		break;
 
 	case 16:
-	case 18:
 		p = vod_copy(p, m3u8_stream_inf_video_range_pq, sizeof(m3u8_stream_inf_video_range_pq) - 1);
+		break;
+
+	case 18:
+		p = vod_copy(p,
+			m3u8_stream_inf_video_range_hlg,
+			sizeof(m3u8_stream_inf_video_range_hlg) - 1);
 		break;
 	}
 
