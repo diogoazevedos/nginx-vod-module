@@ -1085,6 +1085,10 @@ m3u8_builder_write_video_range(u_char* p, media_info_t* media_info)
 	switch (media_info->u.video.transfer_characteristics)
 	{
 	case 1:
+	case 6:
+	case 13:
+	case 14:
+	case 15:
 		p = vod_copy(p,
 			m3u8_stream_inf_video_range_sdr,
 			sizeof(m3u8_stream_inf_video_range_sdr) - 1);
