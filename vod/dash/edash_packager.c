@@ -14,40 +14,40 @@
 	(vod_memcmp((info)->system_id, edash_clear_key_system_id, sizeof(edash_clear_key_system_id)) == 0)
 
 // manifest constants
-#define VOD_EDASH_MANIFEST_CONTENT_PROTECTION_CENC									\
-	"      <ContentProtection schemeIdUri=\"urn:mpeg:dash:mp4protection:2011\" value=\"cenc\"/>\n"
+static const u_char mpd_content_protection_cenc[] =
+	"      <ContentProtection schemeIdUri=\"urn:mpeg:dash:mp4protection:2011\" value=\"cenc\"/>\n";
 
-#define VOD_EDASH_MANIFEST_CONTENT_PROTECTION_CENC_PART1							\
-	"      <ContentProtection xmlns:cenc=\"urn:mpeg:cenc:2013\" schemeIdUri=\"urn:uuid:"
+static const u_char mpd_content_protection_cenc_part1[] =
+	"      <ContentProtection xmlns:cenc=\"urn:mpeg:cenc:2013\" schemeIdUri=\"urn:uuid:";
 
-#define VOD_EDASH_MANIFEST_CONTENT_PROTECTION_CENC_PART2							\
-	"\" cenc:default_KID=\""
+static const u_char mpd_content_protection_cenc_part2[] =
+	"\" cenc:default_KID=\"";
 
-#define VOD_EDASH_MANIFEST_CONTENT_PROTECTION_CENC_PART3							\
-	"\">\n"																			\
-	"        <cenc:pssh>"
+static const u_char mpd_content_protection_cenc_part3[] =
+	"\">\n"
+	"        <cenc:pssh>";
 
-#define VOD_EDASH_MANIFEST_CONTENT_PROTECTION_CENC_PART4							\
-	"</cenc:pssh>\n"																\
-	"      </ContentProtection>\n"
+static const u_char mpd_content_protection_cenc_part4[] =
+	"</cenc:pssh>\n"
+	"      </ContentProtection>\n";
 
 // TODO: remove this - always generate a default_KID for PlayReady
-#define VOD_EDASH_MANIFEST_CONTENT_PROTECTION_PLAYREADY_PART1						\
-	"      <ContentProtection xmlns:mspr=\"urn:microsoft:playready\" schemeIdUri=\"urn:uuid:"
+static const u_char mpd_content_protection_playready_part1[] =
+	"      <ContentProtection xmlns:mspr=\"urn:microsoft:playready\" schemeIdUri=\"urn:uuid:";
 
-#define VOD_EDASH_MANIFEST_CONTENT_PROTECTION_PLAYREADY_V2_PART1					\
-	"      <ContentProtection xmlns:cenc=\"urn:mpeg:cenc:2013\" xmlns:mspr=\"urn:microsoft:playready\" schemeIdUri=\"urn:uuid:"
+static const u_char mpd_content_protection_playready_v2_part1[] =
+	"      <ContentProtection xmlns:cenc=\"urn:mpeg:cenc:2013\" xmlns:mspr=\"urn:microsoft:playready\" schemeIdUri=\"urn:uuid:";
 
-#define VOD_EDASH_MANIFEST_CONTENT_PROTECTION_PLAYREADY_V2_PART2					\
-	"\" value=\"2.0\" cenc:default_KID=\""
+static const u_char mpd_content_protection_playready_v2_part2[] =
+	"\" value=\"2.0\" cenc:default_KID=\"";
 
-#define VOD_EDASH_MANIFEST_CONTENT_PROTECTION_PLAYREADY_PART3						\
-	"\">\n"																			\
-	"        <mspr:pro>"
+static const u_char mpd_content_protection_playready_part3[] =
+	"\">\n"
+	"        <mspr:pro>";
 
-#define VOD_EDASH_MANIFEST_CONTENT_PROTECTION_PLAYREADY_PART4						\
-	"</mspr:pro>\n"																	\
-	"      </ContentProtection>\n"
+static const u_char mpd_content_protection_playready_part4[] =
+	"</mspr:pro>\n"
+	"      </ContentProtection>\n";
 
 // mpd types
 typedef struct {
@@ -111,38 +111,54 @@ edash_packager_write_content_protection(void* ctx, u_char* p, media_track_t* tra
 		return p;
 	}
 
-	p = vod_copy(p, VOD_EDASH_MANIFEST_CONTENT_PROTECTION_CENC, sizeof(VOD_EDASH_MANIFEST_CONTENT_PROTECTION_CENC) - 1);
+	p = vod_copy(p, mpd_content_protection_cenc, sizeof(mpd_content_protection_cenc) - 1);
 	for (cur_info = drm_info->pssh_array.first; cur_info < drm_info->pssh_array.last; cur_info++)
 	{
 		if (vod_memcmp(cur_info->system_id, edash_playready_system_id, sizeof(edash_playready_system_id)) == 0)
 		{
 			if (context->write_playready_kid)
 			{
-				p = vod_copy(p, VOD_EDASH_MANIFEST_CONTENT_PROTECTION_PLAYREADY_V2_PART1, sizeof(VOD_EDASH_MANIFEST_CONTENT_PROTECTION_PLAYREADY_V2_PART1) - 1);
+				p = vod_copy(p,
+					mpd_content_protection_playready_v2_part1,
+					sizeof(mpd_content_protection_playready_v2_part1) - 1);
 				p = mp4_cenc_encrypt_write_guid(p, cur_info->system_id);
-				p = vod_copy(p, VOD_EDASH_MANIFEST_CONTENT_PROTECTION_PLAYREADY_V2_PART2, sizeof(VOD_EDASH_MANIFEST_CONTENT_PROTECTION_PLAYREADY_V2_PART2) - 1);
+				p = vod_copy(p,
+					mpd_content_protection_playready_v2_part2,
+					sizeof(mpd_content_protection_playready_v2_part2) - 1);
 				p = mp4_cenc_encrypt_write_guid(p, drm_info->key_id);
 			}
 			else
 			{
-				p = vod_copy(p, VOD_EDASH_MANIFEST_CONTENT_PROTECTION_PLAYREADY_PART1, sizeof(VOD_EDASH_MANIFEST_CONTENT_PROTECTION_PLAYREADY_PART1) - 1);
+				p = vod_copy(p,
+					mpd_content_protection_playready_part1,
+					sizeof(mpd_content_protection_playready_part1) - 1);
 				p = mp4_cenc_encrypt_write_guid(p, cur_info->system_id);
 			}
-			p = vod_copy(p, VOD_EDASH_MANIFEST_CONTENT_PROTECTION_PLAYREADY_PART3, sizeof(VOD_EDASH_MANIFEST_CONTENT_PROTECTION_PLAYREADY_PART3) - 1);
+			p = vod_copy(p,
+				mpd_content_protection_playready_part3,
+				sizeof(mpd_content_protection_playready_part3) - 1);
 
 			base64.data = p;
 			vod_encode_base64(&base64, &cur_info->data);
 			p += base64.len;
 
-			p = vod_copy(p, VOD_EDASH_MANIFEST_CONTENT_PROTECTION_PLAYREADY_PART4, sizeof(VOD_EDASH_MANIFEST_CONTENT_PROTECTION_PLAYREADY_PART4) - 1);
+			p = vod_copy(p,
+				mpd_content_protection_playready_part4,
+				sizeof(mpd_content_protection_playready_part4) - 1);
 		}
 		else
 		{
-			p = vod_copy(p, VOD_EDASH_MANIFEST_CONTENT_PROTECTION_CENC_PART1, sizeof(VOD_EDASH_MANIFEST_CONTENT_PROTECTION_CENC_PART1) - 1);
+			p = vod_copy(p,
+				mpd_content_protection_cenc_part1,
+				sizeof(mpd_content_protection_cenc_part1) - 1);
 			p = mp4_cenc_encrypt_write_guid(p, cur_info->system_id);
-			p = vod_copy(p, VOD_EDASH_MANIFEST_CONTENT_PROTECTION_CENC_PART2, sizeof(VOD_EDASH_MANIFEST_CONTENT_PROTECTION_CENC_PART2) - 1);
+			p = vod_copy(p,
+				mpd_content_protection_cenc_part2,
+				sizeof(mpd_content_protection_cenc_part2) - 1);
 			p = mp4_cenc_encrypt_write_guid(p, drm_info->key_id);
-			p = vod_copy(p, VOD_EDASH_MANIFEST_CONTENT_PROTECTION_CENC_PART3, sizeof(VOD_EDASH_MANIFEST_CONTENT_PROTECTION_CENC_PART3) - 1);
+			p = vod_copy(p,
+				mpd_content_protection_cenc_part3,
+				sizeof(mpd_content_protection_cenc_part3) - 1);
 
 			pssh.data = context->temp_buffer;
 			pssh.len = edash_packager_write_pssh(pssh.data, cur_info) - pssh.data;
@@ -151,7 +167,9 @@ edash_packager_write_content_protection(void* ctx, u_char* p, media_track_t* tra
 			vod_encode_base64(&base64, &pssh);
 			p += base64.len;
 
-			p = vod_copy(p, VOD_EDASH_MANIFEST_CONTENT_PROTECTION_CENC_PART4, sizeof(VOD_EDASH_MANIFEST_CONTENT_PROTECTION_CENC_PART4) - 1);
+			p = vod_copy(p,
+				mpd_content_protection_cenc_part4,
+				sizeof(mpd_content_protection_cenc_part4) - 1);
 		}
 	}
 	return p;
@@ -184,20 +202,20 @@ edash_packager_build_mpd(
 	{
 		drm_info = (drm_info_t*)cur_sequence->drm_info;
 
-		cur_drm_tags_size = sizeof(VOD_EDASH_MANIFEST_CONTENT_PROTECTION_CENC) - 1;
+		cur_drm_tags_size = sizeof(mpd_content_protection_cenc) - 1;
 
 		for (cur_info = drm_info->pssh_array.first; cur_info < drm_info->pssh_array.last; cur_info++)
 		{
 			if (vod_memcmp(cur_info->system_id, edash_playready_system_id, sizeof(edash_playready_system_id)) == 0)
 			{
 				cur_drm_tags_size +=
-					sizeof(VOD_EDASH_MANIFEST_CONTENT_PROTECTION_PLAYREADY_V2_PART1) - 1 +
+					sizeof(mpd_content_protection_playready_v2_part1) - 1 +
 					VOD_GUID_LENGTH +
-					sizeof(VOD_EDASH_MANIFEST_CONTENT_PROTECTION_PLAYREADY_V2_PART2) - 1 +
+					sizeof(mpd_content_protection_playready_v2_part2) - 1 +
 					VOD_GUID_LENGTH +
-					sizeof(VOD_EDASH_MANIFEST_CONTENT_PROTECTION_PLAYREADY_PART3) - 1 +
+					sizeof(mpd_content_protection_playready_part3) - 1 +
 					vod_base64_encoded_length(cur_info->data.len) +
-					sizeof(VOD_EDASH_MANIFEST_CONTENT_PROTECTION_PLAYREADY_PART4) - 1;
+					sizeof(mpd_content_protection_playready_part4) - 1;
 			}
 			else
 			{
@@ -208,13 +226,13 @@ edash_packager_build_mpd(
 				}
 
 				cur_drm_tags_size +=
-					sizeof(VOD_EDASH_MANIFEST_CONTENT_PROTECTION_CENC_PART1) - 1 +
+					sizeof(mpd_content_protection_cenc_part1) - 1 +
 					VOD_GUID_LENGTH +
-					sizeof(VOD_EDASH_MANIFEST_CONTENT_PROTECTION_CENC_PART2) - 1 +
+					sizeof(mpd_content_protection_cenc_part2) - 1 +
 					VOD_GUID_LENGTH +
-					sizeof(VOD_EDASH_MANIFEST_CONTENT_PROTECTION_CENC_PART3) - 1 +
+					sizeof(mpd_content_protection_cenc_part3) - 1 +
 					vod_base64_encoded_length(cur_pssh_size) +
-					sizeof(VOD_EDASH_MANIFEST_CONTENT_PROTECTION_CENC_PART4) - 1;
+					sizeof(mpd_content_protection_cenc_part4) - 1;
 
 				continue;
 			}
