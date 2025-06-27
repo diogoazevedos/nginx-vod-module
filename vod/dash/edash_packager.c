@@ -11,7 +11,7 @@
 
 // macros
 #define edash_pssh_v1(info) \
-	(vod_memcmp((info)->system_id, edash_clear_key_system_id, sizeof(edash_clear_key_system_id)) == 0)
+	(vod_memcmp((info)->system_id, mpd_clear_key_system_id, sizeof(mpd_clear_key_system_id)) == 0)
 
 // manifest constants
 static const u_char mpd_content_protection_cenc[] =
@@ -57,12 +57,12 @@ typedef struct {
 
 ////// mpd functions
 
-static u_char edash_playready_system_id[] = {
+static const u_char mpd_playready_system_id[] = {
 	0x9a, 0x04, 0xf0, 0x79, 0x98, 0x40, 0x42, 0x86,
 	0xab, 0x92, 0xe6, 0x5b, 0xe0, 0x88, 0x5f, 0x95
 };
 
-static u_char edash_clear_key_system_id[] = {
+static const u_char mpd_clear_key_system_id[] = {
 	0x10, 0x77, 0xef, 0xec, 0xc0, 0xb2, 0x4d, 0x02,
 	0xac, 0xe3, 0x3c, 0x1e, 0x52, 0xe2, 0xfb, 0x4b
 };
@@ -114,7 +114,7 @@ edash_packager_write_content_protection(void* ctx, u_char* p, media_track_t* tra
 	p = vod_copy(p, mpd_content_protection_cenc, sizeof(mpd_content_protection_cenc) - 1);
 	for (cur_info = drm_info->pssh_array.first; cur_info < drm_info->pssh_array.last; cur_info++)
 	{
-		if (vod_memcmp(cur_info->system_id, edash_playready_system_id, sizeof(edash_playready_system_id)) == 0)
+		if (vod_memcmp(cur_info->system_id, mpd_playready_system_id, sizeof(mpd_playready_system_id)) == 0)
 		{
 			if (context->write_playready_kid)
 			{
@@ -206,7 +206,7 @@ edash_packager_build_mpd(
 
 		for (cur_info = drm_info->pssh_array.first; cur_info < drm_info->pssh_array.last; cur_info++)
 		{
-			if (vod_memcmp(cur_info->system_id, edash_playready_system_id, sizeof(edash_playready_system_id)) == 0)
+			if (vod_memcmp(cur_info->system_id, mpd_playready_system_id, sizeof(mpd_playready_system_id)) == 0)
 			{
 				cur_drm_tags_size +=
 					sizeof(mpd_content_protection_playready_v2_part1) - 1 +
