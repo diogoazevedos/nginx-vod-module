@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0](https://github.com/diogoazevedos/nginx-vod-module/compare/v1.2.0...v1.3.0) (2025-06-29)
+
+### Features
+
+- Improve encrypted DASH packager constants ([#41](https://github.com/diogoazevedos/nginx-vod-module/pull/41))
+- Extend video range SDR support ([#39](https://github.com/diogoazevedos/nginx-vod-module/pull/39))
+- Add video range HLG support ([#38](https://github.com/diogoazevedos/nginx-vod-module/pull/38))
+- Improve DASH packager constants ([#37](https://github.com/diogoazevedos/nginx-vod-module/pull/37))
+
 ## [1.2.0](https://github.com/diogoazevedos/nginx-vod-module/compare/v1.1.0...v1.2.0) (2025-06-10)
 
 ### Features
