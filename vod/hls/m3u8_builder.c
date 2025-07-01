@@ -55,7 +55,7 @@ static const char m3u8_iframe_stream_inf[] = "#EXT-X-I-FRAME-STREAM-INF:BANDWIDT
 static const char m3u8_key[] = "#EXT-X-KEY:METHOD=%s";
 static const u_char m3u8_key_aes_128[] = "AES-128";
 static const u_char m3u8_key_sample_aes[] = "SAMPLE-AES";
-static const u_char m3u8_key_sample_aes_cenc[] = "SAMPLE-AES-CTR";
+static const u_char m3u8_key_sample_aes_ctr[] = "SAMPLE-AES-CTR";
 static const u_char m3u8_key_uri[] = ",URI=\"";
 static const u_char m3u8_key_iv[] = ",IV=0x";
 static const char m3u8_key_keyformat[] = ",KEYFORMAT=\"%V\"";
@@ -63,7 +63,7 @@ static const char m3u8_key_keyformatversions[] = ",KEYFORMATVERSIONS=\"%V\"";
 static const u_char m3u8_key_extension[] = ".key";
 
 #if (NGX_HAVE_OPENSSL_EVP)
-static const u_char m3u8_key_uri_sample_aes_cenc_prefix[] = "data:text/plain;base64,";
+static const u_char m3u8_key_uri_sample_aes_ctr_prefix[] = "data:text/plain;base64,";
 #endif // NGX_HAVE_OPENSSL_EVP
 
 static vod_str_t m3u8_ts_suffix = vod_string(".ts\n");
@@ -492,7 +492,7 @@ m3u8_builder_build_index_playlist(
 	{
 		result_size +=
 			sizeof(m3u8_key) - 1 +
-			sizeof(m3u8_key_sample_aes_cenc) - 1 +
+			sizeof(m3u8_key_sample_aes_ctr) - 1 +
 			sizeof(m3u8_key_uri) - 1 +
 			2;			// '"', '\n'
 
@@ -512,7 +512,7 @@ m3u8_builder_build_index_playlist(
 				return rc;
 			}
 
-			result_size += sizeof(m3u8_key_uri_sample_aes_cenc_prefix) +
+			result_size += sizeof(m3u8_key_uri_sample_aes_ctr_prefix) +
 				vod_base64_encoded_length(psshs.len);
 		}
 #endif // NGX_HAVE_OPENSSL_EVP
@@ -614,7 +614,7 @@ m3u8_builder_build_index_playlist(
 			break;
 
 		case HLS_ENC_SAMPLE_AES_CENC:
-			p = vod_sprintf(p, m3u8_key, m3u8_key_sample_aes_cenc);
+			p = vod_sprintf(p, m3u8_key, m3u8_key_sample_aes_ctr);
 			break;
 
 		default:
@@ -630,7 +630,7 @@ m3u8_builder_build_index_playlist(
 #if (NGX_HAVE_OPENSSL_EVP)
 		else if (encryption_params->type == HLS_ENC_SAMPLE_AES_CENC)
 		{
-			base64.data = vod_copy(p, m3u8_key_uri_sample_aes_cenc_prefix, sizeof(m3u8_key_uri_sample_aes_cenc_prefix) - 1);
+			base64.data = vod_copy(p, m3u8_key_uri_sample_aes_ctr_prefix, sizeof(m3u8_key_uri_sample_aes_ctr_prefix) - 1);
 			vod_encode_base64(&base64, &psshs);
 			p = base64.data + base64.len;
 		}
