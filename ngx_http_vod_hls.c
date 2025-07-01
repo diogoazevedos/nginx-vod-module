@@ -63,7 +63,7 @@ ngx_conf_enum_t  hls_encryption_methods[] = {
 	{ ngx_string("none"), HLS_ENC_NONE },
 	{ ngx_string("aes-128"), HLS_ENC_AES_128 },
 	{ ngx_string("sample-aes"), HLS_ENC_SAMPLE_AES },
-	{ ngx_string("sample-aes-cenc"), HLS_ENC_SAMPLE_AES_CTR },
+	{ ngx_string("sample-aes-ctr"), HLS_ENC_SAMPLE_AES_CTR },
 	{ ngx_null_string, 0 }
 };
 
@@ -627,7 +627,7 @@ ngx_http_vod_hls_init_ts_frame_processor(
 	if (encryption_params.type == HLS_ENC_SAMPLE_AES_CTR)
 	{
 		ngx_log_error(NGX_LOG_ERR, submodule_context->request_context.log, 0,
-			"ngx_http_vod_hls_init_ts_frame_processor: sample aes cenc not supported with mpeg ts container");
+			"ngx_http_vod_hls_init_ts_frame_processor: sample-aes-ctr not supported with mpeg-ts container");
 		return ngx_http_vod_status_to_ngx_error(submodule_context->r, VOD_BAD_REQUEST);
 	}
 
@@ -857,7 +857,7 @@ ngx_http_vod_hls_init_fmp4_frame_processor(
 		if (encryption_params.type == HLS_ENC_SAMPLE_AES_CTR)
 		{
 			ngx_log_error(NGX_LOG_ERR, submodule_context->request_context.log, 0,
-				"ngx_http_vod_hls_init_fmp4_frame_processor: multiple streams not supported for sample aes cenc");
+				"ngx_http_vod_hls_init_fmp4_frame_processor: multiple streams not supported for sample-aes-ctr");
 			return ngx_http_vod_status_to_ngx_error(submodule_context->r, VOD_BAD_REQUEST);
 		}
 #endif // NGX_HAVE_OPENSSL_EVP
@@ -1182,7 +1182,7 @@ ngx_http_vod_hls_merge_loc_conf(
 	if (conf->encryption_method == HLS_ENC_SAMPLE_AES_CTR && conf->m3u8_config.m3u8_version < 6)
 	{
 		ngx_conf_log_error(NGX_LOG_WARN, cf, 0,
-			"\"vod_hls_version\" must be at least 6 when \"vod_hls_encryption_method\" is sample-aes-cenc");
+			"\"vod_hls_version\" must be at least 6 when \"vod_hls_encryption_method\" is sample-aes-ctr");
 	}
 
 	if (conf->m3u8_config.container_format == HLS_CONTAINER_FMP4 && conf->m3u8_config.m3u8_version < 6)

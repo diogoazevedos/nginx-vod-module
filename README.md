@@ -872,7 +872,7 @@ Common Encryption HLS:
 location ~ ^/hls/cenc/(?<playback_token>[^/]+)/ {
   vod hls;
 
-  vod_hls_encryption_method sample-aes-cenc;
+  vod_hls_encryption_method sample-aes-ctr;
   vod_hls_encryption_key_format 'urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed';
   vod_hls_encryption_key_format_versions '1';
 
@@ -1742,7 +1742,7 @@ URLs.
 
 #### vod_hls_encryption_method
 
-- **syntax**: `vod_hls_encryption_method none | aes-128 | sample-aes | sample-aes-cenc`
+- **syntax**: `vod_hls_encryption_method none | aes-128 | sample-aes | sample-aes-ctr`
 - **default**: `none`
 - **context**: `http`, `server`, `location`
 
