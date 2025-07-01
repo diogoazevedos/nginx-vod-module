@@ -63,7 +63,7 @@ ngx_conf_enum_t  hls_encryption_methods[] = {
 	{ ngx_string("none"), HLS_ENC_NONE },
 	{ ngx_string("aes-128"), HLS_ENC_AES_128 },
 	{ ngx_string("sample-aes"), HLS_ENC_SAMPLE_AES },
-	{ ngx_string("sample-aes-cenc"), HLS_ENC_SAMPLE_AES_CENC },
+	{ ngx_string("sample-aes-cenc"), HLS_ENC_SAMPLE_AES_CTR },
 	{ ngx_null_string, 0 }
 };
 
@@ -88,7 +88,7 @@ ngx_http_vod_hls_get_container_format(
 
 	track = media_set->filtered_tracks;
 	if ((track->media_info.media_type == MEDIA_TYPE_VIDEO && track->media_info.codec_id != VOD_CODEC_ID_AVC) ||
-		conf->encryption_method == HLS_ENC_SAMPLE_AES_CENC)
+		conf->encryption_method == HLS_ENC_SAMPLE_AES_CTR)
 	{
 		return HLS_CONTAINER_FMP4;
 	}
@@ -624,7 +624,7 @@ ngx_http_vod_hls_init_ts_frame_processor(
 		return rc;
 	}
 
-	if (encryption_params.type == HLS_ENC_SAMPLE_AES_CENC)
+	if (encryption_params.type == HLS_ENC_SAMPLE_AES_CTR)
 	{
 		ngx_log_error(NGX_LOG_ERR, submodule_context->request_context.log, 0,
 			"ngx_http_vod_hls_init_ts_frame_processor: sample aes cenc not supported with mpeg ts container");
@@ -716,7 +716,7 @@ ngx_http_vod_hls_handle_mp4_init_segment(
 		}
 		break;
 
-	case HLS_ENC_SAMPLE_AES_CENC:
+	case HLS_ENC_SAMPLE_AES_CTR:
 		drm_info = (drm_info_t*)submodule_context->media_set.sequences[0].drm_info;
 
 		rc = mp4_init_segment_get_encrypted_stsd_writers(
@@ -854,7 +854,7 @@ ngx_http_vod_hls_init_fmp4_frame_processor(
 	if (submodule_context->media_set.total_track_count > 1)
 	{
 #if (NGX_HAVE_OPENSSL_EVP)
-		if (encryption_params.type == HLS_ENC_SAMPLE_AES_CENC)
+		if (encryption_params.type == HLS_ENC_SAMPLE_AES_CTR)
 		{
 			ngx_log_error(NGX_LOG_ERR, submodule_context->request_context.log, 0,
 				"ngx_http_vod_hls_init_fmp4_frame_processor: multiple streams not supported for sample aes cenc");
@@ -887,7 +887,7 @@ ngx_http_vod_hls_init_fmp4_frame_processor(
 	else
 	{
 #if (NGX_HAVE_OPENSSL_EVP)
-		if (encryption_params.type == HLS_ENC_SAMPLE_AES_CENC)
+		if (encryption_params.type == HLS_ENC_SAMPLE_AES_CTR)
 		{
 			drm_writer = *segment_writer;		// must not change segment_writer, otherwise the header will be encrypted
 
@@ -1179,7 +1179,7 @@ ngx_http_vod_hls_merge_loc_conf(
 			"\"vod_hls_version\" must be at least 5 when \"vod_hls_encryption_method\" is sample-aes");
 	}
 
-	if (conf->encryption_method == HLS_ENC_SAMPLE_AES_CENC && conf->m3u8_config.m3u8_version < 6)
+	if (conf->encryption_method == HLS_ENC_SAMPLE_AES_CTR && conf->m3u8_config.m3u8_version < 6)
 	{
 		ngx_conf_log_error(NGX_LOG_WARN, cf, 0,
 			"\"vod_hls_version\" must be at least 6 when \"vod_hls_encryption_method\" is sample-aes-cenc");
@@ -1232,7 +1232,7 @@ ngx_http_vod_hls_parse_uri_file_name(
 			*request = &hls_mp4_segment_request_cbcs;
 			break;
 
-		case HLS_ENC_SAMPLE_AES_CENC:
+		case HLS_ENC_SAMPLE_AES_CTR:
 			*request = &hls_mp4_segment_request_cenc;
 			break;
 

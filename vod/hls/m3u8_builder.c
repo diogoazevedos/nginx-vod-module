@@ -501,7 +501,7 @@ m3u8_builder_build_index_playlist(
 			result_size += encryption_params->key_uri.len;
 		}
 #if (NGX_HAVE_OPENSSL_EVP)
-		else if (encryption_params->type == HLS_ENC_SAMPLE_AES_CENC)
+		else if (encryption_params->type == HLS_ENC_SAMPLE_AES_CTR)
 		{
 			rc = m3u8_builder_write_psshs(
 				request_context,
@@ -613,7 +613,7 @@ m3u8_builder_build_index_playlist(
 			p = vod_sprintf(p, m3u8_key, m3u8_key_sample_aes);
 			break;
 
-		case HLS_ENC_SAMPLE_AES_CENC:
+		case HLS_ENC_SAMPLE_AES_CTR:
 			p = vod_sprintf(p, m3u8_key, m3u8_key_sample_aes_ctr);
 			break;
 
@@ -628,7 +628,7 @@ m3u8_builder_build_index_playlist(
 			p = vod_copy(p, encryption_params->key_uri.data, encryption_params->key_uri.len);
 		}
 #if (NGX_HAVE_OPENSSL_EVP)
-		else if (encryption_params->type == HLS_ENC_SAMPLE_AES_CENC)
+		else if (encryption_params->type == HLS_ENC_SAMPLE_AES_CTR)
 		{
 			base64.data = vod_copy(p, m3u8_key_uri_sample_aes_ctr_prefix, sizeof(m3u8_key_uri_sample_aes_ctr_prefix) - 1);
 			vod_encode_base64(&base64, &psshs);
@@ -1347,7 +1347,7 @@ m3u8_builder_build_master_playlist(
 
 	// get the adaptations sets
 	flags = ADAPTATION_SETS_FLAG_SINGLE_LANG_TRACK | ADAPTATION_SETS_FLAG_MULTI_AUDIO_CODEC;
-	if (!conf->force_unmuxed_segments && encryption_method != HLS_ENC_SAMPLE_AES_CENC)
+	if (!conf->force_unmuxed_segments && encryption_method != HLS_ENC_SAMPLE_AES_CTR)
 	{
 		flags |= ADAPTATION_SETS_FLAG_MUXED;
 	}
