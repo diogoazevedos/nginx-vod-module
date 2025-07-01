@@ -11,6 +11,7 @@ typedef enum {
 	HLS_ENC_AES_128,
 	HLS_ENC_SAMPLE_AES,
 	HLS_ENC_SAMPLE_AES_CTR,
+	HLS_ENC_SAMPLE_AES_CENC, // TODO: remove in next major version
 } hls_encryption_type_t;
 
 typedef struct {

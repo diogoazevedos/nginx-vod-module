@@ -64,6 +64,7 @@ ngx_conf_enum_t  hls_encryption_methods[] = {
 	{ ngx_string("aes-128"), HLS_ENC_AES_128 },
 	{ ngx_string("sample-aes"), HLS_ENC_SAMPLE_AES },
 	{ ngx_string("sample-aes-ctr"), HLS_ENC_SAMPLE_AES_CTR },
+	{ ngx_string("sample-aes-cenc"), HLS_ENC_SAMPLE_AES_CENC },
 	{ ngx_null_string, 0 }
 };
 
@@ -1171,6 +1172,14 @@ ngx_http_vod_hls_merge_loc_conf(
 		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
 			"\"vod_drm_enabled\" must be set when \"vod_hls_encryption_method\" is not none");
 		return NGX_CONF_ERROR;
+	}
+
+	if (conf->encryption_method == HLS_ENC_SAMPLE_AES_CENC)
+	{
+		ngx_conf_log_error(NGX_LOG_WARN, cf, 0,
+			"\"vod_hls_encryption_method\" sample-aes-cenc is deprecated, use sample-aes-ctr instead");
+
+		conf->encryption_method = HLS_ENC_SAMPLE_AES_CTR;
 	}
 
 	if (conf->encryption_method == HLS_ENC_SAMPLE_AES && conf->m3u8_config.m3u8_version < 5)
