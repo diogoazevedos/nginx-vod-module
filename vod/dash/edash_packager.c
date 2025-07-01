@@ -6,12 +6,9 @@
 #include "../mp4/mp4_init_segment.h"
 #include "../mp4/mp4_write_stream.h"
 #include "../mp4/mp4_defs.h"
+#include "../mp4/mp4_pssh.h"
 #include "../udrm.h"
 #include "../common.h"
-
-// macros
-#define edash_pssh_v1(info) \
-	(vod_memcmp((info)->system_id, mpd_clear_key_system_id, sizeof(mpd_clear_key_system_id)) == 0)
 
 // manifest constants
 static const u_char mpd_content_protection_cenc[] =
@@ -55,48 +52,6 @@ typedef struct {
 	bool_t write_playready_kid;
 } write_content_protection_context_t;
 
-////// mpd functions
-
-static const u_char mpd_playready_system_id[] = {
-	0x9a, 0x04, 0xf0, 0x79, 0x98, 0x40, 0x42, 0x86,
-	0xab, 0x92, 0xe6, 0x5b, 0xe0, 0x88, 0x5f, 0x95
-};
-
-static const u_char mpd_clear_key_system_id[] = {
-	0x10, 0x77, 0xef, 0xec, 0xc0, 0xb2, 0x4d, 0x02,
-	0xac, 0xe3, 0x3c, 0x1e, 0x52, 0xe2, 0xfb, 0x4b
-};
-
-u_char*
-edash_packager_write_pssh(u_char* p, drm_system_info_t* cur_info)
-{
-	bool_t pssh_v1 = edash_pssh_v1(cur_info);
-	size_t pssh_atom_size;
-
-	pssh_atom_size = ATOM_HEADER_SIZE + sizeof(pssh_atom_t) + cur_info->data.len;
-	if (pssh_v1)
-	{
-		pssh_atom_size -= sizeof(uint32_t);
-	}
-
-	write_atom_header(p, pssh_atom_size, 'p', 's', 's', 'h');
-	if (pssh_v1)
-	{
-		write_be32(p, 0x01000000);						// version + flags
-	}
-	else
-	{
-		write_be32(p, 0);						// version + flags
-	}
-	p = vod_copy(p, cur_info->system_id, DRM_SYSTEM_ID_SIZE);	// system id
-	if (!pssh_v1)
-	{
-		write_be32(p, cur_info->data.len);		// data size
-	}
-	p = vod_copy(p, cur_info->data.data, cur_info->data.len);
-	return p;
-}
-
 static u_char*
 edash_packager_write_content_protection(void* ctx, u_char* p, media_track_t* track)
 {
@@ -114,7 +69,7 @@ edash_packager_write_content_protection(void* ctx, u_char* p, media_track_t* tra
 	p = vod_copy(p, mpd_content_protection_cenc, sizeof(mpd_content_protection_cenc) - 1);
 	for (cur_info = drm_info->pssh_array.first; cur_info < drm_info->pssh_array.last; cur_info++)
 	{
-		if (vod_memcmp(cur_info->system_id, mpd_playready_system_id, sizeof(mpd_playready_system_id)) == 0)
+		if (mp4_pssh_is_playready(cur_info))
 		{
 			if (context->write_playready_kid)
 			{
@@ -161,7 +116,7 @@ edash_packager_write_content_protection(void* ctx, u_char* p, media_track_t* tra
 				sizeof(mpd_content_protection_cenc_part3) - 1);
 
 			pssh.data = context->temp_buffer;
-			pssh.len = edash_packager_write_pssh(pssh.data, cur_info) - pssh.data;
+			pssh.len = mp4_pssh_write_box(pssh.data, cur_info) - pssh.data;
 
 			base64.data = p;
 			vod_encode_base64(&base64, &pssh);
@@ -206,7 +161,7 @@ edash_packager_build_mpd(
 
 		for (cur_info = drm_info->pssh_array.first; cur_info < drm_info->pssh_array.last; cur_info++)
 		{
-			if (vod_memcmp(cur_info->system_id, mpd_playready_system_id, sizeof(mpd_playready_system_id)) == 0)
+			if (mp4_pssh_is_playready(cur_info))
 			{
 				cur_drm_tags_size +=
 					sizeof(mpd_content_protection_playready_v2_part1) - 1 +
@@ -289,20 +244,6 @@ edash_packager_build_mpd(
 
 ////// init segment functions
 
-static u_char*
-edash_packager_write_psshs(void* context, u_char* p)
-{
-	drm_system_info_array_t* pssh_array = (drm_system_info_array_t*)context;
-	drm_system_info_t* cur_info;
-
-	for (cur_info = pssh_array->first; cur_info < pssh_array->last; cur_info++)
-	{
-		p = edash_packager_write_pssh(p, cur_info);
-	}
-
-	return p;
-}
-
 vod_status_t
 edash_packager_build_init_mp4(
 	request_context_t* request_context,
@@ -340,12 +281,12 @@ edash_packager_build_init_mp4(
 		for (cur_info = drm_info->pssh_array.first; cur_info < drm_info->pssh_array.last; cur_info++)
 		{
 			pssh_atom_writer.atom_size += ATOM_HEADER_SIZE + sizeof(pssh_atom_t) + cur_info->data.len;
-			if (edash_pssh_v1(cur_info))
+			if (mp4_pssh_is_common(cur_info))
 			{
 				pssh_atom_writer.atom_size -= sizeof(uint32_t);
 			}
 		}
-		pssh_atom_writer.write = edash_packager_write_psshs;
+		pssh_atom_writer.write = mp4_pssh_write_boxes;
 		pssh_atom_writer.context = &drm_info->pssh_array;
 
 		ppssh_atom_writer = &pssh_atom_writer;

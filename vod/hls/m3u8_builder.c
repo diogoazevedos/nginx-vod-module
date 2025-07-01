@@ -3,8 +3,7 @@
 #include "../mp4/mp4_defs.h"
 
 #if (NGX_HAVE_OPENSSL_EVP)
-#include "../dash/edash_packager.h"
-#include "../mp4/mp4_defs.h"
+#include "../mp4/mp4_pssh.h"
 #endif // NGX_HAVE_OPENSSL_EVP
 
 // constants
@@ -369,7 +368,7 @@ m3u8_builder_write_psshs(
 
 	for (cur_info = drm_info->pssh_array.first; cur_info < drm_info->pssh_array.last; cur_info++)
 	{
-		p = edash_packager_write_pssh(p, cur_info);
+		p = mp4_pssh_write_box(p, cur_info);
 	}
 
 	result->len = p - result->data;

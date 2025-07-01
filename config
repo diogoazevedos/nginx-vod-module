@@ -64,6 +64,7 @@ VOD_FEATURE_SRCS="                                      \
     $ngx_addon_dir/vod/mp4/mp4_cenc_decrypt.c           \
     $ngx_addon_dir/vod/mp4/mp4_cenc_encrypt.c           \
     $ngx_addon_dir/vod/mp4/mp4_cenc_passthrough.c       \
+    $ngx_addon_dir/vod/mp4/mp4_pssh.c                   \
     "
 
 VOD_FEATURE_DEPS="                                      \
@@ -77,6 +78,7 @@ VOD_FEATURE_DEPS="                                      \
     $ngx_addon_dir/vod/mp4/mp4_cenc_decrypt.h           \
     $ngx_addon_dir/vod/mp4/mp4_cenc_encrypt.h           \
     $ngx_addon_dir/vod/mp4/mp4_cenc_passthrough.h       \
+    $ngx_addon_dir/vod/mp4/mp4_pssh.h                   \
     "
 
 if [ $OPENSSL = NONE ]; then
