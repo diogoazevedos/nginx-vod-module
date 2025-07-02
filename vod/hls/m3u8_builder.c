@@ -399,11 +399,11 @@ m3u8_builder_build_index_playlist(
 	segment_durations_t segment_durations;
 	segment_duration_item_t* cur_item;
 	segment_duration_item_t* last_item;
-	hls_encryption_type_t encryption_type;
+	hls_encryption_type_t encryption_type = encryption_params->type;
 	segmenter_conf_t* segmenter_conf = media_set->segmenter_conf;
 	vod_str_t name_suffix;
 	vod_str_t extinf;
-	vod_str_t* suffix;
+	vod_str_t* suffix = &m3u8_ts_suffix;
 	uint32_t conf_max_segment_duration;
 	uint64_t max_segment_duration;
 	uint64_t duration_millis;
@@ -424,13 +424,7 @@ m3u8_builder_build_index_playlist(
 	// build the required tracks string
 	if (media_set->track_count[MEDIA_TYPE_VIDEO] != 0 || media_set->track_count[MEDIA_TYPE_AUDIO] != 0)
 	{
-		encryption_type = encryption_params->type;
-
-		if (container_format == HLS_CONTAINER_MPEGTS)
-		{
-			suffix = &m3u8_ts_suffix;
-		}
-		else
+		if (container_format == HLS_CONTAINER_FMP4)
 		{
 			suffix = &m3u8_m4s_suffix;
 		}
@@ -1333,7 +1327,7 @@ m3u8_builder_build_master_playlist(
 	media_track_t* audio_codec_tracks[VOD_CODEC_ID_SUBTITLE - VOD_CODEC_ID_AUDIO];
 	media_track_t* cur_track;
 	vod_status_t rc;
-	uint32_t variant_set_count;
+	uint32_t variant_set_count = 1;
 	uint32_t variant_set_size;
 	uint32_t muxed_tracks;
 	uint32_t flags;
@@ -1408,10 +1402,6 @@ m3u8_builder_build_master_playlist(
 		variant_set_count = m3u8_builder_get_audio_codec_count(
 			&adaptation_sets,
 			audio_codec_tracks);
-	}
-	else
-	{
-		variant_set_count = 1;
 	}
 
 	if (adaptation_sets.count[ADAPTATION_TYPE_SUBTITLE] > 0)
