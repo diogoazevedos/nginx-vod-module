@@ -846,6 +846,7 @@ Apple FairPlay HLS:
 location ~ ^/hls/cbcs/(?<playback_token>[^/]+)/ {
   vod hls;
 
+  vod_hls_version 5;
   vod_hls_encryption_method sample-aes;
   vod_hls_encryption_key_uri 'skd://$vod_set_id';
   vod_hls_encryption_key_format 'com.apple.streamingkeydelivery';
