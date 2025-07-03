@@ -1,9 +1,7 @@
-#include "edash_packager.h"
 #include "dash_packager.h"
 #include "../read_stream.h"
 #include "../mp4/mp4_cenc_passthrough.h"
 #include "../mp4/mp4_cenc_encrypt.h"
-#include "../mp4/mp4_init_segment.h"
 #include "../mp4/mp4_write_stream.h"
 #include "../mp4/mp4_defs.h"
 #include "../mp4/mp4_pssh.h"
@@ -236,78 +234,6 @@ edash_packager_build_mpd(
 	{
 		vod_log_debug1(VOD_LOG_DEBUG_LEVEL, request_context->log, 0,
 			"edash_packager_build_mpd: dash_packager_build_mpd failed %i", rc);
-		return rc;
-	}
-
-	return VOD_OK;
-}
-
-////// init segment functions
-
-vod_status_t
-edash_packager_build_init_mp4(
-	request_context_t* request_context,
-	media_set_t* media_set,
-	uint32_t flags,
-	bool_t size_only,
-	vod_str_t* result)
-{
-	drm_info_t* drm_info = (drm_info_t*)media_set->sequences[0].drm_info;
-	atom_writer_t* stsd_atom_writers;
-	atom_writer_t* ppssh_atom_writer;
-	atom_writer_t pssh_atom_writer;
-	drm_system_info_t* cur_info;
-	vod_status_t rc;
-
-	// get the stsd writers
-	rc = mp4_init_segment_get_encrypted_stsd_writers(
-		request_context,
-		media_set,
-		SCHEME_TYPE_CENC,
-		(flags & EDASH_INIT_MP4_HAS_CLEAR_LEAD) != 0,
-		drm_info->key_id,
-		NULL,
-		&stsd_atom_writers);
-	if (rc != VOD_OK)
-	{
-		return rc;
-	}
-
-	if ((flags & EDASH_INIT_MP4_WRITE_PSSH) != 0 &&
-		media_set->track_count[MEDIA_TYPE_VIDEO] + media_set->track_count[MEDIA_TYPE_AUDIO] > 0)
-	{
-		// build the pssh writer
-		pssh_atom_writer.atom_size = 0;
-		for (cur_info = drm_info->pssh_array.first; cur_info < drm_info->pssh_array.last; cur_info++)
-		{
-			pssh_atom_writer.atom_size += ATOM_HEADER_SIZE + sizeof(pssh_atom_t) + cur_info->data.len;
-			if (mp4_pssh_is_common(cur_info))
-			{
-				pssh_atom_writer.atom_size -= sizeof(uint32_t);
-			}
-		}
-		pssh_atom_writer.write = mp4_pssh_write_boxes;
-		pssh_atom_writer.context = &drm_info->pssh_array;
-
-		ppssh_atom_writer = &pssh_atom_writer;
-	}
-	else
-	{
-		ppssh_atom_writer = NULL;
-	}
-
-	// build the init segment
-	rc = mp4_init_segment_build(
-		request_context,
-		media_set,
-		size_only,
-		ppssh_atom_writer,
-		stsd_atom_writers,
-		result);
-	if (rc != VOD_OK)
-	{
-		vod_log_debug1(VOD_LOG_DEBUG_LEVEL, request_context->log, 0,
-			"edash_packager_build_init_mp4: mp4_init_segment_build failed %i", rc);
 		return rc;
 	}
 

@@ -10,6 +10,7 @@
 #include "vod/udrm.h"
 
 #if (NGX_HAVE_OPENSSL_EVP)
+#include "vod/mp4/mp4_pssh.h"
 #include "vod/dash/edash_packager.h"
 #include "vod/mp4/mp4_cbcs_encrypt.h"
 #include "vod/hls/aes_cbc_encrypt.h"
@@ -685,11 +686,13 @@ ngx_http_vod_hls_handle_mp4_init_segment(
 	ngx_str_t* content_type)
 {
 	atom_writer_t* stsd_atom_writers = NULL;
+	atom_writer_t* pssh_atom_writer = NULL;
 	vod_status_t rc;
 
 #if (NGX_HAVE_OPENSSL_EVP)
 	aes_cbc_encrypt_context_t* encrypted_write_context;
 	hls_encryption_params_t encryption_params;
+	atom_writer_t pssh_atom_writer_temp;
 	drm_info_t* drm_info;
 
 	rc = ngx_http_vod_hls_init_encryption_params(&encryption_params, submodule_context, HLS_CONTAINER_FMP4);
@@ -709,17 +712,12 @@ ngx_http_vod_hls_handle_mp4_init_segment(
 			NULL,
 			encryption_params.iv,
 			&stsd_atom_writers);
-		if (rc != VOD_OK)
-		{
-			ngx_log_debug1(NGX_LOG_DEBUG_HTTP, submodule_context->request_context.log, 0,
-				"ngx_http_vod_hls_handle_mp4_init_segment: mp4_init_segment_get_encrypted_stsd_writers failed %i (1)", rc);
-			return ngx_http_vod_status_to_ngx_error(submodule_context->r, rc);
-		}
 		break;
 
 	case HLS_ENC_SAMPLE_AES_CTR:
 		drm_info = (drm_info_t*)submodule_context->media_set.sequences[0].drm_info;
 
+		// NOTE: similar to DASH, but clear lead is always disabled.
 		rc = mp4_init_segment_get_encrypted_stsd_writers(
 			&submodule_context->request_context,
 			&submodule_context->media_set,
@@ -728,15 +726,19 @@ ngx_http_vod_hls_handle_mp4_init_segment(
 			drm_info->key_id,
 			NULL,
 			&stsd_atom_writers);
-		if (rc != VOD_OK)
-		{
-			ngx_log_debug1(NGX_LOG_DEBUG_HTTP, submodule_context->request_context.log, 0,
-				"ngx_http_vod_hls_handle_mp4_init_segment: mp4_init_segment_get_encrypted_stsd_writers failed %i (2)", rc);
-			return ngx_http_vod_status_to_ngx_error(submodule_context->r, rc);
-		}
+
+		pssh_atom_writer = &pssh_atom_writer_temp;
+		mp4_pssh_init_atom_writer(drm_info, pssh_atom_writer);
 		break;
 
 	default:;
+	}
+
+	if (rc != VOD_OK)
+	{
+		ngx_log_debug1(NGX_LOG_DEBUG_HTTP, submodule_context->request_context.log, 0,
+			"ngx_http_vod_hls_handle_mp4_init_segment: mp4_init_segment_get_encrypted_stsd_writers failed %i", rc);
+		return ngx_http_vod_status_to_ngx_error(submodule_context->r, rc);
 	}
 #endif // NGX_HAVE_OPENSSL_EVP
 
@@ -744,7 +746,7 @@ ngx_http_vod_hls_handle_mp4_init_segment(
 		&submodule_context->request_context,
 		&submodule_context->media_set,
 		ngx_http_vod_submodule_size_only(submodule_context),
-		NULL,
+		pssh_atom_writer,
 		stsd_atom_writers,
 		response);
 	if (rc != VOD_OK)

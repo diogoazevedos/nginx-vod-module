@@ -5,10 +5,6 @@
 #include "dash_packager.h"
 #include "../udrm.h"
 
-// constants
-#define EDASH_INIT_MP4_HAS_CLEAR_LEAD	(0x01)
-#define EDASH_INIT_MP4_WRITE_PSSH		(0x02)
-
 // functions
 vod_status_t edash_packager_build_mpd(
 	request_context_t* request_context,
@@ -16,13 +12,6 @@ vod_status_t edash_packager_build_mpd(
 	vod_str_t* base_url,
 	media_set_t* media_set,
 	bool_t drm_single_key,
-	vod_str_t* result);
-
-vod_status_t edash_packager_build_init_mp4(
-	request_context_t* request_context,
-	media_set_t* media_set,
-	uint32_t flags,
-	bool_t size_only,
 	vod_str_t* result);
 
 vod_status_t edash_packager_get_fragment_writer(

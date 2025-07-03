@@ -11,6 +11,7 @@
 #include "vod/udrm.h"
 
 #if (NGX_HAVE_OPENSSL_EVP)
+#include "vod/mp4/mp4_pssh.h"
 #include "vod/dash/edash_packager.h"
 #endif // NGX_HAVE_OPENSSL_EVP
 
@@ -121,48 +122,51 @@ ngx_http_vod_dash_mp4_handle_init_segment(
 	ngx_str_t* content_type)
 {
 	vod_status_t rc;
+	atom_writer_t* stsd_atom_writers = NULL;
+	atom_writer_t* pssh_atom_writer = NULL;
 
 #if (NGX_HAVE_OPENSSL_EVP)
 	ngx_http_vod_loc_conf_t* conf = submodule_context->conf;
-	uint32_t flags;
+	atom_writer_t pssh_atom_writer_temp;
+	drm_info_t* drm_info;
 
 	if (conf->drm_enabled)
 	{
-		flags = 0;
+		drm_info = (drm_info_t*)submodule_context->media_set.sequences[0].drm_info;
+
+		rc = mp4_init_segment_get_encrypted_stsd_writers(
+			&submodule_context->request_context,
+			&submodule_context->media_set,
+			SCHEME_TYPE_CENC,
+			conf->drm_clear_lead_segment_count > 0,
+			drm_info->key_id,
+			NULL,
+			&stsd_atom_writers);
+		if (rc != VOD_OK)
+		{
+			ngx_log_debug1(NGX_LOG_DEBUG_HTTP, submodule_context->request_context.log, 0,
+				"ngx_http_vod_das_handle_mp4_init_segment: mp4_init_segment_get_encrypted_stsd_writers failed %i", rc);
+			return ngx_http_vod_status_to_ngx_error(submodule_context->r, rc);
+		}
 
 		if (conf->dash.init_mp4_pssh)
 		{
-			flags |= EDASH_INIT_MP4_WRITE_PSSH;
+			pssh_atom_writer = &pssh_atom_writer_temp;
+			mp4_pssh_init_atom_writer(drm_info, pssh_atom_writer);
 		}
-
-		if (conf->drm_clear_lead_segment_count > 0)
-		{
-			flags |= EDASH_INIT_MP4_HAS_CLEAR_LEAD;
-		}
-
-		rc = edash_packager_build_init_mp4(
-			&submodule_context->request_context,
-			&submodule_context->media_set,
-			flags,
-			ngx_http_vod_submodule_size_only(submodule_context),
-			response);
 	}
-	else
 #endif // NGX_HAVE_OPENSSL_EVP
-	{
-		rc = mp4_init_segment_build(
-			&submodule_context->request_context,
-			&submodule_context->media_set,
-			ngx_http_vod_submodule_size_only(submodule_context),
-			NULL,
-			NULL,
-			response);
-	}
-
+	rc = mp4_init_segment_build(
+		&submodule_context->request_context,
+		&submodule_context->media_set,
+		ngx_http_vod_submodule_size_only(submodule_context),
+		pssh_atom_writer,
+		stsd_atom_writers,
+		response);
 	if (rc != VOD_OK)
 	{
 		ngx_log_debug1(NGX_LOG_DEBUG_HTTP, submodule_context->request_context.log, 0,
-			"ngx_http_vod_dash_mp4_handle_init_segment: (e)dash_packager_build_init_mp4 failed %i", rc);
+			"ngx_http_vod_dash_mp4_handle_init_segment: mp4_init_segment_build failed %i", rc);
 		return ngx_http_vod_status_to_ngx_error(submodule_context->r, rc);
 	}
 

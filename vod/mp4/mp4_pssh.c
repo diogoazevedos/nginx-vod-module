@@ -1,5 +1,6 @@
 #include "mp4_defs.h"
 #include "mp4_pssh.h"
+#include "mp4_init_segment.h"
 #include "mp4_write_stream.h"
 #include "../udrm.h"
 
@@ -60,4 +61,24 @@ mp4_pssh_write_boxes(void* context, u_char* p)
 	}
 
 	return p;
+}
+
+void
+mp4_pssh_init_atom_writer(drm_info_t* drm_info, atom_writer_t* atom_writer)
+{
+	drm_system_info_t* cur_info;
+
+	atom_writer->atom_size = 0;
+
+	for (cur_info = drm_info->pssh_array.first; cur_info < drm_info->pssh_array.last; cur_info++)
+	{
+		atom_writer->atom_size += ATOM_HEADER_SIZE + sizeof(pssh_atom_t) + cur_info->data.len;
+		if (mp4_pssh_is_common(cur_info))
+		{
+			atom_writer->atom_size -= sizeof(uint32_t);
+		}
+	}
+
+	atom_writer->write = mp4_pssh_write_boxes;
+	atom_writer->context = &drm_info->pssh_array;
 }
