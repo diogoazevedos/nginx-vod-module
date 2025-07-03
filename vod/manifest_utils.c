@@ -360,7 +360,7 @@ manifest_utils_append_tracks_spec(
 	media_track_t** cur_track_ptr;
 	media_track_t* cur_track;
 	uint32_t last_sequence_index;
-	u_char media_type_letter[] = { 'v', 'a' };		// must match MEDIA_TYPE_xxx in order
+	const u_char media_type_letter[] = { 'v', 'a' }; // must match MEDIA_TYPE_* order
 
 	last_sequence_index = INVALID_SEQUENCE_INDEX;
 	for (cur_track_ptr = tracks; cur_track_ptr < last_track_ptr; cur_track_ptr++)
@@ -375,6 +375,7 @@ manifest_utils_append_tracks_spec(
 		{
 			cur_sequence = cur_track->file_info.source->sequence;
 
+			// muxed audio/video tracks have the same sequence index
 			if (cur_sequence->index != last_sequence_index)
 			{
 				last_sequence_index = cur_sequence->index;
