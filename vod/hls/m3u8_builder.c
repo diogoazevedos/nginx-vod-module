@@ -486,7 +486,7 @@ m3u8_builder_build_index_playlist(
 	u_char* p;
 
 #if (NGX_HAVE_OPENSSL_EVP)
-	size_t max_pssh_size = 0;
+	size_t max_pssh_size = 1;
 	u_char* temp_buffer;
 #endif // NGX_HAVE_OPENSSL_EVP
 
@@ -589,14 +589,6 @@ m3u8_builder_build_index_playlist(
 	else if (encryption_type == HLS_ENC_SAMPLE_AES_CTR)
 	{
 		result_size += m3u8_builder_get_keys_size(media_set->sequences[0].drm_info, &max_pssh_size);
-
-		temp_buffer = vod_alloc(request_context->pool, max_pssh_size);
-		if (temp_buffer == NULL)
-		{
-			vod_log_debug0(VOD_LOG_DEBUG_LEVEL, request_context->log, 0,
-				"m3u8_builder_build_index_playlist: vod_alloc failed");
-			return VOD_ALLOC_FAILED;
-		}
 	}
 #endif // NGX_HAVE_OPENSSL_EVP
 
@@ -712,6 +704,14 @@ m3u8_builder_build_index_playlist(
 #if (NGX_HAVE_OPENSSL_EVP)
 	else if (encryption_type == HLS_ENC_SAMPLE_AES_CTR)
 	{
+		temp_buffer = vod_alloc(request_context->pool, max_pssh_size);
+		if (temp_buffer == NULL)
+		{
+			vod_log_debug0(VOD_LOG_DEBUG_LEVEL, request_context->log, 0,
+				"m3u8_builder_build_index_playlist: vod_alloc failed");
+			return VOD_ALLOC_FAILED;
+		}
+
 		p = m3u8_builder_write_keys(p, media_set->sequences[0].drm_info, temp_buffer);
 	}
 #endif // NGX_HAVE_OPENSSL_EVP
