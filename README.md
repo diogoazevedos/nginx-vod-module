@@ -872,9 +872,8 @@ Common Encryption HLS:
 location ~ ^/hls/cenc/(?<playback_token>[^/]+)/ {
   vod hls;
 
+  vod_hls_version 6;
   vod_hls_encryption_method sample-aes-ctr;
-  vod_hls_encryption_key_format 'urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed';
-  vod_hls_encryption_key_format_versions '1';
 
   vod_drm_enabled on;
   vod_drm_request_uri '/drm/$playback_token';
