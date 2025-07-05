@@ -398,22 +398,23 @@ dash_packager_get_track_spec(
 	media_track_t* track)
 {
 	u_char* p = result->data;
-	u_char media_type_letter[] = { 'v', 'a' };		// must match MEDIA_TYPE_xxx in order
+	const u_char media_type_letter[] = { 'v', 'a' }; // must match MEDIA_TYPE_* order
 
 	if (media_set->has_multi_sequences && sequence->index != INVALID_SEQUENCE_INDEX)
 	{
 		if (sequence->id.len != 0 && sequence->id.len < VOD_INT32_LEN)
 		{
-			p = vod_sprintf(p, "s%V-", &sequence->id);
+			p = vod_sprintf(p, "s%V", &sequence->id);
 		}
 		else
 		{
-			p = vod_sprintf(p, "f%uD-", sequence->index + 1);
+			p = vod_sprintf(p, "f%uD", sequence->index + 1);
 		}
 	}
 
 	if (track->media_info.media_type <= MEDIA_TYPE_AUDIO)
 	{
+		*p++ = '-';
 		*p++ = media_type_letter[track->media_info.media_type];
 		p = vod_sprintf(p, "%uD-x3", track->index + 1); // TODO: remove -xN in the future
 	}

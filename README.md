@@ -846,6 +846,7 @@ Apple FairPlay HLS:
 location ~ ^/hls/cbcs/(?<playback_token>[^/]+)/ {
   vod hls;
 
+  vod_hls_version 5;
   vod_hls_encryption_method sample-aes;
   vod_hls_encryption_key_uri 'skd://$vod_set_id';
   vod_hls_encryption_key_format 'com.apple.streamingkeydelivery';
@@ -872,9 +873,8 @@ Common Encryption HLS:
 location ~ ^/hls/cenc/(?<playback_token>[^/]+)/ {
   vod hls;
 
-  vod_hls_encryption_method sample-aes-cenc;
-  vod_hls_encryption_key_format 'urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed';
-  vod_hls_encryption_key_format_versions '1';
+  vod_hls_version 6;
+  vod_hls_encryption_method sample-aes-ctr;
 
   vod_drm_enabled on;
   vod_drm_request_uri '/drm/$playback_token';
@@ -1742,7 +1742,7 @@ URLs.
 
 #### vod_hls_encryption_method
 
-- **syntax**: `vod_hls_encryption_method none | aes-128 | sample-aes | sample-aes-cenc`
+- **syntax**: `vod_hls_encryption_method none | aes-128 | sample-aes | sample-aes-ctr`
 - **default**: `none`
 - **context**: `http`, `server`, `location`
 

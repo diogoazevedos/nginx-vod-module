@@ -3,8 +3,8 @@
 #include "../mp4/mp4_defs.h"
 
 #if (NGX_HAVE_OPENSSL_EVP)
-#include "../dash/edash_packager.h"
-#include "../mp4/mp4_defs.h"
+#include "../mp4/mp4_pssh.h"
+#include "../mp4/mp4_cenc_encrypt.h"
 #endif // NGX_HAVE_OPENSSL_EVP
 
 // constants
@@ -55,15 +55,22 @@ static const char m3u8_iframe_stream_inf[] = "#EXT-X-I-FRAME-STREAM-INF:BANDWIDT
 static const char m3u8_key[] = "#EXT-X-KEY:METHOD=%s";
 static const u_char m3u8_key_aes_128[] = "AES-128";
 static const u_char m3u8_key_sample_aes[] = "SAMPLE-AES";
-static const u_char m3u8_key_sample_aes_cenc[] = "SAMPLE-AES-CTR";
 static const u_char m3u8_key_uri[] = ",URI=\"";
 static const u_char m3u8_key_iv[] = ",IV=0x";
-static const char m3u8_key_keyformat[] = ",KEYFORMAT=\"%V\"";
+static const char m3u8_key_keyformat[] = ",KEYFORMAT=\"";
 static const char m3u8_key_keyformatversions[] = ",KEYFORMATVERSIONS=\"%V\"";
 static const u_char m3u8_key_extension[] = ".key";
 
 #if (NGX_HAVE_OPENSSL_EVP)
-static const u_char m3u8_key_uri_sample_aes_cenc_prefix[] = "data:text/plain;base64,";
+static const u_char m3u8_key_sample_aes_ctr[] = "SAMPLE-AES-CTR";
+
+static const u_char m3u8_keyformat_playready[] = "com.microsoft.playready";
+static const u_char m3u8_keyformat_uuid_prefix[] = "urn:uuid:";
+
+static const u_char m3u8_key_uri_pssh_prefix[] = "data:text/plain;base64,";
+static const u_char m3u8_key_uri_playready_prefix[] = "data:text/plain;charset=UTF-16;base64,";
+
+static vod_str_t keyformatversions_1 = vod_string("1");
 #endif // NGX_HAVE_OPENSSL_EVP
 
 static vod_str_t m3u8_ts_suffix = vod_string(".ts\n");
@@ -171,11 +178,9 @@ m3u8_builder_build_tracks_spec(
 	media_track_t** tracks;
 	media_track_t* cur_track;
 	u_char* p;
-	size_t result_size;
-
-	// get the result size
-	result_size = suffix->len +
+	size_t result_size = suffix->len + sizeof("-x") - 1 + VOD_INT32_LEN +
 		(sizeof("-v") - 1 + VOD_INT32_LEN) * media_set->total_track_count;
+
 	if (media_set->has_multi_sequences)
 	{
 		result_size += (sizeof("-f") - 1 + VOD_INT32_LEN) * media_set->total_track_count;
@@ -207,6 +212,12 @@ m3u8_builder_build_tracks_spec(
 		tracks,
 		media_set->total_track_count,
 		media_set->has_multi_sequences);
+
+	// only for audio/video MP4 fragments
+	if (suffix == &m3u8_m4s_suffix)
+	{
+		p = vod_copy(p, "-x3", sizeof("-x3") - 1); // TODO: remove -xN in the future
+	}
 
 	p = vod_copy(p, suffix->data, suffix->len);
 
@@ -342,47 +353,104 @@ m3u8_builder_build_iframe_playlist(
 }
 
 #if (NGX_HAVE_OPENSSL_EVP)
-static vod_status_t
-m3u8_builder_write_psshs(
-	request_context_t* request_context,
-	drm_info_t* drm_info,
-	vod_str_t* result)
+static size_t
+m3u8_builder_get_keys_size(drm_info_t* drm_info, size_t* max_pssh_size)
 {
 	drm_system_info_t* cur_info;
-	size_t result_size = 0;
-	u_char* p;
+	size_t result = 0;
+	size_t cur_pssh_size = 0;
 
 	for (cur_info = drm_info->pssh_array.first; cur_info < drm_info->pssh_array.last; cur_info++)
 	{
-		result_size += ATOM_HEADER_SIZE + sizeof(pssh_atom_t) + cur_info->data.len;
+		result +=
+			sizeof(m3u8_key) - 1 +
+			sizeof(m3u8_key_sample_aes_ctr) - 1 +
+			sizeof(m3u8_key_uri) - 1 +
+			sizeof(m3u8_key_keyformat) - 1 +
+			sizeof(m3u8_key_keyformatversions) - 1 + keyformatversions_1.len +
+			3; // 2 '"' and '\n'
+
+		if (mp4_pssh_is_playready(cur_info))
+		{
+			result +=
+				sizeof(m3u8_keyformat_playready) - 1 +
+				sizeof(m3u8_key_uri_playready_prefix) - 1 + vod_base64_encoded_length(
+					cur_info->data.len);
+		}
+		else
+		{
+			cur_pssh_size = ATOM_HEADER_SIZE + sizeof(pssh_atom_t) + cur_info->data.len;
+			if (cur_pssh_size > *max_pssh_size)
+			{
+				*max_pssh_size = cur_pssh_size;
+			}
+
+			result +=
+				sizeof(m3u8_keyformat_uuid_prefix) - 1 + VOD_GUID_LENGTH +
+				sizeof(m3u8_key_uri_pssh_prefix) - 1 + vod_base64_encoded_length(cur_pssh_size);
+		}
 	}
 
-	p = vod_alloc(request_context->pool, result_size);
-	if (p == NULL)
-	{
-		vod_log_debug0(VOD_LOG_DEBUG_LEVEL, request_context->log, 0,
-			"m3u8_builder_write_psshs: vod_alloc failed");
-		return VOD_ALLOC_FAILED;
-	}
+	return result;
+}
 
-	result->data = p;
+static u_char*
+m3u8_builder_write_keys(u_char* p, drm_info_t* drm_info, u_char* temp_buffer)
+{
+	drm_system_info_t* cur_info;
+	vod_str_t pssh;
+	vod_str_t base64;
+	bool_t is_playready;
 
 	for (cur_info = drm_info->pssh_array.first; cur_info < drm_info->pssh_array.last; cur_info++)
 	{
-		p = edash_packager_write_pssh(p, cur_info);
+		is_playready = mp4_pssh_is_playready(cur_info);
+
+		p = vod_sprintf(p, m3u8_key, m3u8_key_sample_aes_ctr);
+
+		p = vod_copy(p, m3u8_key_uri, sizeof(m3u8_key_uri) - 1);
+		if (is_playready)
+		{
+			p = vod_copy(p,
+				m3u8_key_uri_playready_prefix,
+				sizeof(m3u8_key_uri_playready_prefix) - 1);
+
+			base64.data = p;
+			vod_encode_base64(&base64, &cur_info->data);
+		}
+		else
+		{
+			p = vod_copy(p,
+				m3u8_key_uri_pssh_prefix,
+				sizeof(m3u8_key_uri_pssh_prefix) - 1);
+
+			pssh.data = temp_buffer;
+			pssh.len = mp4_pssh_write_box(pssh.data, cur_info) - temp_buffer;
+
+			base64.data = p;
+			vod_encode_base64(&base64, &pssh);
+		}
+		p += base64.len;
+		*p++ = '"';
+
+		p = vod_copy(p, m3u8_key_keyformat, sizeof(m3u8_key_keyformat) - 1);
+		if (is_playready)
+		{
+			p = vod_copy(p, m3u8_keyformat_playready, sizeof(m3u8_keyformat_playready) - 1);
+		}
+		else
+		{
+			p = vod_copy(p, m3u8_keyformat_uuid_prefix, sizeof(m3u8_keyformat_uuid_prefix) - 1);
+			p = mp4_cenc_encrypt_write_guid(p, cur_info->system_id);
+		}
+		*p++ = '"';
+
+		p = vod_sprintf(p, m3u8_key_keyformatversions, &keyformatversions_1);
+
+		*p++ = '\n';
 	}
 
-	result->len = p - result->data;
-
-	if (result->len != result_size)
-	{
-		vod_log_error(VOD_LOG_ERR, request_context->log, 0,
-			"m3u8_builder_write_psshs: result length %uz exceeded allocated length %uz",
-			result->len, result_size);
-		return VOD_UNEXPECTED;
-	}
-
-	return VOD_OK;
+	return p;
 }
 #endif // NGX_HAVE_OPENSSL_EVP
 
@@ -400,11 +468,11 @@ m3u8_builder_build_index_playlist(
 	segment_durations_t segment_durations;
 	segment_duration_item_t* cur_item;
 	segment_duration_item_t* last_item;
-	hls_encryption_type_t encryption_type;
+	hls_encryption_type_t encryption_type = encryption_params->type;
 	segmenter_conf_t* segmenter_conf = media_set->segmenter_conf;
 	vod_str_t name_suffix;
 	vod_str_t extinf;
-	vod_str_t* suffix;
+	vod_str_t* suffix = &m3u8_ts_suffix;
 	uint32_t conf_max_segment_duration;
 	uint64_t max_segment_duration;
 	uint64_t duration_millis;
@@ -418,20 +486,14 @@ m3u8_builder_build_index_playlist(
 	u_char* p;
 
 #if (NGX_HAVE_OPENSSL_EVP)
-	vod_str_t base64;
-	vod_str_t psshs;
+	size_t max_pssh_size = 1;
+	u_char* temp_buffer;
 #endif // NGX_HAVE_OPENSSL_EVP
 
 	// build the required tracks string
 	if (media_set->track_count[MEDIA_TYPE_VIDEO] != 0 || media_set->track_count[MEDIA_TYPE_AUDIO] != 0)
 	{
-		encryption_type = encryption_params->type;
-
-		if (container_format == HLS_CONTAINER_MPEGTS)
-		{
-			suffix = &m3u8_ts_suffix;
-		}
-		else
+		if (container_format == HLS_CONTAINER_FMP4)
 		{
 			suffix = &m3u8_m4s_suffix;
 		}
@@ -488,63 +550,47 @@ m3u8_builder_build_index_playlist(
 		(segment_durations.discontinuities + 1) +
 		sizeof(m3u8_endlist) - 1;
 
-	if (encryption_type != HLS_ENC_NONE)
+	if (encryption_type == HLS_ENC_AES_128 || encryption_type == HLS_ENC_SAMPLE_AES)
 	{
 		result_size +=
 			sizeof(m3u8_key) - 1 +
-			sizeof(m3u8_key_sample_aes_cenc) - 1 +
+			sizeof(m3u8_key_sample_aes) - 1 +
 			sizeof(m3u8_key_uri) - 1 +
-			2;			// '"', '\n'
+			2; // '"', '\n'
 
 		if (encryption_params->key_uri.len != 0)
 		{
 			result_size += encryption_params->key_uri.len;
 		}
-#if (NGX_HAVE_OPENSSL_EVP)
-		else if (encryption_params->type == HLS_ENC_SAMPLE_AES_CENC)
-		{
-			rc = m3u8_builder_write_psshs(
-				request_context,
-				media_set->sequences[0].drm_info,
-				&psshs);
-			if (rc != VOD_OK)
-			{
-				return rc;
-			}
-
-			result_size += sizeof(m3u8_key_uri_sample_aes_cenc_prefix) +
-				vod_base64_encoded_length(psshs.len);
-		}
-#endif // NGX_HAVE_OPENSSL_EVP
 		else
 		{
-			result_size += base_url->len +
-				conf->encryption_key_file_name.len +
+			result_size += base_url->len + conf->encryption_key_file_name.len +
 				sizeof("-f") - 1 + VOD_INT32_LEN +
 				sizeof(m3u8_key_extension) - 1;
 		}
 
 		if (encryption_params->return_iv)
 		{
-			result_size +=
-				sizeof(m3u8_key_iv) - 1 +
-				sizeof(encryption_params->iv_buf) * 2;
+			result_size += sizeof(m3u8_key_iv) - 1 + sizeof(encryption_params->iv_buf) * 2;
 		}
 
 		if (conf->encryption_key_format.len != 0)
 		{
-			result_size +=
-				sizeof(m3u8_key_keyformat) - 1 +
-				conf->encryption_key_format.len;
+			result_size += sizeof(m3u8_key_keyformat) - 1 + conf->encryption_key_format.len + 1; // '"'
 		}
 
 		if (conf->encryption_key_format_versions.len != 0)
 		{
 			result_size +=
-				sizeof(m3u8_key_keyformatversions) - 1 +
-				conf->encryption_key_format_versions.len;
+				sizeof(m3u8_key_keyformatversions) - 1 + conf->encryption_key_format_versions.len;
 		}
 	}
+#if (NGX_HAVE_OPENSSL_EVP)
+	else if (encryption_type == HLS_ENC_SAMPLE_AES_CTR)
+	{
+		result_size += m3u8_builder_get_keys_size(media_set->sequences[0].drm_info, &max_pssh_size);
+	}
+#endif // NGX_HAVE_OPENSSL_EVP
 
 	if (media_set->segmenter_conf->align_to_key_frames &&
 		(media_set->track_count[MEDIA_TYPE_VIDEO] != 0 || media_set->track_count[MEDIA_TYPE_AUDIO] != 0))
@@ -605,16 +651,12 @@ m3u8_builder_build_index_playlist(
 		p = vod_copy(p, m3u8_independent_segments, sizeof(m3u8_independent_segments) - 1);
 	}
 
-	if (encryption_type != HLS_ENC_NONE)
+	if (encryption_type == HLS_ENC_SAMPLE_AES || encryption_type == HLS_ENC_AES_128)
 	{
 		switch (encryption_type)
 		{
 		case HLS_ENC_SAMPLE_AES:
 			p = vod_sprintf(p, m3u8_key, m3u8_key_sample_aes);
-			break;
-
-		case HLS_ENC_SAMPLE_AES_CENC:
-			p = vod_sprintf(p, m3u8_key, m3u8_key_sample_aes_cenc);
 			break;
 
 		default:
@@ -627,14 +669,6 @@ m3u8_builder_build_index_playlist(
 		{
 			p = vod_copy(p, encryption_params->key_uri.data, encryption_params->key_uri.len);
 		}
-#if (NGX_HAVE_OPENSSL_EVP)
-		else if (encryption_params->type == HLS_ENC_SAMPLE_AES_CENC)
-		{
-			base64.data = vod_copy(p, m3u8_key_uri_sample_aes_cenc_prefix, sizeof(m3u8_key_uri_sample_aes_cenc_prefix) - 1);
-			vod_encode_base64(&base64, &psshs);
-			p = base64.data + base64.len;
-		}
-#endif // NGX_HAVE_OPENSSL_EVP
 		else
 		{
 			p = vod_copy(p, base_url->data, base_url->len);
@@ -655,7 +689,9 @@ m3u8_builder_build_index_playlist(
 
 		if (conf->encryption_key_format.len != 0)
 		{
-			p = vod_sprintf(p, m3u8_key_keyformat, &conf->encryption_key_format);
+			p = vod_copy(p, m3u8_key_keyformat, sizeof(m3u8_key_keyformat) - 1);
+			p = vod_copy(p, conf->encryption_key_format.data, conf->encryption_key_format.len);
+			*p++ = '"';
 		}
 
 		if (conf->encryption_key_format_versions.len != 0)
@@ -665,6 +701,20 @@ m3u8_builder_build_index_playlist(
 
 		*p++ = '\n';
 	}
+#if (NGX_HAVE_OPENSSL_EVP)
+	else if (encryption_type == HLS_ENC_SAMPLE_AES_CTR)
+	{
+		temp_buffer = vod_alloc(request_context->pool, max_pssh_size);
+		if (temp_buffer == NULL)
+		{
+			vod_log_debug0(VOD_LOG_DEBUG_LEVEL, request_context->log, 0,
+				"m3u8_builder_build_index_playlist: vod_alloc failed");
+			return VOD_ALLOC_FAILED;
+		}
+
+		p = m3u8_builder_write_keys(p, media_set->sequences[0].drm_info, temp_buffer);
+	}
+#endif // NGX_HAVE_OPENSSL_EVP
 
 	if (container_format == HLS_CONTAINER_FMP4)
 	{
@@ -1334,7 +1384,7 @@ m3u8_builder_build_master_playlist(
 	media_track_t* audio_codec_tracks[VOD_CODEC_ID_SUBTITLE - VOD_CODEC_ID_AUDIO];
 	media_track_t* cur_track;
 	vod_status_t rc;
-	uint32_t variant_set_count;
+	uint32_t variant_set_count = 1;
 	uint32_t variant_set_size;
 	uint32_t muxed_tracks;
 	uint32_t flags;
@@ -1347,7 +1397,7 @@ m3u8_builder_build_master_playlist(
 
 	// get the adaptations sets
 	flags = ADAPTATION_SETS_FLAG_SINGLE_LANG_TRACK | ADAPTATION_SETS_FLAG_MULTI_AUDIO_CODEC;
-	if (!conf->force_unmuxed_segments && encryption_method != HLS_ENC_SAMPLE_AES_CENC)
+	if (!conf->force_unmuxed_segments && encryption_method != HLS_ENC_SAMPLE_AES_CTR)
 	{
 		flags |= ADAPTATION_SETS_FLAG_MUXED;
 	}
@@ -1409,10 +1459,6 @@ m3u8_builder_build_master_playlist(
 		variant_set_count = m3u8_builder_get_audio_codec_count(
 			&adaptation_sets,
 			audio_codec_tracks);
-	}
-	else
-	{
-		variant_set_count = 1;
 	}
 
 	if (adaptation_sets.count[ADAPTATION_TYPE_SUBTITLE] > 0)
