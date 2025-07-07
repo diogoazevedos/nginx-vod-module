@@ -1683,7 +1683,7 @@ The name of the MP4 initialization file (an `.mp4` extension is implied).
 #### vod_dash_fragment_file_name_prefix
 
 - **syntax**: `vod_dash_fragment_file_name_prefix :name`
-- **default**: `frag`
+- **default**: `fragment`
 - **context**: `http`, `server`, `location`
 
 The name of the fragment files (an `.m4s` extension is implied).
