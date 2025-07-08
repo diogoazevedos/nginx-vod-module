@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.0](https://github.com/diogoazevedos/nginx-vod-module/compare/v1.3.0...v1.4.0) (2025-07-08)
+
+### Features
+
+- Add multi-DRM support for HLS SAMPLE-AES-CTR ([#42](https://github.com/diogoazevedos/nginx-vod-module/pull/42))
+
 ## [1.3.0](https://github.com/diogoazevedos/nginx-vod-module/compare/v1.2.0...v1.3.0) (2025-06-29)
 
 ### Features
