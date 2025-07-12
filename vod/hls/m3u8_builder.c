@@ -354,7 +354,7 @@ m3u8_builder_build_iframe_playlist(
 
 #if (NGX_HAVE_OPENSSL_EVP)
 static size_t
-m3u8_builder_get_keys_size(drm_info_t* drm_info, size_t* max_pssh_size)
+m3u8_builder_get_keys_size(const char* key_tag, drm_info_t* drm_info, size_t* max_pssh_size)
 {
 	drm_system_info_t* cur_info;
 	size_t result = 0;
@@ -363,7 +363,7 @@ m3u8_builder_get_keys_size(drm_info_t* drm_info, size_t* max_pssh_size)
 	for (cur_info = drm_info->pssh_array.first; cur_info < drm_info->pssh_array.last; cur_info++)
 	{
 		result +=
-			sizeof(m3u8_key) - 1 +
+			sizeof(key_tag) - 1 +
 			sizeof(m3u8_key_sample_aes_ctr) - 1 +
 			sizeof(m3u8_key_uri) - 1 +
 			sizeof(m3u8_key_keyformat) - 1 +
@@ -395,7 +395,7 @@ m3u8_builder_get_keys_size(drm_info_t* drm_info, size_t* max_pssh_size)
 }
 
 static u_char*
-m3u8_builder_write_keys(u_char* p, drm_info_t* drm_info, u_char* temp_buffer)
+m3u8_builder_write_keys(u_char* p, const char* key_tag, drm_info_t* drm_info, u_char* temp_buffer)
 {
 	drm_system_info_t* cur_info;
 	vod_str_t pssh;
@@ -406,7 +406,7 @@ m3u8_builder_write_keys(u_char* p, drm_info_t* drm_info, u_char* temp_buffer)
 	{
 		is_playready = mp4_pssh_is_playready(cur_info);
 
-		p = vod_sprintf(p, m3u8_key, m3u8_key_sample_aes_ctr);
+		p = vod_sprintf(p, key_tag, m3u8_key_sample_aes_ctr);
 
 		p = vod_copy(p, m3u8_key_uri, sizeof(m3u8_key_uri) - 1);
 		if (is_playready)
@@ -588,7 +588,8 @@ m3u8_builder_build_index_playlist(
 #if (NGX_HAVE_OPENSSL_EVP)
 	else if (encryption_type == HLS_ENC_SAMPLE_AES_CTR)
 	{
-		result_size += m3u8_builder_get_keys_size(media_set->sequences[0].drm_info, &max_pssh_size);
+		result_size +=
+			m3u8_builder_get_keys_size(m3u8_key, media_set->sequences[0].drm_info, &max_pssh_size);
 	}
 #endif // NGX_HAVE_OPENSSL_EVP
 
@@ -712,7 +713,7 @@ m3u8_builder_build_index_playlist(
 			return VOD_ALLOC_FAILED;
 		}
 
-		p = m3u8_builder_write_keys(p, media_set->sequences[0].drm_info, temp_buffer);
+		p = m3u8_builder_write_keys(p, m3u8_key, media_set->sequences[0].drm_info, temp_buffer);
 	}
 #endif // NGX_HAVE_OPENSSL_EVP
 
