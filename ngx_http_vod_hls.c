@@ -88,9 +88,14 @@ ngx_http_vod_hls_get_container_format(
 		return conf->m3u8_config.container_format;
 	}
 
+	if (conf->encryption_method == HLS_ENC_SAMPLE_AES_CTR)
+	{
+		return HLS_CONTAINER_FMP4;
+	}
+
 	track = media_set->filtered_tracks;
-	if ((track->media_info.media_type == MEDIA_TYPE_VIDEO && track->media_info.codec_id != VOD_CODEC_ID_AVC) ||
-		conf->encryption_method == HLS_ENC_SAMPLE_AES_CTR)
+	if (track->media_info.media_type == MEDIA_TYPE_VIDEO &&
+		track->media_info.codec_id != VOD_CODEC_ID_AVC)
 	{
 		return HLS_CONTAINER_FMP4;
 	}
