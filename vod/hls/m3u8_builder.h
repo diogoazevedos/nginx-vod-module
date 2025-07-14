@@ -38,7 +38,7 @@ typedef struct {
 vod_status_t m3u8_builder_build_master_playlist(
 	request_context_t* request_context,
 	m3u8_config_t* conf,
-	vod_uint_t encryption_method,
+	hls_encryption_params_t* encryption_params,
 	vod_str_t* base_url,
 	media_set_t* media_set,
 	vod_str_t* result);

@@ -382,7 +382,12 @@ ngx_http_vod_hls_handle_master_playlist(
 {
 	ngx_http_vod_loc_conf_t* conf = submodule_context->conf;
 	ngx_str_t base_url = ngx_null_string;
+	hls_encryption_params_t encryption_params;
 	vod_status_t rc;
+
+#if (NGX_HAVE_OPENSSL_EVP)
+	ngx_uint_t container_format;
+#endif // NGX_HAVE_OPENSSL_EVP
 
 	if (conf->hls.absolute_master_urls)
 	{
@@ -393,10 +398,45 @@ ngx_http_vod_hls_handle_master_playlist(
 		}
 	}
 
+#if (NGX_HAVE_OPENSSL_EVP)
+	container_format = ngx_http_vod_hls_get_container_format(
+		&conf->hls,
+		&submodule_context->media_set);
+
+	// TODO: add multi key support
+	rc = ngx_http_vod_hls_init_encryption_params(&encryption_params, submodule_context, container_format);
+	if (rc != NGX_OK)
+	{
+		return rc;
+	}
+
+	if (encryption_params.type != HLS_ENC_NONE)
+	{
+		if (conf->hls.encryption_key_uri != NULL)
+		{
+			if (ngx_http_complex_value(
+				submodule_context->r,
+				conf->hls.encryption_key_uri,
+				&encryption_params.key_uri) != NGX_OK)
+			{
+				ngx_log_debug0(NGX_LOG_DEBUG_HTTP, submodule_context->request_context.log, 0,
+					"ngx_http_vod_hls_handle_master_playlist: ngx_http_complex_value failed");
+				return NGX_ERROR;
+			}
+		}
+		else
+		{
+			encryption_params.key_uri.len = 0;
+		}
+	}
+#else
+	encryption_params.type = HLS_ENC_NONE;
+#endif // NGX_HAVE_OPENSSL_EVP
+
 	rc = m3u8_builder_build_master_playlist(
 		&submodule_context->request_context,
 		&conf->hls.m3u8_config,
-		conf->hls.encryption_method,
+		&encryption_params,
 		&base_url,
 		&submodule_context->media_set,
 		response);
