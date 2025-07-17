@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.0](https://github.com/diogoazevedos/nginx-vod-module/compare/v1.4.0...v1.5.0) (2025-07-17)
+
+### Features
+
+- Add HLS session key support ([#46](https://github.com/diogoazevedos/nginx-vod-module/pull/46))
+
+### Bug Fixes
+
+- Remove `libxml2` deprecation error ([#45](https://github.com/diogoazevedos/nginx-vod-module/pull/45))
+
 ## [1.4.0](https://github.com/diogoazevedos/nginx-vod-module/compare/v1.3.0...v1.4.0) (2025-07-08)
 
 ### Features
