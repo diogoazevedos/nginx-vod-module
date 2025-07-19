@@ -6,11 +6,14 @@ on:
 
 jobs:
   build:
-    name: Build using ${{ matrix.build-mode }}
+    name: Build for ${{ matrix.nginx-version }} using ${{ matrix.build-mode }}
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
+        nginx-version:
+          - 1.28.0
+          - 1.29.0
         build-mode:
           - --add-module
           - --add-dynamic-module
@@ -30,7 +33,7 @@ jobs:
         with:
           path: nginx-vod-module
       - run: mkdir nginx
-      - run: curl -s https://nginx.org/download/nginx-1.29.0.tar.gz | tar -xz --strip-components 1 -C nginx
+      - run: curl -s https://nginx.org/download/nginx-${{ matrix.nginx-version }}.tar.gz | tar -xz --strip-components 1 -C nginx
       - working-directory: nginx
         run: |
           ../nginx-vod-module/scripts/build_basic.sh \
