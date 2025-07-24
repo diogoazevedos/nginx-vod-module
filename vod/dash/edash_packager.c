@@ -125,7 +125,7 @@ edash_packager_build_mpd(
 	size_t cur_drm_tags_size;
 	size_t cur_pssh_size;
 	size_t max_pssh_size = 0;
-	u_char* temp_buffer;
+	u_char* temp_buffer = NULL;
 	vod_status_t rc;
 
 	representation_tags_size = 0;
