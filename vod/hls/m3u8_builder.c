@@ -603,8 +603,8 @@ m3u8_builder_build_index_playlist(
 	u_char* p;
 
 #if (NGX_HAVE_OPENSSL_EVP)
-	size_t max_pssh_size = 1;
-	u_char* temp_buffer;
+	size_t max_pssh_size = 0;
+	u_char* temp_buffer = NULL;
 #endif // NGX_HAVE_OPENSSL_EVP
 
 	// build the required tracks string
@@ -739,7 +739,7 @@ m3u8_builder_build_index_playlist(
 	}
 
 #if (NGX_HAVE_OPENSSL_EVP)
-	if (encryption_params->type != HLS_ENC_NONE && suffix != &m3u8_vtt_suffix)
+	if (max_pssh_size > 0)
 	{
 		temp_buffer = vod_alloc(request_context->pool, max_pssh_size);
 		if (temp_buffer == NULL)
@@ -748,7 +748,10 @@ m3u8_builder_build_index_playlist(
 				"m3u8_builder_build_index_playlist: vod_alloc failed");
 			return VOD_ALLOC_FAILED;
 		}
+	}
 
+	if (encryption_params->type != HLS_ENC_NONE && suffix != &m3u8_vtt_suffix)
+	{
 		p = m3u8_builder_write_encryption(p,
 			m3u8_key, base_url, conf, media_set, encryption_params, temp_buffer);
 	}
@@ -1434,8 +1437,8 @@ m3u8_builder_build_master_playlist(
 	bool_t alternative_audio;
 
 #if (NGX_HAVE_OPENSSL_EVP)
-	size_t max_pssh_size = 1;
-	u_char* temp_buffer;
+	size_t max_pssh_size = 0;
+	u_char* temp_buffer = NULL;
 #endif // NGX_HAVE_OPENSSL_EVP
 
 	// get the adaptations sets
@@ -1592,7 +1595,7 @@ m3u8_builder_build_master_playlist(
 	}
 
 #if (NGX_HAVE_OPENSSL_EVP)
-	if (encryption_params->type != HLS_ENC_NONE)
+	if (max_pssh_size > 0)
 	{
 		temp_buffer = vod_alloc(request_context->pool, max_pssh_size);
 		if (temp_buffer == NULL)
@@ -1601,7 +1604,10 @@ m3u8_builder_build_master_playlist(
 				"m3u8_builder_build_index_playlist: vod_alloc failed");
 			return VOD_ALLOC_FAILED;
 		}
+	}
 
+	if (encryption_params->type != HLS_ENC_NONE)
+	{
 		p = m3u8_builder_write_encryption(p,
 			m3u8_session_key, base_url, conf, media_set, encryption_params, temp_buffer);
 	}
