@@ -2,6 +2,8 @@
 
 FROM alpine:3.22.1 AS build
 
+ARG NGINX_VERSION=1.29.0
+
 RUN apk --no-cache add \
 		build-base \
 		linux-headers \
@@ -11,7 +13,7 @@ RUN apk --no-cache add \
 		fdk-aac-dev \
 		openssl-dev \
 	&& mkdir /nginx \
-	&& wget -qO- https://nginx.org/download/nginx-1.29.0.tar.gz | tar -xz --strip-components 1 -C /nginx
+	&& wget -qO- https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz | tar -xz --strip-components 1 -C /nginx
 
 COPY --exclude=sample . /nginx-vod-module
 
