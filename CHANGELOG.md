@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.1](https://github.com/diogoazevedos/nginx-vod-module/compare/v1.5.0...v1.5.1) (2025-07-31)
+
+### Bug Fixes
+
+- Avoid unnecessary heap alloc in HLS ([#49](https://github.com/diogoazevedos/nginx-vod-module/pull/49))
+
 ## [1.5.0](https://github.com/diogoazevedos/nginx-vod-module/compare/v1.4.0...v1.5.0) (2025-07-17)
 
 ### Features
