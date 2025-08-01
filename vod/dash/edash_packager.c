@@ -26,14 +26,10 @@ static const u_char mpd_content_protection_cenc_part4[] =
 	"</cenc:pssh>\n"
 	"      </ContentProtection>\n";
 
-// TODO: remove this - always generate a default_KID for PlayReady
 static const u_char mpd_content_protection_playready_part1[] =
-	"      <ContentProtection xmlns:mspr=\"urn:microsoft:playready\" schemeIdUri=\"urn:uuid:";
-
-static const u_char mpd_content_protection_playready_v2_part1[] =
 	"      <ContentProtection xmlns:cenc=\"urn:mpeg:cenc:2013\" xmlns:mspr=\"urn:microsoft:playready\" schemeIdUri=\"urn:uuid:";
 
-static const u_char mpd_content_protection_playready_v2_part2[] =
+static const u_char mpd_content_protection_playready_part2[] =
 	"\" value=\"2.0\" cenc:default_KID=\"";
 
 static const u_char mpd_content_protection_playready_part3[] =
@@ -44,16 +40,9 @@ static const u_char mpd_content_protection_playready_part4[] =
 	"</mspr:pro>\n"
 	"      </ContentProtection>\n";
 
-// mpd types
-typedef struct {
-	u_char* temp_buffer;
-	bool_t write_playready_kid;
-} write_content_protection_context_t;
-
 static u_char*
-edash_packager_write_content_protection(void* ctx, u_char* p, media_track_t* track)
+edash_packager_write_content_protection(void* temp_buffer, u_char* p, media_track_t* track)
 {
-	write_content_protection_context_t* context = ctx;
 	drm_info_t* drm_info = (drm_info_t*)track->file_info.drm_info;
 	drm_system_info_t* cur_info;
 	vod_str_t base64;
@@ -69,24 +58,14 @@ edash_packager_write_content_protection(void* ctx, u_char* p, media_track_t* tra
 	{
 		if (mp4_pssh_is_playready(cur_info))
 		{
-			if (context->write_playready_kid)
-			{
-				p = vod_copy(p,
-					mpd_content_protection_playready_v2_part1,
-					sizeof(mpd_content_protection_playready_v2_part1) - 1);
-				p = mp4_cenc_encrypt_write_guid(p, cur_info->system_id);
-				p = vod_copy(p,
-					mpd_content_protection_playready_v2_part2,
-					sizeof(mpd_content_protection_playready_v2_part2) - 1);
-				p = mp4_cenc_encrypt_write_guid(p, drm_info->key_id);
-			}
-			else
-			{
-				p = vod_copy(p,
-					mpd_content_protection_playready_part1,
-					sizeof(mpd_content_protection_playready_part1) - 1);
-				p = mp4_cenc_encrypt_write_guid(p, cur_info->system_id);
-			}
+			p = vod_copy(p,
+				mpd_content_protection_playready_part1,
+				sizeof(mpd_content_protection_playready_part1) - 1);
+			p = mp4_cenc_encrypt_write_guid(p, cur_info->system_id);
+			p = vod_copy(p,
+				mpd_content_protection_playready_part2,
+				sizeof(mpd_content_protection_playready_part2) - 1);
+			p = mp4_cenc_encrypt_write_guid(p, drm_info->key_id);
 			p = vod_copy(p,
 				mpd_content_protection_playready_part3,
 				sizeof(mpd_content_protection_playready_part3) - 1);
@@ -113,7 +92,7 @@ edash_packager_write_content_protection(void* ctx, u_char* p, media_track_t* tra
 				mpd_content_protection_cenc_part3,
 				sizeof(mpd_content_protection_cenc_part3) - 1);
 
-			pssh.data = context->temp_buffer;
+			pssh.data = temp_buffer;
 			pssh.len = mp4_pssh_write_box(pssh.data, cur_info) - pssh.data;
 
 			base64.data = p;
@@ -137,7 +116,6 @@ edash_packager_build_mpd(
 	bool_t drm_single_key,
 	vod_str_t* result)
 {
-	write_content_protection_context_t context;
 	dash_manifest_extensions_t extensions;
 	media_sequence_t* cur_sequence;
 	drm_system_info_t* cur_info;
@@ -147,6 +125,7 @@ edash_packager_build_mpd(
 	size_t cur_drm_tags_size;
 	size_t cur_pssh_size;
 	size_t max_pssh_size = 0;
+	u_char* temp_buffer = NULL;
 	vod_status_t rc;
 
 	representation_tags_size = 0;
@@ -162,9 +141,9 @@ edash_packager_build_mpd(
 			if (mp4_pssh_is_playready(cur_info))
 			{
 				cur_drm_tags_size +=
-					sizeof(mpd_content_protection_playready_v2_part1) - 1 +
+					sizeof(mpd_content_protection_playready_part1) - 1 +
 					VOD_GUID_LENGTH +
-					sizeof(mpd_content_protection_playready_v2_part2) - 1 +
+					sizeof(mpd_content_protection_playready_part2) - 1 +
 					VOD_GUID_LENGTH +
 					sizeof(mpd_content_protection_playready_part3) - 1 +
 					vod_base64_encoded_length(cur_info->data.len) +
@@ -194,11 +173,10 @@ edash_packager_build_mpd(
 		representation_tags_size += cur_drm_tags_size * cur_sequence->total_track_count;
 	}
 
-	context.write_playready_kid = conf->write_playready_kid;
 	if (max_pssh_size > 0)
 	{
-		context.temp_buffer = vod_alloc(request_context->pool, max_pssh_size);
-		if (context.temp_buffer == NULL)
+		temp_buffer = vod_alloc(request_context->pool, max_pssh_size);
+		if (temp_buffer == NULL)
 		{
 			vod_log_debug0(VOD_LOG_DEBUG_LEVEL, request_context->log, 0,
 				"edash_packager_build_mpd: vod_alloc failed");
@@ -208,7 +186,7 @@ edash_packager_build_mpd(
 
 	content_prot_writer.size = representation_tags_size;
 	content_prot_writer.write = edash_packager_write_content_protection;
-	content_prot_writer.context = &context;
+	content_prot_writer.context = temp_buffer;
 
 	if (drm_single_key)
 	{
