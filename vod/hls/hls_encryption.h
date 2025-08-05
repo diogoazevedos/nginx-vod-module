@@ -8,7 +8,6 @@
 // typedefs
 typedef enum {
 	HLS_ENC_NONE,
-	HLS_ENC_AES_128,
 	HLS_ENC_SAMPLE_AES,
 	HLS_ENC_SAMPLE_AES_CTR
 } hls_encryption_type_t;

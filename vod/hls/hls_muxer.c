@@ -463,7 +463,6 @@ hls_muxer_init_segment(
 	media_set_t* media_set,
 	write_callback_t write_callback,
 	void* write_context,
-	bool_t reuse_buffers,
 	size_t* response_size,
 	vod_str_t* response_header,
 	hls_muxer_state_t** processor_state)
@@ -481,12 +480,7 @@ hls_muxer_init_segment(
 	}
 
 	// init the write queue
-	write_buffer_queue_init(
-		&state->queue,
-		request_context,
-		write_callback,
-		write_context,
-		reuse_buffers);
+	write_buffer_queue_init(&state->queue, request_context, write_callback, write_context, FALSE);
 
 	rc = hls_muxer_init_base(
 		state,

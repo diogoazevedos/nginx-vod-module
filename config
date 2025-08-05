@@ -55,7 +55,6 @@ fi
 #
 VOD_FEATURE_SRCS="                                      \
     $ngx_addon_dir/vod/dash/edash_packager.c            \
-    $ngx_addon_dir/vod/hls/aes_cbc_encrypt.c            \
     $ngx_addon_dir/vod/hls/eac3_encrypt_filter.c        \
     $ngx_addon_dir/vod/hls/frame_encrypt_filter.c       \
     $ngx_addon_dir/vod/hls/sample_aes_avc_filter.c      \
@@ -69,7 +68,6 @@ VOD_FEATURE_SRCS="                                      \
 
 VOD_FEATURE_DEPS="                                      \
     $ngx_addon_dir/vod/dash/edash_packager.h            \
-    $ngx_addon_dir/vod/hls/aes_cbc_encrypt.h            \
     $ngx_addon_dir/vod/hls/eac3_encrypt_filter.h        \
     $ngx_addon_dir/vod/hls/frame_encrypt_filter.h       \
     $ngx_addon_dir/vod/hls/sample_aes_avc_filter.h      \
