@@ -96,7 +96,6 @@ vod_status_t hls_muxer_init_segment(
 	media_set_t* media_set,
 	write_callback_t write_callback,
 	void* write_context,
-	bool_t reuse_buffers,
 	size_t* response_size,
 	vod_str_t* response_header,
 	hls_muxer_state_t** processor_state);

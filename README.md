@@ -1742,7 +1742,7 @@ URLs.
 
 #### vod_hls_encryption_method
 
-- **syntax**: `vod_hls_encryption_method none | aes-128 | sample-aes | sample-aes-ctr`
+- **syntax**: `vod_hls_encryption_method none | sample-aes | sample-aes-ctr`
 - **default**: `none`
 - **context**: `http`, `server`, `location`
 
@@ -2202,11 +2202,7 @@ http {
     }
 
     location ~ ^/hls/ {
-      # encrypted hls
       vod hls;
-
-      vod_secret_key 'secret-$vod_filepath';
-      vod_hls_encryption_method aes-128;
 
       add_header Access-Control-Allow-Methods 'GET, HEAD, OPTIONS';
       add_header Access-Control-Allow-Headers 'Origin, Range';
