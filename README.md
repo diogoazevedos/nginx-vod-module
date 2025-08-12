@@ -1760,7 +1760,7 @@ video stream (using `#EXT-X-MEDIA`).
 #### vod_hls_version
 
 - **syntax**: `vod_hls_version :version`
-- **default**: `4`
+- **default**: `6`
 - **context**: `http`, `server`, `location`
 
 Sets the version of the manifest. See
