@@ -50,7 +50,7 @@
 - Volume map (requires `libavcodec`) - returns a CSV containing the volume level in each interval.
 - Decryption of CENC-encrypted MP4 files (it is possible to create such files with MP4Box).
 - DASH: common encryption (CENC) support.
-- HLS: support for AES-128 / SAMPLE-AES encryption.
+- HLS: support for SAMPLE-AES / SAMPLE-AES-CTR encryption.
 - HLS: Generation of I-frames playlist (`#EXT-X-I-FRAMES-ONLY`).
 
 ### Limitations
