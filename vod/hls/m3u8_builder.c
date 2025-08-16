@@ -213,12 +213,6 @@ m3u8_builder_build_tracks_spec(
 		media_set->total_track_count,
 		media_set->has_multi_sequences);
 
-	// only for audio/video MP4 fragments
-	if (suffix == &m3u8_m4s_suffix)
-	{
-		p = vod_copy(p, "-x3", sizeof("-x3") - 1); // TODO: remove -xN in the future
-	}
-
 	p = vod_copy(p, suffix->data, suffix->len);
 
 	result->len = p - result->data;

@@ -58,15 +58,6 @@ typedef struct {
 // fixed atoms
 
 static const u_char ftyp_atom[] = {
-	0x00, 0x00, 0x00, 0x18,		// atom size
-	0x66, 0x74, 0x79, 0x70,		// ftyp
-	0x69, 0x73, 0x6f, 0x6d,		// major brand
-	0x00, 0x00, 0x00, 0x01,		// minor version
-	0x69, 0x73, 0x6f, 0x6d,		// compatible brand
-	0x61, 0x76, 0x63, 0x31,		// compatible brand
-};
-
-static const u_char ftyp_atom_v2[] = {
 	0x00, 0x00, 0x00, 0x1c,		// atom size
 	0x66, 0x74, 0x79, 0x70,		// ftyp
 	0x69, 0x73, 0x6f, 0x35,		// major brand
@@ -75,6 +66,7 @@ static const u_char ftyp_atom_v2[] = {
 	0x64, 0x61, 0x73, 0x68,		// compatible brand
 	0x6d, 0x73, 0x69, 0x78,		// compatible brand
 };
+
 static const u_char hdlr_video_atom[] = {
 	0x00, 0x00, 0x00, 0x2d,		// size
 	0x68, 0x64, 0x6c, 0x72,		// hdlr
@@ -745,9 +737,7 @@ mp4_init_segment_calc_size(
 		result->moov_atom_size += track_sizes->trak_size;
 	}
 
-	result->total_size =
-		(media_set->version >= 2 ? sizeof(ftyp_atom_v2) : sizeof(ftyp_atom)) +
-		result->moov_atom_size;
+	result->total_size = sizeof(ftyp_atom) + result->moov_atom_size;
 }
 
 static u_char*
@@ -776,14 +766,7 @@ mp4_init_segment_write(
 	}
 
 	// ftyp
-	if (media_set->version >= 2)
-	{
-		p = vod_copy(p, ftyp_atom_v2, sizeof(ftyp_atom_v2));
-	}
-	else
-	{
-		p = vod_copy(p, ftyp_atom, sizeof(ftyp_atom));
-	}
+	p = vod_copy(p, ftyp_atom, sizeof(ftyp_atom));
 
 	// moov
 	write_atom_header(p, sizes->moov_atom_size, 'm', 'o', 'o', 'v');
