@@ -83,32 +83,26 @@ u_char*
 mp4_fragment_write_video_trun_atom(
 	u_char* p,
 	media_sequence_t* sequence,
-	uint32_t first_frame_offset,
-	uint32_t version)
+	uint32_t first_frame_offset)
 {
 	media_clip_filtered_t* cur_clip;
 	frame_list_part_t* part;
 	input_frame_t* cur_frame;
 	input_frame_t* last_frame;
 	uint32_t initial_pts_delay = 0;
-	uint32_t flags;
 	int32_t pts_delay;
 	size_t atom_size;
 
 	atom_size = ATOM_HEADER_SIZE + sizeof(trun_atom_t) + sequence->total_frame_count * sizeof(trun_video_frame_t);
-	flags = (version << 24) | TRUN_VIDEO_FLAGS;
 
 	write_atom_header(p, atom_size, 't', 'r', 'u', 'n');
-	write_be32(p, flags);								// flags = data offset, duration, size, key, delay
+	write_be32(p, (1 << 24) | TRUN_VIDEO_FLAGS);	// version = 1, flags = data offset, duration, size, key, delay
 	write_be32(p, sequence->total_frame_count);
 	write_be32(p, first_frame_offset);	// first frame offset relative to moof start offset
 
 	for (cur_clip = sequence->filtered_clips; cur_clip < sequence->filtered_clips_end; cur_clip++)
 	{
-		if (version == 1)
-		{
-			initial_pts_delay = cur_clip->first_track->media_info.u.video.initial_pts_delay;
-		}
+		initial_pts_delay = cur_clip->first_track->media_info.u.video.initial_pts_delay;
 
 		part = &cur_clip->first_track->frames;
 		last_frame = part->last_frame;
@@ -157,7 +151,7 @@ mp4_fragment_write_audio_trun_atom(
 	atom_size = ATOM_HEADER_SIZE + sizeof(trun_atom_t) + sequence->total_frame_count * sizeof(trun_audio_frame_t);
 
 	write_atom_header(p, atom_size, 't', 'r', 'u', 'n');
-	write_be32(p, TRUN_AUDIO_FLAGS);						// flags = data offset, duration, size
+	write_be32(p, TRUN_AUDIO_FLAGS);	// flags = data offset, duration, size
 	write_be32(p, sequence->total_frame_count);
 	write_be32(p, first_frame_offset);	// first frame offset relative to moof start offset
 
@@ -196,8 +190,8 @@ mp4_fragment_write_subtitle_trun_atom(
 
 	atom_size = ATOM_HEADER_SIZE + sizeof(trun_atom_t) + sizeof(trun_audio_frame_t);
 	write_atom_header(p, atom_size, 't', 'r', 'u', 'n');
-	write_be32(p, TRUN_AUDIO_FLAGS);		// flags = data offset, duration, size
-	write_be32(p, 1);						// sample count = 1
+	write_be32(p, TRUN_AUDIO_FLAGS);	// flags = data offset, duration, size
+	write_be32(p, 1);					// sample count = 1
 	write_be32(p, first_frame_offset);
 
 	write_be32(p, duration);

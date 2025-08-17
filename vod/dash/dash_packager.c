@@ -1927,7 +1927,7 @@ dash_packager_build_fragment_header(
 	switch (sequence->media_type)
 	{
 	case MEDIA_TYPE_VIDEO:
-		p = mp4_fragment_write_video_trun_atom(p, sequence, first_frame_offset, 1);
+		p = mp4_fragment_write_video_trun_atom(p, sequence, first_frame_offset);
 		break;
 
 	case MEDIA_TYPE_AUDIO:

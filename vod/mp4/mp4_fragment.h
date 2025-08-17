@@ -65,8 +65,7 @@ size_t mp4_fragment_get_trun_atom_size(uint32_t media_type, uint32_t frame_count
 u_char* mp4_fragment_write_video_trun_atom(
 	u_char* p,
 	media_sequence_t* sequence,
-	uint32_t first_frame_offset,
-	uint32_t version);
+	uint32_t first_frame_offset);
 
 u_char* mp4_fragment_write_audio_trun_atom(
 	u_char* p,
