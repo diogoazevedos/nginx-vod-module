@@ -1021,13 +1021,6 @@ manifest_utils_get_adaptation_sets(
 		return rc;
 	}
 
-	if (vod_all_flags_set(flags, ADAPTATION_SETS_FLAG_MULTI_AUDIO | ADAPTATION_SETS_FLAG_DEFAULT_LANG_LAST))
-	{
-		vod_queue_t* first = vod_queue_head(&groups[MEDIA_TYPE_AUDIO].list);
-		vod_queue_remove(first);
-		vod_queue_insert_tail(&groups[MEDIA_TYPE_AUDIO].list, first);
-	}
-
 	// get the number of adaptation sets
 	if (groups[MEDIA_TYPE_VIDEO].count > 0 && (flags & ADAPTATION_SETS_FLAG_MUXED) != 0)
 	{
