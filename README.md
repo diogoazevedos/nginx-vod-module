@@ -1748,15 +1748,6 @@ URLs.
 
 Sets the encryption method of HLS segments.
 
-#### vod_hls_force_unmuxed_segments
-
-- **syntax**: `vod_hls_force_unmuxed_segments on | off`
-- **default**: `off`
-- **context**: `http`, `server`, `location`
-
-When enabled the server returns the audio stream in separate segments than the ones used by the
-video stream (using `#EXT-X-MEDIA`).
-
 #### vod_hls_version
 
 - **syntax**: `vod_hls_version :version`
