@@ -267,22 +267,12 @@ typedef struct {
 // fixed fragment atoms
 
 static const u_char styp_atom[] = {
-	0x00, 0x00, 0x00, 0x1c,		// atom size
-	0x73, 0x74, 0x79, 0x70,		// styp
-	0x69, 0x73, 0x6f, 0x36,		// major brand
-	0x00, 0x00, 0x00, 0x01,		// minor version
-	0x69, 0x73, 0x6f, 0x6d,		// compatible brand
-	0x69, 0x73, 0x6f, 0x36,		// compatible brand
-	0x64, 0x61, 0x73, 0x68,		// compatible brand
-};
-
-static const u_char styp_atom_v2[] = {
 	0x00, 0x00, 0x00, 0x18,		// atom size
 	0x73, 0x74, 0x79, 0x70,		// styp
-	0x6d, 0x73, 0x64, 0x68,		// major brand
+	0x6d, 0x73, 0x64, 0x68,		// major brand = "msdh"
 	0x00, 0x00, 0x00, 0x00,		// minor version
-	0x6d, 0x73, 0x64, 0x68,		// compatible brand
-	0x6d, 0x73, 0x69, 0x78,		// compatible brand
+	0x6d, 0x73, 0x64, 0x68,		// compatible brand = "msdh"
+	0x6d, 0x73, 0x69, 0x78,		// compatible brand = "msix"
 };
 
 static dash_codec_info_t dash_codecs[VOD_CODEC_ID_COUNT] = {
@@ -416,7 +406,7 @@ dash_packager_get_track_spec(
 	{
 		*p++ = '-';
 		*p++ = media_type_letter[track->media_info.media_type];
-		p = vod_sprintf(p, "%uD-x3", track->index + 1); // TODO: remove -xN in the future
+		p = vod_sprintf(p, "%uD", track->index + 1);
 	}
 
 	result->len = p - result->data;
@@ -1726,8 +1716,7 @@ dash_packager_get_earliest_pres_time(media_set_t* media_set, media_track_t* trac
 		result += track->frames.first_frame[0].pts_delay;
 
 #ifndef DISABLE_PTS_DELAY_COMPENSATION
-		if (track->media_info.media_type == MEDIA_TYPE_VIDEO &&
-			media_set->version >= 1)							// TODO: remove this after deployment
+		if (track->media_info.media_type == MEDIA_TYPE_VIDEO)
 		{
 			result -= track->media_info.u.video.initial_pts_delay;
 		}
@@ -1871,7 +1860,7 @@ dash_packager_build_fragment_header(
 		traf_atom_size;
 
 	*total_fragment_size =
-		(media_set->version >= 2 ? sizeof(styp_atom_v2) : sizeof(styp_atom)) +
+		sizeof(styp_atom) +
 		ATOM_HEADER_SIZE + (sidx_params.earliest_pres_time > UINT_MAX ? sizeof(sidx64_atom_t) : sizeof(sidx_atom_t)) +
 		moof_atom_size +
 		mdat_atom_size;
@@ -1896,14 +1885,7 @@ dash_packager_build_fragment_header(
 	result->data = p;
 
 	// styp
-	if (media_set->version >= 2)
-	{
-		p = vod_copy(p, styp_atom_v2, sizeof(styp_atom_v2));
-	}
-	else
-	{
-		p = vod_copy(p, styp_atom, sizeof(styp_atom));
-	}
+	p = vod_copy(p, styp_atom, sizeof(styp_atom));
 
 	// sidx
 	if (sidx_params.earliest_pres_time > UINT_MAX)
@@ -1945,7 +1927,7 @@ dash_packager_build_fragment_header(
 	switch (sequence->media_type)
 	{
 	case MEDIA_TYPE_VIDEO:
-		p = mp4_fragment_write_video_trun_atom(p, sequence, first_frame_offset, media_set->version >= 2 ? 1 : 0);
+		p = mp4_fragment_write_video_trun_atom(p, sequence, first_frame_offset);
 		break;
 
 	case MEDIA_TYPE_AUDIO:
