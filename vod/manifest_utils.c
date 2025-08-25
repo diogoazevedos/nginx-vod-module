@@ -359,10 +359,8 @@ manifest_utils_append_tracks_spec(
 	media_track_t** last_track_ptr = tracks + track_count;
 	media_track_t** cur_track_ptr;
 	media_track_t* cur_track;
-	uint32_t last_sequence_index;
 	const u_char media_type_letter[] = { 'v', 'a' }; // must match MEDIA_TYPE_* order
 
-	last_sequence_index = INVALID_SEQUENCE_INDEX;
 	for (cur_track_ptr = tracks; cur_track_ptr < last_track_ptr; cur_track_ptr++)
 	{
 		cur_track = *cur_track_ptr;
@@ -374,19 +372,13 @@ manifest_utils_append_tracks_spec(
 		if (write_sequence_index)
 		{
 			cur_sequence = cur_track->file_info.source->sequence;
-
-			// muxed audio/video tracks have the same sequence index
-			if (cur_sequence->index != last_sequence_index)
+			if (cur_sequence->id.len != 0 && cur_sequence->id.len < VOD_INT32_LEN)
 			{
-				last_sequence_index = cur_sequence->index;
-				if (cur_sequence->id.len != 0 && cur_sequence->id.len < VOD_INT32_LEN)
-				{
-					p = vod_sprintf(p, "-s%V", &cur_sequence->id);
-				}
-				else
-				{
-					p = vod_sprintf(p, "-f%uD", last_sequence_index + 1);
-				}
+				p = vod_sprintf(p, "-s%V", &cur_sequence->id);
+			}
+			else
+			{
+				p = vod_sprintf(p, "-f%uD", cur_sequence->index + 1);
 			}
 		}
 

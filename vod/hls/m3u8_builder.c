@@ -841,8 +841,7 @@ m3u8_builder_append_index_url(
 	media_track_t** tracks,
 	vod_str_t* base_url)
 {
-	media_track_t* main_track;
-	media_track_t* sub_track;
+	media_track_t* track = NULL;
 	uint32_t media_type;
 	bool_t write_sequence_index;
 
@@ -851,11 +850,10 @@ m3u8_builder_append_index_url(
 	{
 		if (tracks[media_type] != NULL)
 		{
+			track = tracks[media_type];
 			break;
 		}
 	}
-	main_track = tracks[media_type];
-	sub_track = media_type == MEDIA_TYPE_VIDEO ? tracks[MEDIA_TYPE_AUDIO] : NULL;
 
 	write_sequence_index = media_set->has_multi_sequences;
 	if (base_url->len != 0)
@@ -864,11 +862,10 @@ m3u8_builder_append_index_url(
 		p = vod_copy(p, base_url->data, base_url->len);
 		if (p[-1] != '/')
 		{
-			if (main_track->file_info.uri.len != 0 &&
-				(sub_track == NULL || vod_str_equals(main_track->file_info.uri, sub_track->file_info.uri)))
+			if (track->file_info.uri.len != 0)
 			{
-				p = vod_copy(p, main_track->file_info.uri.data, main_track->file_info.uri.len);
-				write_sequence_index = FALSE;		// no need to pass the sequence index since we have a direct uri
+				p = vod_copy(p, track->file_info.uri.data, track->file_info.uri.len);
+				write_sequence_index = FALSE;	// no need to pass the sequence index since we have a direct uri
 			}
 			else
 			{
@@ -1188,7 +1185,7 @@ m3u8_builder_write_variants(
 
 	for (cur_track_ptr = adaptation_set->first;
 		cur_track_ptr < adaptation_set->last;
-		cur_track_ptr += 1)
+		cur_track_ptr++)
 	{
 		// get the audio / video tracks
 		// Note: this is ok because the adaptation types enum is aligned with media types
@@ -1203,11 +1200,6 @@ m3u8_builder_write_variants(
 			if (group_audio_track != NULL)
 			{
 				audio = &group_audio_track->media_info;
-			}
-			// TODO: is this for muxed tracks?
-			else if (tracks[MEDIA_TYPE_AUDIO] != NULL)
-			{
-				audio = &tracks[MEDIA_TYPE_AUDIO]->media_info;
 			}
 			else
 			{
@@ -1313,7 +1305,7 @@ m3u8_builder_write_iframe_variants(
 
 	for (cur_track_ptr = adaptation_set->first;
 		cur_track_ptr < adaptation_set->last;
-		cur_track_ptr += 1)
+		cur_track_ptr++)
 	{
 		// get the audio / video tracks
 		// Note: this is ok because the adaptation types enum is aligned with media types
@@ -1485,7 +1477,7 @@ m3u8_builder_build_master_playlist(
 	{
 		for (cur_track_ptr = adaptation_sets.first->first;
 			cur_track_ptr < adaptation_sets.first->last;
-			cur_track_ptr += 1)
+			cur_track_ptr++)
 		{
 			cur_track = cur_track_ptr[0];
 			if (cur_track == NULL)
