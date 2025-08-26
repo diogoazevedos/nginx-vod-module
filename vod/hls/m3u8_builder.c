@@ -835,8 +835,7 @@ m3u8_builder_append_index_url(
 	media_track_t** tracks,
 	vod_str_t* base_url)
 {
-	media_track_t* main_track;
-	media_track_t* sub_track;
+	media_track_t* track = NULL;
 	uint32_t media_type;
 	bool_t write_sequence_index;
 
@@ -845,11 +844,10 @@ m3u8_builder_append_index_url(
 	{
 		if (tracks[media_type] != NULL)
 		{
+			track = tracks[media_type];
 			break;
 		}
 	}
-	main_track = tracks[media_type];
-	sub_track = media_type == MEDIA_TYPE_VIDEO ? tracks[MEDIA_TYPE_AUDIO] : NULL;
 
 	write_sequence_index = media_set->has_multi_sequences;
 	if (base_url->len != 0)
@@ -858,11 +856,10 @@ m3u8_builder_append_index_url(
 		p = vod_copy(p, base_url->data, base_url->len);
 		if (p[-1] != '/')
 		{
-			if (main_track->file_info.uri.len != 0 &&
-				(sub_track == NULL || vod_str_equals(main_track->file_info.uri, sub_track->file_info.uri)))
+			if (track->file_info.uri.len != 0)
 			{
-				p = vod_copy(p, main_track->file_info.uri.data, main_track->file_info.uri.len);
-				write_sequence_index = FALSE;		// no need to pass the sequence index since we have a direct uri
+				p = vod_copy(p, track->file_info.uri.data, track->file_info.uri.len);
+				write_sequence_index = FALSE;	// no need to pass the sequence index since we have a direct uri
 			}
 			else
 			{
@@ -1177,25 +1174,16 @@ m3u8_builder_write_variants(
 	media_info_t* audio = NULL;
 	uint32_t bitrate;
 	uint32_t avg_bitrate;
-	uint32_t muxed_tracks = adaptation_set->type == ADAPTATION_TYPE_MUXED ? MEDIA_TYPE_COUNT : 1;
 
 	vod_memzero(tracks, sizeof(tracks));
 
 	for (cur_track_ptr = adaptation_set->first;
 		cur_track_ptr < adaptation_set->last;
-		cur_track_ptr += muxed_tracks)
+		cur_track_ptr++)
 	{
 		// get the audio / video tracks
-		if (muxed_tracks == MEDIA_TYPE_COUNT)
-		{
-			tracks[MEDIA_TYPE_VIDEO] = cur_track_ptr[MEDIA_TYPE_VIDEO];
-			tracks[MEDIA_TYPE_AUDIO] = cur_track_ptr[MEDIA_TYPE_AUDIO];
-		}
-		else
-		{
-			// Note: this is ok because the adaptation types enum is aligned with media types
-			tracks[adaptation_set->type] = cur_track_ptr[0];
-		}
+		// Note: this is ok because the adaptation types enum is aligned with media types
+		tracks[adaptation_set->type] = cur_track_ptr[0];
 
 		// output EXT-X-STREAM-INF
 		if (tracks[MEDIA_TYPE_VIDEO] != NULL)
@@ -1206,10 +1194,6 @@ m3u8_builder_write_variants(
 			if (group_audio_track != NULL)
 			{
 				audio = &group_audio_track->media_info;
-			}
-			else if (tracks[MEDIA_TYPE_AUDIO] != NULL)
-			{
-				audio = &tracks[MEDIA_TYPE_AUDIO]->media_info;
 			}
 			else
 			{
@@ -1310,25 +1294,16 @@ m3u8_builder_write_iframe_variants(
 	media_track_t** cur_track_ptr;
 	media_track_t* tracks[MEDIA_TYPE_COUNT];
 	media_info_t* video;
-	uint32_t muxed_tracks = adaptation_set->type == ADAPTATION_TYPE_MUXED ? MEDIA_TYPE_COUNT : 1;
 
 	vod_memzero(tracks, sizeof(tracks));
 
 	for (cur_track_ptr = adaptation_set->first;
 		cur_track_ptr < adaptation_set->last;
-		cur_track_ptr += muxed_tracks)
+		cur_track_ptr++)
 	{
 		// get the audio / video tracks
-		if (muxed_tracks == MEDIA_TYPE_COUNT)
-		{
-			tracks[MEDIA_TYPE_VIDEO] = cur_track_ptr[MEDIA_TYPE_VIDEO];
-			tracks[MEDIA_TYPE_AUDIO] = cur_track_ptr[MEDIA_TYPE_AUDIO];
-		}
-		else
-		{
-			// Note: this is ok because the adaptation types enum is aligned with media types
-			tracks[adaptation_set->type] = cur_track_ptr[0];
-		}
+		// Note: this is ok because the adaptation types enum is aligned with media types
+		tracks[adaptation_set->type] = cur_track_ptr[0];
 
 		if (tracks[MEDIA_TYPE_VIDEO] == NULL)
 		{
@@ -1389,7 +1364,6 @@ m3u8_builder_build_master_playlist(
 	vod_status_t rc;
 	uint32_t variant_set_count = 1;
 	uint32_t variant_set_size;
-	uint32_t muxed_tracks;
 	uint32_t flags;
 	bool_t iframe_playlist;
 	size_t max_video_stream_inf;
@@ -1405,10 +1379,6 @@ m3u8_builder_build_master_playlist(
 
 	// get the adaptations sets
 	flags = ADAPTATION_SETS_FLAG_SINGLE_LANG_TRACK | ADAPTATION_SETS_FLAG_MULTI_AUDIO_CODEC;
-	if (!conf->force_unmuxed_segments && encryption_params->type != HLS_ENC_SAMPLE_AES_CTR)
-	{
-		flags |= ADAPTATION_SETS_FLAG_MUXED;
-	}
 
 	rc = manifest_utils_get_adaptation_sets(
 		request_context,
@@ -1426,7 +1396,7 @@ m3u8_builder_build_master_playlist(
 		encryption_params->type == HLS_ENC_NONE &&
 		conf->container_format != HLS_CONTAINER_FMP4 &&
 		!media_set->audio_filtering_needed &&
-		(adaptation_sets.first->type == ADAPTATION_TYPE_MUXED || adaptation_sets.first->type == ADAPTATION_TYPE_VIDEO);
+		adaptation_sets.first->type == ADAPTATION_TYPE_VIDEO;
 
 	// get the response size
 	base_url_len = base_url->len + 1 + conf->index_file_name_prefix.len +			// 1 = /
@@ -1494,8 +1464,6 @@ m3u8_builder_build_master_playlist(
 	}
 
 	// variants
-	muxed_tracks = adaptation_sets.first->type == ADAPTATION_TYPE_MUXED ? MEDIA_TYPE_COUNT : 1;
-
 	variant_set_size = (max_video_stream_inf +		 // using only video since it's larger than audio
 		base_url_len) * adaptation_sets.first->count;
 
@@ -1503,7 +1471,7 @@ m3u8_builder_build_master_playlist(
 	{
 		for (cur_track_ptr = adaptation_sets.first->first;
 			cur_track_ptr < adaptation_sets.first->last;
-			cur_track_ptr += muxed_tracks)
+			cur_track_ptr++)
 		{
 			cur_track = cur_track_ptr[0];
 			if (cur_track == NULL)

@@ -359,10 +359,8 @@ manifest_utils_append_tracks_spec(
 	media_track_t** last_track_ptr = tracks + track_count;
 	media_track_t** cur_track_ptr;
 	media_track_t* cur_track;
-	uint32_t last_sequence_index;
 	const u_char media_type_letter[] = { 'v', 'a' }; // must match MEDIA_TYPE_* order
 
-	last_sequence_index = INVALID_SEQUENCE_INDEX;
 	for (cur_track_ptr = tracks; cur_track_ptr < last_track_ptr; cur_track_ptr++)
 	{
 		cur_track = *cur_track_ptr;
@@ -374,19 +372,13 @@ manifest_utils_append_tracks_spec(
 		if (write_sequence_index)
 		{
 			cur_sequence = cur_track->file_info.source->sequence;
-
-			// muxed audio/video tracks have the same sequence index
-			if (cur_sequence->index != last_sequence_index)
+			if (cur_sequence->id.len != 0 && cur_sequence->id.len < VOD_INT32_LEN)
 			{
-				last_sequence_index = cur_sequence->index;
-				if (cur_sequence->id.len != 0 && cur_sequence->id.len < VOD_INT32_LEN)
-				{
-					p = vod_sprintf(p, "-s%V", &cur_sequence->id);
-				}
-				else
-				{
-					p = vod_sprintf(p, "-f%uD", last_sequence_index + 1);
-				}
+				p = vod_sprintf(p, "-s%V", &cur_sequence->id);
+			}
+			else
+			{
+				p = vod_sprintf(p, "-f%uD", cur_sequence->index + 1);
 			}
 		}
 
@@ -539,26 +531,6 @@ track_group_key_compare(track_group_key_t* key1, track_group_key_t* key2)
 	}
 
 	return 0;
-}
-
-static bool_t
-track_group_key_match_track(
-	track_group_key_t* key,
-	media_track_t* track,
-	uint32_t flags)
-{
-	track_group_key_t track_key;
-
-	track_key.tags.label.data = NULL;		// silence gcc warning
-	if (!track_group_key_init(
-		track,
-		flags,
-		&track_key))
-	{
-		return FALSE;
-	}
-
-	return track_group_key_compare(key, &track_key) == 0;
 }
 
 static void
@@ -863,112 +835,6 @@ manifest_utils_is_multi_audio(media_set_t* media_set)
 	return FALSE;
 }
 
-static vod_status_t
-manifest_utils_get_muxed_adaptation_set(
-	request_context_t* request_context,
-	media_set_t* media_set,
-	uint32_t flags,
-	track_group_key_t* audio_key,
-	adaptation_set_t* output)
-{
-	media_sequence_t* cur_sequence;
-	media_track_t** cur_track_ptr;
-	media_track_t* audio_track;
-	media_track_t* last_track;
-	media_track_t* cur_track;
-	uint32_t main_media_type;
-
-	// allocate the tracks array
-	cur_track_ptr = vod_alloc(request_context->pool,
-		sizeof(output->first[0]) * media_set->total_track_count * MEDIA_TYPE_COUNT);
-	if (cur_track_ptr == NULL)
-	{
-		vod_log_debug0(VOD_LOG_DEBUG_LEVEL, request_context->log, 0,
-			"manifest_utils_get_muxed_adaptation_set: vod_alloc failed");
-		return VOD_ALLOC_FAILED;
-	}
-
-	output->type = ADAPTATION_TYPE_MUXED;
-	output->first = cur_track_ptr;
-	output->count = 0;
-
-	for (cur_sequence = media_set->sequences; cur_sequence < media_set->sequences_end; cur_sequence++)
-	{
-		// find the main media type
-		if (cur_sequence->track_count[MEDIA_TYPE_VIDEO] > 0)
-		{
-			main_media_type = MEDIA_TYPE_VIDEO;
-		}
-		else if (cur_sequence->track_count[MEDIA_TYPE_AUDIO] > 0)
-		{
-			if ((flags & ADAPTATION_SETS_FLAG_AVOID_AUDIO_ONLY) != 0 &&
-				media_set->track_count[MEDIA_TYPE_VIDEO] > 0)
-			{
-				continue;
-			}
-
-			main_media_type = MEDIA_TYPE_AUDIO;
-		}
-		else
-		{
-			continue;
-		}
-
-		// find the audio track
-		audio_track = cur_sequence->filtered_clips[0].ref_track[MEDIA_TYPE_AUDIO];
-		if ((audio_track == NULL ||
-			(audio_key != NULL && !track_group_key_match_track(audio_key, audio_track, flags))) &&
-			media_set->track_count[MEDIA_TYPE_AUDIO] > 0)
-		{
-			if (cur_sequence->track_count[MEDIA_TYPE_VIDEO] <= 0)
-			{
-				continue;
-			}
-
-			// find some audio track from another sequence to mux with this video
-			last_track = media_set->filtered_tracks + media_set->total_track_count;
-			for (cur_track = media_set->filtered_tracks; cur_track < last_track; cur_track++)
-			{
-				if (cur_track->media_info.media_type == MEDIA_TYPE_AUDIO &&
-					(audio_key == NULL || track_group_key_match_track(audio_key, cur_track, flags)))
-				{
-					audio_track = cur_track;
-					break;
-				}
-			}
-		}
-
-		for (cur_track = cur_sequence->filtered_clips[0].first_track; cur_track < cur_sequence->filtered_clips[0].last_track; cur_track++)
-		{
-			if (cur_track->media_info.media_type != main_media_type)
-			{
-				continue;
-			}
-
-			// add the track
-			if (main_media_type == MEDIA_TYPE_VIDEO)
-			{
-				cur_track_ptr[MEDIA_TYPE_VIDEO] = cur_track;
-				cur_track_ptr[MEDIA_TYPE_AUDIO] = audio_track;
-			}
-			else
-			{
-				cur_track_ptr[MEDIA_TYPE_VIDEO] = NULL;
-				cur_track_ptr[MEDIA_TYPE_AUDIO] = cur_track;
-			}
-			cur_track_ptr[MEDIA_TYPE_SUBTITLE] = NULL;
-
-			cur_track_ptr += MEDIA_TYPE_COUNT;
-
-			output->count++;
-		}
-	}
-
-	output->last = cur_track_ptr;
-
-	return VOD_OK;
-}
-
 vod_status_t
 manifest_utils_get_adaptation_sets(
 	request_context_t* request_context,
@@ -976,29 +842,15 @@ manifest_utils_get_adaptation_sets(
 	uint32_t flags,
 	adaptation_sets_t* output)
 {
-	track_group_key_t* muxed_audio_key;
 	adaptation_set_t* cur_adaptation_set;
 	adaptation_set_t* adaptation_sets;
 	track_groups_t groups[MEDIA_TYPE_COUNT];
-	track_group_t* first_audio_group;
 	media_track_t** cur_track_ptr;
 	vod_status_t rc;
 	uint32_t media_type;
 	size_t adaptation_sets_count;
 
 	// update flags
-	if (media_set->track_count[MEDIA_TYPE_VIDEO] <= 0)
-	{
-		// cannot generate muxed media set if there are only subtitles
-		if (media_set->track_count[MEDIA_TYPE_AUDIO] <= 0 &&
-			(flags & ADAPTATION_SETS_FLAG_MUXED) != 0)
-		{
-			vod_log_error(VOD_LOG_ERR, request_context->log, 0,
-				"manifest_utils_get_adaptation_sets: no audio/video tracks");
-			return VOD_BAD_REQUEST;
-		}
-	}
-
 	if (manifest_utils_is_multi_audio(media_set))
 	{
 		flags |= ADAPTATION_SETS_FLAG_MULTI_AUDIO;
@@ -1022,37 +874,14 @@ manifest_utils_get_adaptation_sets(
 	}
 
 	// get the number of adaptation sets
-	if (groups[MEDIA_TYPE_VIDEO].count > 0 && (flags & ADAPTATION_SETS_FLAG_MUXED) != 0)
-	{
-		output->count[ADAPTATION_TYPE_MUXED] = 1;
-		output->count[ADAPTATION_TYPE_VIDEO] = 0;
-		if (groups[MEDIA_TYPE_AUDIO].count > 1)
-		{
-			output->count[ADAPTATION_TYPE_AUDIO] = groups[MEDIA_TYPE_AUDIO].count;
-			if ((flags & ADAPTATION_SETS_FLAG_EXCLUDE_MUXED_AUDIO) != 0)
-			{
-				output->count[ADAPTATION_TYPE_AUDIO]--;
-			}
-		}
-		else
-		{
-			output->count[ADAPTATION_TYPE_AUDIO] = 0;
-		}
-	}
-	else
-	{
-		output->count[ADAPTATION_TYPE_MUXED] = 0;
-		output->count[ADAPTATION_TYPE_VIDEO] = groups[MEDIA_TYPE_VIDEO].count;
-		output->count[ADAPTATION_TYPE_AUDIO] = groups[MEDIA_TYPE_AUDIO].count;
-	}
-
+	output->count[ADAPTATION_TYPE_VIDEO] = groups[MEDIA_TYPE_VIDEO].count;
+	output->count[ADAPTATION_TYPE_AUDIO] = groups[MEDIA_TYPE_AUDIO].count;
 	output->count[ADAPTATION_TYPE_SUBTITLE] = groups[MEDIA_TYPE_SUBTITLE].count;
 
 	adaptation_sets_count =
 		output->count[ADAPTATION_TYPE_VIDEO] +
 		output->count[ADAPTATION_TYPE_AUDIO] +
-		output->count[ADAPTATION_TYPE_SUBTITLE] +
-		output->count[ADAPTATION_TYPE_MUXED];
+		output->count[ADAPTATION_TYPE_SUBTITLE];
 
 	// allocate the adaptation sets and tracks
 	adaptation_sets = vod_alloc(request_context->pool,
@@ -1067,38 +896,6 @@ manifest_utils_get_adaptation_sets(
 
 	cur_track_ptr = (void*)(adaptation_sets + adaptation_sets_count);
 	cur_adaptation_set = adaptation_sets;
-
-	if (output->count[ADAPTATION_TYPE_MUXED] > 0)
-	{
-		// initialize the muxed adaptation set
-		first_audio_group = vod_container_of(
-			vod_queue_head(&groups[MEDIA_TYPE_AUDIO].list), track_group_t, list_node);
-
-		muxed_audio_key = NULL;
-		if (output->count[ADAPTATION_TYPE_AUDIO] > 0)
-		{
-			flags |= ADAPTATION_SETS_FLAG_AVOID_AUDIO_ONLY;
-
-			if ((flags & ADAPTATION_SETS_FLAG_EXCLUDE_MUXED_AUDIO) != 0)
-			{
-				muxed_audio_key = &first_audio_group->key;
-				vod_queue_remove(&first_audio_group->list_node);	// do not output this label separately
-			}
-		}
-
-		output->first_by_type[ADAPTATION_TYPE_MUXED] = cur_adaptation_set;
-		rc = manifest_utils_get_muxed_adaptation_set(
-			request_context,
-			media_set,
-			flags,
-			muxed_audio_key,
-			cur_adaptation_set);
-		if (rc != VOD_OK)
-		{
-			return rc;
-		}
-		cur_adaptation_set++;
-	}
 
 	// initialize all other adaptation sets
 	for (media_type = MEDIA_TYPE_VIDEO; media_type < MEDIA_TYPE_COUNT; media_type++)

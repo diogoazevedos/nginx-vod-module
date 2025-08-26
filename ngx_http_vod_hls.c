@@ -4,7 +4,6 @@
 #include "ngx_http_vod_utils.h"
 #include "vod/subtitle/webvtt_builder.h"
 #include "vod/hls/hls_muxer.h"
-#include "vod/mp4/mp4_muxer.h"
 #include "vod/mp4/mp4_fragment.h"
 #include "vod/mp4/mp4_init_segment.h"
 #include "vod/udrm.h"
@@ -751,10 +750,8 @@ ngx_http_vod_hls_init_fmp4_frame_processor(
 {
 	dash_fragment_header_extensions_t header_extensions;
 	fragment_writer_state_t* state;
-	mp4_muxer_state_t* muxer_state;
 	segment_writer_t* segment_writers;
 	vod_status_t rc;
-	bool_t per_stream_writer;
 	bool_t reuse_input_buffers = FALSE;
 	bool_t size_only = ngx_http_vod_submodule_size_only(submodule_context);
 
@@ -789,47 +786,19 @@ ngx_http_vod_hls_init_fmp4_frame_processor(
 				"ngx_http_vod_hls_init_fmp4_frame_processor: mp4_cbcs_encrypt_get_writers failed %i", rc);
 			return ngx_http_vod_status_to_ngx_error(submodule_context->r, rc);
 		}
-		per_stream_writer = TRUE;
 	}
 	else
 #endif // NGX_HAVE_OPENSSL_EVP
 	{
 		segment_writers = segment_writer;
-		per_stream_writer = FALSE;
 	}
 
+	// muxed audio/video tracks not supported
 	if (submodule_context->media_set.total_track_count > 1)
 	{
-#if (NGX_HAVE_OPENSSL_EVP)
-		if (encryption_params.type == HLS_ENC_SAMPLE_AES_CTR)
-		{
-			ngx_log_error(NGX_LOG_ERR, submodule_context->request_context.log, 0,
-				"ngx_http_vod_hls_init_fmp4_frame_processor: multiple streams not supported for sample-aes-ctr");
-			return ngx_http_vod_status_to_ngx_error(submodule_context->r, VOD_BAD_REQUEST);
-		}
-#endif // NGX_HAVE_OPENSSL_EVP
-
-		// muxed segment
-		rc = mp4_muxer_init_fragment(
-			&submodule_context->request_context,
-			submodule_context->request_params.segment_index,
-			&submodule_context->media_set,
-			segment_writers,
-			per_stream_writer,
-			reuse_input_buffers,
-			size_only,
-			output_buffer,
-			response_size,
-			&muxer_state);
-		if (rc != VOD_OK)
-		{
-			ngx_log_debug1(NGX_LOG_DEBUG_HTTP, submodule_context->request_context.log, 0,
-				"ngx_http_vod_hls_init_fmp4_frame_processor: mp4_muxer_init_fragment failed %i", rc);
-			return ngx_http_vod_status_to_ngx_error(submodule_context->r, rc);
-		}
-
-		*frame_processor = (ngx_http_vod_frame_processor_t)mp4_muxer_process_frames;
-		*frame_processor_state = muxer_state;
+		ngx_log_error(NGX_LOG_ERR, submodule_context->request_context.log, 0,
+			"ngx_http_vod_hls_init_fmp4_frame_processor: multiple streams not supported");
+		return ngx_http_vod_status_to_ngx_error(submodule_context->r, VOD_BAD_REQUEST);
 	}
 	else
 	{
@@ -1058,7 +1027,6 @@ ngx_http_vod_hls_create_loc_conf(
 	conf->encryption_method = NGX_CONF_UNSET_UINT;
 	conf->output_iv = NGX_CONF_UNSET;
 	conf->m3u8_config.output_iframes_playlist = NGX_CONF_UNSET;
-	conf->m3u8_config.force_unmuxed_segments = NGX_CONF_UNSET;
 	conf->m3u8_config.container_format = NGX_CONF_UNSET_UINT;
 	conf->m3u8_config.m3u8_version = NGX_CONF_UNSET_UINT;
 }
@@ -1089,7 +1057,6 @@ ngx_http_vod_hls_merge_loc_conf(
 	{
 		conf->encryption_key_uri = prev->encryption_key_uri;
 	}
-	ngx_conf_merge_value(conf->m3u8_config.force_unmuxed_segments, prev->m3u8_config.force_unmuxed_segments, 0);
 	ngx_conf_merge_uint_value(conf->m3u8_config.container_format, prev->m3u8_config.container_format, HLS_CONTAINER_AUTO);
 	ngx_conf_merge_uint_value(conf->m3u8_config.m3u8_version, prev->m3u8_config.m3u8_version, 6);
 
