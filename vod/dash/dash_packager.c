@@ -410,11 +410,11 @@ dash_packager_get_track_spec(
 		{
 			p = vod_sprintf(p, "f%uD", sequence->index + 1);
 		}
+		*p++ = '-';
 	}
 
 	if (track->media_info.media_type <= MEDIA_TYPE_AUDIO)
 	{
-		*p++ = '-';
 		*p++ = media_type_letter[track->media_info.media_type];
 		p = vod_sprintf(p, "%uD-x3", track->index + 1); // TODO: remove -xN in the future
 	}
