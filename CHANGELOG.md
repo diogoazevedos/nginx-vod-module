@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.3](https://github.com/diogoazevedos/nginx-vod-module/compare/v1.5.2...v1.5.3) (2025-08-28)
+
+### Bug Fixes
+
+- Fix DASH representation ID for single sequence, again ([#60](https://github.com/diogoazevedos/nginx-vod-module/pull/60))
+
 ## [1.5.2](https://github.com/diogoazevedos/nginx-vod-module/compare/v1.5.1...v1.5.2) (2025-08-10)
 
 ### Bug Fixes
