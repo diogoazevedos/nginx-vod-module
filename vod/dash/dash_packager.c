@@ -1383,16 +1383,9 @@ dash_packager_build_mpd(
 	// get the base url
 	if (base_url->len != 0)
 	{
-		if (conf->use_base_url_tag)
-		{
-			result_size += sizeof(mpd_baseurl) - 1 + base_url->len;
-			context.base_url.data = NULL;
-			context.base_url.len = 0;
-		}
-		else
-		{
-			context.base_url = *base_url;
-		}
+		result_size += sizeof(mpd_baseurl) - 1 + base_url->len;
+		context.base_url.data = NULL;
+		context.base_url.len = 0;
 	}
 	else
 	{
@@ -1653,7 +1646,7 @@ dash_packager_build_mpd(
 		break;
 	}
 
-	if (conf->use_base_url_tag && base_url->len != 0)
+	if (base_url->len != 0)
 	{
 		p = vod_sprintf(p, mpd_baseurl, base_url);
 	}
