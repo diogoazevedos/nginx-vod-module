@@ -1842,14 +1842,6 @@ The prefix of segment file names, the actual file name is
 
 The name of the init segment file name, only relevant when using fMP4 container.
 
-#### vod_hls_encryption_key_file_name
-
-- **syntax**: `vod_hls_encryption_key_file_name :name`
-- **default**: `encryption.key`
-- **context**: `http`, `server`, `location`
-
-The name of the encryption key file name, only relevant when encryption method is **not** `none`.
-
 #### vod_hls_encryption_key_uri
 
 - **syntax**: `vod_hls_encryption_key_uri :uri`

@@ -44,7 +44,6 @@
 
 // content types
 static u_char m3u8_content_type[] = "application/vnd.apple.mpegurl";
-static u_char encryption_key_content_type[] = "application/octet-stream";
 static u_char mpeg_ts_content_type[] = "video/MP2T";
 static u_char vtt_content_type[] = "text/vtt";
 
@@ -53,7 +52,6 @@ static const u_char m4s_file_ext[] = ".m4s";
 static const u_char vtt_file_ext[] = ".vtt";
 static const u_char mp4_file_ext[] = ".mp4";
 static const u_char m3u8_file_ext[] = ".m3u8";
-static const u_char key_file_ext[] = ".key";
 
 // constants
 static ngx_str_t empty_string = ngx_null_string;
@@ -562,33 +560,6 @@ ngx_http_vod_hls_handle_iframe_playlist(
 }
 
 static ngx_int_t
-ngx_http_vod_hls_handle_encryption_key(
-	ngx_http_vod_submodule_context_t* submodule_context,
-	ngx_str_t* response,
-	ngx_str_t* content_type)
-{
-	u_char* encryption_key;
-
-	encryption_key = ngx_palloc(submodule_context->request_context.pool, BUFFER_CACHE_KEY_SIZE);
-	if (encryption_key == NULL)
-	{
-		ngx_log_debug0(NGX_LOG_DEBUG_HTTP, submodule_context->request_context.log, 0,
-			"ngx_http_vod_hls_handle_encryption_key: ngx_palloc failed");
-		return ngx_http_vod_status_to_ngx_error(submodule_context->r, VOD_ALLOC_FAILED);
-	}
-
-	ngx_memcpy(encryption_key, submodule_context->media_set.sequences[0].encryption_key, BUFFER_CACHE_KEY_SIZE);
-
-	response->data = encryption_key;
-	response->len = BUFFER_CACHE_KEY_SIZE;
-
-	content_type->data = encryption_key_content_type;
-	content_type->len = sizeof(encryption_key_content_type) - 1;
-
-	return NGX_OK;
-}
-
-static ngx_int_t
 ngx_http_vod_hls_init_ts_frame_processor(
 	ngx_http_vod_submodule_context_t* submodule_context,
 	segment_writer_t* segment_writer,
@@ -942,16 +913,6 @@ static const ngx_http_vod_request_t hls_iframes_request = {
 	NULL,
 };
 
-static const ngx_http_vod_request_t hls_enc_key_request = {
-	REQUEST_FLAG_SINGLE_TRACK_PER_MEDIA_TYPE,
-	PARSE_BASIC_METADATA_ONLY,
-	REQUEST_CLASS_OTHER,
-	SUPPORTED_CODECS,
-	HLS_TIMESCALE,
-	ngx_http_vod_hls_handle_encryption_key,
-	NULL,
-};
-
 static const ngx_http_vod_request_t hls_ts_segment_request = {
 	REQUEST_FLAG_SINGLE_TRACK_PER_MEDIA_TYPE,
 	PARSE_FLAG_FRAMES_ALL | PARSE_FLAG_PARSED_EXTRA_DATA | PARSE_FLAG_INITIAL_PTS_DELAY,
@@ -1050,7 +1011,6 @@ ngx_http_vod_hls_merge_loc_conf(
 	ngx_conf_merge_str_value(conf->m3u8_config.segment_file_name_prefix, prev->m3u8_config.segment_file_name_prefix, "seg");
 	ngx_conf_merge_str_value(conf->m3u8_config.init_file_name_prefix, prev->m3u8_config.init_file_name_prefix, "init");
 
-	ngx_conf_merge_str_value(conf->m3u8_config.encryption_key_file_name, prev->m3u8_config.encryption_key_file_name, "encryption");
 	ngx_conf_merge_str_value(conf->m3u8_config.encryption_key_format, prev->m3u8_config.encryption_key_format, "");
 	ngx_conf_merge_str_value(conf->m3u8_config.encryption_key_format_versions, prev->m3u8_config.encryption_key_format_versions, "");
 	if (conf->encryption_key_uri == NULL)
@@ -1188,16 +1148,6 @@ ngx_http_vod_hls_parse_uri_file_name(
 				"ngx_http_vod_hls_parse_uri_file_name: unidentified m3u8 request");
 			return ngx_http_vod_status_to_ngx_error(r, VOD_BAD_REQUEST);
 		}
-	}
-	// encryption key
-	else if (ngx_http_vod_match_prefix_postfix(start_pos, end_pos, &conf->hls.m3u8_config.encryption_key_file_name, key_file_ext) &&
-		!conf->drm_enabled &&
-		conf->hls.encryption_method != HLS_ENC_NONE)
-	{
-		start_pos += conf->hls.m3u8_config.encryption_key_file_name.len;
-		end_pos -= (sizeof(key_file_ext) - 1);
-		*request = &hls_enc_key_request;
-		flags = 0;
 	}
 	// init segment
 	else if (ngx_http_vod_match_prefix_postfix(start_pos, end_pos, &conf->hls.m3u8_config.init_file_name_prefix, mp4_file_ext))
