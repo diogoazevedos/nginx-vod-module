@@ -33,13 +33,7 @@
   - HLS - segmented WebVTT.
 
 - Audio or video only files.
-- Alternative audio renditions - supporting both:
-
-  - Generation of manifest with different audio renditions, allowing selection on the client side.
-  - Muxing together audio and video streams from separate files / tracks - provides the ability to
-    serve different audio renditions of a single video, without the need for any special support on
-    the client side.
-
+- Alternative audio renditions - generates manifest with different audio renditions.
 - Track selection for multi audio/video MP4 files.
 - Playback rate change - 0.5x up to 2x (requires `libavcodec` and `libavfilter`).
 - Source file clipping (only from I-Frame to P-frame).
