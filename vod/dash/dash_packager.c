@@ -93,11 +93,10 @@ static const char mpd_adaptation_header_subtitle_vtt[] =
 static const char mpd_label[] =
 	"      <Label>%V</Label>\n";
 
-// TODO: value should be the number of channels ?
-static const u_char mpd_audio_channel_config[] =
+static const char mpd_audio_channel_config[] =
 	"      <AudioChannelConfiguration\n"
 	"          schemeIdUri=\"urn:mpeg:dash:23003:3:audio_channel_configuration:2011\"\n"
-	"          value=\"1\"/>\n";
+	"          value=\"%uD\"/>\n";
 
 static const char mpd_audio_channel_config_eac3[] =
 	"      <AudioChannelConfiguration\n"
@@ -921,7 +920,8 @@ dash_packager_write_mpd_period(
 			}
 			else
 			{
-				p = vod_copy(p, mpd_audio_channel_config, sizeof(mpd_audio_channel_config) - 1);
+				p = vod_sprintf(p, mpd_audio_channel_config,
+					(uint32_t)reference_track->media_info.u.audio.channels);
 			}
 			break;
 
