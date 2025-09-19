@@ -1897,7 +1897,7 @@ dash_packager_build_fragment_header(
 	write_atom_header(p, moof_atom_size, 'm', 'o', 'o', 'f');
 
 	// moof.mfhd
-	p = mp4_fragment_write_mfhd_atom(p, segment_index);
+	p = mp4_fragment_write_mfhd_atom(p, segment_index + 1);
 
 	// moof.traf
 	write_atom_header(p, traf_atom_size, 't', 'r', 'a', 'f');
