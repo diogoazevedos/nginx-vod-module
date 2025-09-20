@@ -10,9 +10,9 @@ if [ -z "$NGINX_VOD_MODULE_SOURCE_DIR" ]; then
 	exit 1
 fi
 
-cc -Wall -g -ojson_parser_test \
-	$NGINX_VOD_MODULE_SOURCE_DIR/vod/json_parser.c \
-	$NGINX_VOD_MODULE_SOURCE_DIR/test/json_parser/main.c \
+cc -Wall -g -oparse_utils_test \
+	$NGINX_VOD_MODULE_SOURCE_DIR/vod/parse_utils.c \
+	$NGINX_VOD_MODULE_SOURCE_DIR/test/parse_utils/main.c \
 	$NGINX_SOURCE_DIR/src/core/ngx_string.c \
 	$NGINX_SOURCE_DIR/src/core/ngx_hash.c \
 	$NGINX_SOURCE_DIR/src/core/ngx_palloc.c \
