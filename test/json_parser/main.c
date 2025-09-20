@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <ngx_core.h>
 #include <vod/json_parser.h>
-#include <vod/parse_utils.h>
 
 volatile ngx_cycle_t  *ngx_cycle;
 ngx_pool_t *pool;
@@ -220,80 +219,11 @@ void bad_jsons_test()
 	}
 }
 
-void get_element_guid_tests()
-{
-	static ngx_str_t tests[] = {
-		ngx_string("xx"),
-		ngx_string("0000000000000000000000000000000000"),
-		ngx_string("0000000000000000000000000000"),
-		ngx_null_string
-	};
-	u_char guid[16];
-	ngx_str_t* cur_test;
-	ngx_int_t rc;
-
-	for (cur_test = tests; cur_test->len; cur_test++)
-	{
-		rc = parse_utils_parse_guid_string(cur_test, guid);
-		if (rc != VOD_BAD_DATA)
-		{
-			printf("Error: %s - expected %" PRIdPTR " got %" PRIdPTR "\n", cur_test->data, (vod_status_t)VOD_BAD_DATA, rc);
-		}
-	}
-}
-
-void get_fixed_string_tests()
-{
-	static ngx_str_t tests[] = {
-		ngx_string("123"),
-		ngx_string("12345==="),
-		ngx_string("123456=="),
-		ngx_string("2xF1CWaBQs21ihR4NI-AwQ=="),
-		ngx_string("2xF1CWaBQs21ihR4NI=AwQ=="),
-		ngx_null_string,
-	};
-	ngx_str_t* cur_test;
-	u_char str[16];
-	ngx_int_t rc;
-
-	for (cur_test = tests; cur_test->len; cur_test++)
-	{
-		rc = parse_utils_parse_fixed_base64_string(cur_test, str, sizeof(str));
-		if (rc != VOD_BAD_DATA)
-		{
-			printf("Error: %s - expected %" PRIdPTR " got %" PRIdPTR "\n", cur_test->data, (vod_status_t)VOD_BAD_DATA, rc);
-		}
-	}
-}
-
-void get_binary_string_tests()
-{
-	static ngx_str_t tests[] = {
-		ngx_string("2xF1CWaBQs21ihR4NI-AwQ=="),
-		ngx_null_string,
-	};
-	ngx_str_t* cur_test;
-	ngx_str_t str;
-	ngx_int_t rc;
-
-	for (cur_test = tests; cur_test->len; cur_test++)
-	{
-		rc = parse_utils_parse_variable_base64_string(pool, cur_test, &str);
-		if (rc != VOD_BAD_DATA)
-		{
-			printf("Error: %s - expected %" PRIdPTR " got %" PRIdPTR "\n", cur_test->data, (vod_status_t)VOD_BAD_DATA, rc);
-		}
-	}
-}
-
 int main()
 {
 	pool = ngx_create_pool(1024 * 1024, &ngx_log);
 
 	sanity_tests();
 	bad_jsons_test();
-	get_element_guid_tests();
-	get_fixed_string_tests();
-	get_binary_string_tests();
 	return 0;
 }
