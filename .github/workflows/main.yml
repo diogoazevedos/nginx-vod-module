@@ -48,3 +48,5 @@ jobs:
         run: |
           ./bitset/build.sh
           ./bitset_test
+          ./parse_utils/build.sh
+          ./parse_utils_test
