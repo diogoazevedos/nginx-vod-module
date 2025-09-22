@@ -101,6 +101,8 @@ vod_json_get_value_type(vod_json_parser_state_t* state, vod_json_type_t** result
 		*result = &vod_json_bool;
 		return VOD_JSON_OK;
 
+	// TODO: support null values
+
 	default:
 		break;		// handled outside the switch
 	}

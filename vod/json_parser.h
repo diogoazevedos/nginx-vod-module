@@ -32,7 +32,7 @@ typedef struct {
 } vod_json_fraction_t;
 
 typedef struct {
-	int type;
+	int type; // TODO: support multi-typed arrays
 	size_t count;
 	vod_array_part_t part;
 } vod_json_array_t;
