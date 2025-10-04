@@ -13,7 +13,7 @@ jobs:
       matrix:
         nginx-version:
           - 1.28.0
-          - 1.29.1
+          - 1.29.2
         build-mode:
           - --add-module
           - --add-dynamic-module
