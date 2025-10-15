@@ -13,7 +13,7 @@ jobs:
       matrix:
         nginx-version:
           - 1.28.0
-          - 1.29.1
+          - 1.29.2
         build-mode:
           - --add-module
           - --add-dynamic-module
@@ -29,7 +29,7 @@ jobs:
             libavfilter-dev \
             libswscale-dev \
             libxml2-dev
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           path: nginx-vod-module
       - run: mkdir nginx
