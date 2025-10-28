@@ -28,6 +28,7 @@ audio_encoder_is_format_supported(const AVCodec *codec, enum AVSampleFormat samp
 {
 	const enum AVSampleFormat *p;
 
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(61, 13, 100)
 	for (p = codec->sample_fmts; *p != AV_SAMPLE_FMT_NONE; p++)
 	{
 		if (*p == sample_fmt)
@@ -35,6 +36,29 @@ audio_encoder_is_format_supported(const AVCodec *codec, enum AVSampleFormat samp
 			return TRUE;
 		}
 	}
+#else
+	const void *configs = NULL;
+
+	if (avcodec_get_supported_config(
+		NULL, codec, AV_CODEC_CONFIG_SAMPLE_FORMAT, 0, &configs, NULL) < 0)
+	{
+		return FALSE;
+	}
+
+	if (configs == NULL)
+	{
+		return TRUE;
+	}
+
+	p = (const enum AVSampleFormat *)configs;
+	for (; *p != AV_SAMPLE_FMT_NONE; p++)
+	{
+		if (*p == sample_fmt)
+		{
+			return TRUE;
+		}
+	}
+#endif
 
 	return FALSE;
 }
