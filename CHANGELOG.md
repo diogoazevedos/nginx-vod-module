@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.0](https://github.com/diogoazevedos/nginx-vod-module/compare/v1.5.4...v1.6.0) (2025-10-29)
+
+### Features
+
+- Build against multiple FFmpeg versions ([#71](https://github.com/diogoazevedos/nginx-vod-module/pull/71))
+
 ## [1.5.4](https://github.com/diogoazevedos/nginx-vod-module/compare/v1.5.3...v1.5.4) (2025-09-16)
 
 ### Bug Fixes
