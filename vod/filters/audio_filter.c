@@ -396,46 +396,76 @@ audio_filter_init_sink(
 	// configure the buffer sink
 	out_sample_fmts[0] = sink->encoder->format;
 	out_sample_fmts[1] = -1;
+
+#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(59, 36, 100)
+	avrc = av_opt_set_array(
+		sink->buffer_sink,
+		BUFFERSINK_PARAM_SAMPLE_FORMATS,
+		AV_OPT_SEARCH_CHILDREN,
+		0, 1, AV_OPT_TYPE_SAMPLE_FMT,
+		out_sample_fmts);
+#else
 	avrc = av_opt_set_int_list(
 		sink->buffer_sink,
 		BUFFERSINK_PARAM_SAMPLE_FORMATS,
 		out_sample_fmts,
 		-1,
 		AV_OPT_SEARCH_CHILDREN);
+#endif
 	if (avrc < 0)
 	{
 		vod_log_error(VOD_LOG_ERR, request_context->log, 0,
-			"audio_filter_init_sink: av_opt_set_int_list(sample formats) failed %d", avrc);
+			"audio_filter_init_sink: av_opt_set(sample formats) failed %d", avrc);
 		return VOD_UNEXPECTED;
 	}
 
 	out_channel_layouts[0] = channel_layout;
 	out_channel_layouts[1] = -1;
+
+#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(59, 36, 100)
+	avrc = av_opt_set_array(
+		sink->buffer_sink,
+		BUFFERSINK_PARAM_CHANNEL_LAYOUTS,
+		AV_OPT_SEARCH_CHILDREN,
+		0, 1, AV_OPT_TYPE_CHLAYOUT,
+		out_channel_layouts);
+#else
 	avrc = av_opt_set_int_list(
 		sink->buffer_sink,
 		BUFFERSINK_PARAM_CHANNEL_LAYOUTS,
 		out_channel_layouts,
 		-1,
 		AV_OPT_SEARCH_CHILDREN);
+#endif
 	if (avrc < 0)
 	{
 		vod_log_error(VOD_LOG_ERR, request_context->log, 0,
-			"audio_filter_init_sink: av_opt_set_int_list(channel layouts) failed %d", avrc);
+			"audio_filter_init_sink: av_opt_set(channel layouts) failed %d", avrc);
 		return VOD_UNEXPECTED;
 	}
 
 	out_sample_rates[0] = sample_rate;
 	out_sample_rates[1] = -1;
+
+#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(59, 36, 100)
+	avrc = av_opt_set_array(
+		sink->buffer_sink,
+		BUFFERSINK_PARAM_SAMPLE_RATES,
+		AV_OPT_SEARCH_CHILDREN,
+		0, 1, AV_OPT_TYPE_INT,
+		out_sample_rates);
+#else
 	avrc = av_opt_set_int_list(
 		sink->buffer_sink,
 		BUFFERSINK_PARAM_SAMPLE_RATES,
 		out_sample_rates,
 		-1,
 		AV_OPT_SEARCH_CHILDREN);
+#endif
 	if (avrc < 0)
 	{
 		vod_log_error(VOD_LOG_ERR, request_context->log, 0,
-			"audio_filter_init_sink: av_opt_set_int_list(sample rates) failed %d", avrc);
+			"audio_filter_init_sink: av_opt_set(sample rates) failed %d", avrc);
 		return VOD_UNEXPECTED;
 	}
 
