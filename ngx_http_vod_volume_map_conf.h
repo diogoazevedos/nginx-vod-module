@@ -5,8 +5,7 @@
 #include <ngx_http.h>
 
 // typedefs
-typedef struct
-{
+typedef struct {
 	ngx_str_t file_name_prefix;
 	uintptr_t interval;
 } ngx_http_vod_volume_map_loc_conf_t;

@@ -5,12 +5,13 @@
 #include "ngx_queue.h"
 
 // macros
-#define container_of(ptr, type, member) (type *)((char *)(ptr) - offsetof(type, member))
+#define container_of(ptr, type, member) (type*)((char*)(ptr) - offsetof(type, member))
 
 // constants
 #define CACHE_LOCK_EXPIRATION (5)
 #define ENTRY_LOCK_EXPIRATION (5)
-#define ENTRIES_ALLOC_MARGIN (1024)		// 1K entries ~= 100KB, we reserve this space to make sure allocating entries does not become the bottleneck
+// 1K entries ~= 100KB, we reserve this space to make sure allocating entries does not become the bottleneck
+#define ENTRIES_ALLOC_MARGIN (1024)
 #define BUFFER_ALIGNMENT (16)
 #define MAX_EVICTIONS_PER_STORE (128)
 
@@ -51,12 +52,12 @@ typedef struct {
 } ngx_buffer_cache_sh_t;
 
 struct ngx_buffer_cache_s {
-	ngx_buffer_cache_sh_t *sh;
-	ngx_slab_pool_t *shpool;
+	ngx_buffer_cache_sh_t* sh;
+	ngx_slab_pool_t* shpool;
 
 	uint32_t expiration;
 
-	ngx_shm_zone_t *shm_zone;
+	ngx_shm_zone_t* shm_zone;
 };
 
 #endif // _NGX_BUFFER_CACHE_INTERNAL_H_INCLUDED_

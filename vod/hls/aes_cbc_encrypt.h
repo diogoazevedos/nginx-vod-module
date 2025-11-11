@@ -22,17 +22,12 @@ vod_status_t aes_cbc_encrypt_init(
 	void* callback_context,
 	buffer_pool_t* buffer_pool,
 	const u_char* key,
-	const u_char* iv);
+	const u_char* iv
+);
 
-vod_status_t aes_cbc_encrypt(
-	aes_cbc_encrypt_context_t* state,
-	vod_str_t* dest,
-	vod_str_t* src,
-	bool_t flush);
+vod_status_t
+aes_cbc_encrypt(aes_cbc_encrypt_context_t* state, vod_str_t* dest, vod_str_t* src, bool_t flush);
 
-vod_status_t aes_cbc_encrypt_write(
-	aes_cbc_encrypt_context_t* ctx,
-	u_char* buffer,
-	uint32_t size);
+vod_status_t aes_cbc_encrypt_write(aes_cbc_encrypt_context_t* ctx, u_char* buffer, uint32_t size);
 
 #endif // __AES_CBC_ENCRYPT_H__

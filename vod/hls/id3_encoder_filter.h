@@ -42,9 +42,7 @@ typedef struct {
 } id3_encoder_state_t;
 
 // functions
-void id3_encoder_init(
-	id3_encoder_state_t* state,
-	media_filter_t* filter,
-	media_filter_context_t* context);
+void
+id3_encoder_init(id3_encoder_state_t* state, media_filter_t* filter, media_filter_context_t* context);
 
 #endif // __ID3_ENCODER_FILTER_H__

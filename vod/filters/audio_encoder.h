@@ -8,9 +8,8 @@
 // constants
 #define AUDIO_ENCODER_INPUT_SAMPLE_FORMAT (AV_SAMPLE_FMT_S16)
 
-//typedefs
-typedef struct
-{
+// typedefs
+typedef struct {
 	uint64_t channel_layout;
 	uint16_t channels;
 	uint32_t sample_rate;
@@ -19,30 +18,20 @@ typedef struct
 } audio_encoder_params_t;
 
 // functions
-void audio_encoder_process_init(
-	vod_log_t* log);
+void audio_encoder_process_init(vod_log_t* log);
 
 vod_status_t audio_encoder_init(
-	request_context_t* request_context,
-	audio_encoder_params_t* params,
-	vod_array_t* frames_array,
-	void** result);
+	request_context_t* request_context, audio_encoder_params_t* params, vod_array_t* frames_array, void** result
+);
 
-void audio_encoder_free(
-	void* context);
+void audio_encoder_free(void* context);
 
-size_t audio_encoder_get_frame_size(
-	void* context);
+size_t audio_encoder_get_frame_size(void* context);
 
-vod_status_t audio_encoder_write_frame(
-	void* context,
-	AVFrame* frame);
+vod_status_t audio_encoder_write_frame(void* context, AVFrame* frame);
 
-vod_status_t audio_encoder_flush(
-	void* context);
+vod_status_t audio_encoder_flush(void* context);
 
-vod_status_t audio_encoder_update_media_info(
-	void* context,
-	media_info_t* media_info);
+vod_status_t audio_encoder_update_media_info(void* context, media_info_t* media_info);
 
 #endif // __AUDIO_ENCODER_H__

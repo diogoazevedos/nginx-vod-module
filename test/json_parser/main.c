@@ -3,53 +3,52 @@
 #include <ngx_core.h>
 #include <vod/json_parser.h>
 
-volatile ngx_cycle_t  *ngx_cycle;
-ngx_pool_t *pool;
+volatile ngx_cycle_t* ngx_cycle;
+ngx_pool_t* pool;
 ngx_log_t ngx_log;
 
 #if (NGX_HAVE_VARIADIC_MACROS)
 
 void
-ngx_log_error_core(ngx_uint_t level, ngx_log_t *log, ngx_err_t err,
-    const char *fmt, ...)
-
+ngx_log_error_core(ngx_uint_t level, ngx_log_t* log, ngx_err_t err, const char* fmt, ...)
 #else
 
 void
-ngx_log_error_core(ngx_uint_t level, ngx_log_t *log, ngx_err_t err,
-    const char *fmt, va_list args)
+ngx_log_error_core(ngx_uint_t level, ngx_log_t* log, ngx_err_t err, const char* fmt, va_list args)
 
 #endif
 {
 }
 
 void*
-ngx_array_push(ngx_array_t *a)
-{
-    void        *elt, *new_elts;
+ngx_array_push(ngx_array_t* a) {
+	void *elt, *new_elts;
 
-	if (a->nelts >= a->nalloc)
-	{
+	if (a->nelts >= a->nalloc) {
 		new_elts = realloc(a->elts, a->size * a->nalloc * 2);
-		if (new_elts == NULL)
-		{
+		if (new_elts == NULL) {
 			return NULL;
 		}
 		a->elts = new_elts;
 		a->nalloc *= 2;
 	}
 
-    elt = (u_char *) a->elts + a->size * a->nelts;
-    a->nelts++;
+	elt = (u_char*)a->elts + a->size * a->nelts;
+	a->nelts++;
 
-    return elt;
+	return elt;
 }
 
-#define assert(cond) if (!(cond)) { printf("Error: assertion failed, file=%s line=%d\n", __FILE__, __LINE__); success = FALSE; }
-#define assert_string(val, expected) assert((val).len == sizeof(expected) - 1 && memcmp((val).data, expected, sizeof(expected) - 1) == 0)
+#define assert(cond)                                                              \
+	if (!(cond)) {                                                                \
+		printf("Error: assertion failed, file=%s line=%d\n", __FILE__, __LINE__); \
+		success = FALSE;                                                          \
+	}
+#define assert_string(val, expected) \
+	assert((val).len == sizeof(expected) - 1 && memcmp((val).data, expected, sizeof(expected) - 1) == 0)
 
-bool_t test_valid_jsons()
-{
+bool_t
+test_valid_jsons() {
 	bool_t success = TRUE;
 	vod_json_key_value_t* pairs;
 	vod_json_array_t* element;
@@ -120,7 +119,13 @@ bool_t test_valid_jsons()
 	assert(result.type == VOD_JSON_OBJECT);
 	assert(result.v.obj.nelts == 0);
 
-	rc = vod_json_parse(pool, (u_char*)" { \"key1\" : null , \"key2\" : true , \"key3\" : false , \"key4\" : \"value\" }", &result, error, sizeof(error));
+	rc = vod_json_parse(
+		pool,
+		(u_char*)" { \"key1\" : null , \"key2\" : true , \"key3\" : false , \"key4\" : \"value\" }",
+		&result,
+		error,
+		sizeof(error)
+	);
 	assert(rc == VOD_JSON_OK);
 	assert(result.type == VOD_JSON_OBJECT);
 	assert(result.v.obj.nelts == 4);
@@ -135,7 +140,9 @@ bool_t test_valid_jsons()
 	assert(pairs[3].value.type == VOD_JSON_STRING);
 	assert_string(pairs[3].value.v.str, "value");
 
-	rc = vod_json_parse(pool, (u_char*)" { \"key\" : { \"subkey\": \"value\" } } ", &result, error, sizeof(error));
+	rc = vod_json_parse(
+		pool, (u_char*)" { \"key\" : { \"subkey\": \"value\" } } ", &result, error, sizeof(error)
+	);
 	assert(rc == VOD_JSON_OK);
 	assert(result.type == VOD_JSON_OBJECT);
 	assert(result.v.obj.nelts == 1);
@@ -148,7 +155,13 @@ bool_t test_valid_jsons()
 	assert(pairs[0].value.type == VOD_JSON_STRING);
 	assert_string(pairs[0].value.v.str, "value");
 
-	rc = vod_json_parse(pool, (u_char*)" { \"key1\" : { \"subkey\": \"value\" } , \"key2\" : null } ", &result, error, sizeof(error));
+	rc = vod_json_parse(
+		pool,
+		(u_char*)" { \"key1\" : { \"subkey\": \"value\" } , \"key2\" : null } ",
+		&result,
+		error,
+		sizeof(error)
+	);
 	assert(rc == VOD_JSON_OK);
 	assert(result.type == VOD_JSON_OBJECT);
 	assert(result.v.obj.nelts == 2);
@@ -187,8 +200,8 @@ bool_t test_valid_jsons()
 	return success;
 }
 
-bool_t test_bad_jsons()
-{
+bool_t
+test_bad_jsons() {
 	bool_t success = TRUE;
 	static char* tests[] = {
 		"",
@@ -215,11 +228,9 @@ bool_t test_bad_jsons()
 	ngx_int_t rc;
 	u_char error[128];
 
-	for (cur_test = tests; *cur_test; cur_test++)
-	{
+	for (cur_test = tests; *cur_test; cur_test++) {
 		rc = vod_json_parse(pool, (u_char*)*cur_test, &result, error, sizeof(error));
-		if (rc != expected_rc)
-		{
+		if (rc != expected_rc) {
 			printf("Error: %s - expected %" PRIdPTR " got %" PRIdPTR "\n", *cur_test, expected_rc, rc);
 			success = FALSE;
 		}
@@ -228,18 +239,16 @@ bool_t test_bad_jsons()
 	return success;
 }
 
-int main()
-{
+int
+main() {
 	pool = ngx_create_pool(1024 * 1024, &ngx_log);
 
-	if (!test_valid_jsons())
-	{
+	if (!test_valid_jsons()) {
 		printf("One or more valid JSON tests failed.\n");
 		return 1;
 	}
 
-	if (!test_bad_jsons())
-	{
+	if (!test_bad_jsons()) {
 		printf("One or more bad JSON tests failed.\n");
 		return 1;
 	}

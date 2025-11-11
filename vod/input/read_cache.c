@@ -4,8 +4,7 @@
 #define MIN_BUFFER_COUNT (2)
 
 void
-read_cache_init(read_cache_state_t* state, request_context_t* request_context, size_t buffer_size)
-{
+read_cache_init(read_cache_state_t* state, request_context_t* request_context, size_t buffer_size) {
 	state->request_context = request_context;
 	state->buffer_size = buffer_size;
 	state->buffer_count = 0;
@@ -13,27 +12,24 @@ read_cache_init(read_cache_state_t* state, request_context_t* request_context, s
 }
 
 vod_status_t
-read_cache_allocate_buffer_slots(read_cache_state_t* state, size_t buffer_count)
-{
+read_cache_allocate_buffer_slots(read_cache_state_t* state, size_t buffer_count) {
 	size_t alloc_size;
 
-	if (buffer_count < MIN_BUFFER_COUNT)
-	{
+	if (buffer_count < MIN_BUFFER_COUNT) {
 		buffer_count = MIN_BUFFER_COUNT;
 	}
 
-	if (state->buffer_count >= buffer_count)
-	{
+	if (state->buffer_count >= buffer_count) {
 		return VOD_OK;
 	}
 
 	alloc_size = sizeof(state->buffers[0]) * buffer_count;
 
 	state->buffers = vod_alloc(state->request_context->pool, alloc_size);
-	if (state->buffers == NULL)
-	{
-		vod_log_debug0(VOD_LOG_DEBUG_LEVEL, state->request_context->log, 0,
-			"read_cache_allocate_buffer_slots: vod_alloc failed");
+	if (state->buffers == NULL) {
+		vod_log_debug0(
+			VOD_LOG_DEBUG_LEVEL, state->request_context->log, 0, "read_cache_allocate_buffer_slots: vod_alloc failed"
+		);
 		return VOD_ALLOC_FAILED;
 	}
 
@@ -47,11 +43,8 @@ read_cache_allocate_buffer_slots(read_cache_state_t* state, size_t buffer_count)
 
 bool_t
 read_cache_get_from_cache(
-	read_cache_state_t* state,
-	read_cache_request_t* request,
-	u_char** buffer,
-	uint32_t* size)
-{
+	read_cache_state_t* state, read_cache_request_t* request, u_char** buffer, uint32_t* size
+) {
 	media_clip_source_t* source = request->source;
 	read_cache_hint_t* hint;
 	cache_buffer_t* target_buffer;
@@ -63,11 +56,10 @@ read_cache_get_from_cache(
 	int cache_slot_id;
 
 	// check whether we already have the requested offset
-	for (cur_buffer = state->buffers; cur_buffer < state->buffers_end; cur_buffer++)
-	{
-		if (cur_buffer->source == source &&
-			offset >= cur_buffer->start_offset && offset < cur_buffer->end_offset)
-		{
+	for (cur_buffer = state->buffers; cur_buffer < state->buffers_end; cur_buffer++) {
+		if (cur_buffer->source == source
+		    && offset >= cur_buffer->start_offset
+		    && offset < cur_buffer->end_offset) {
 			*buffer = cur_buffer->buffer_pos + (offset - cur_buffer->start_offset);
 			*size = cur_buffer->end_offset - offset;
 			return TRUE;
@@ -79,15 +71,14 @@ read_cache_get_from_cache(
 	cache_slot_id = request->cache_slot_id;
 
 	// start reading from the min offset, if that would contain the whole frame
-	// Note: this condition is intended to optimize the case in which the frame order
-	//		in the output segment is <video1><audio1> while on disk it's <audio1><video1>.
-	//		in this case it would be better to start reading from the beginning, even
-	//		though the first frame that is requested is the second one
+	// NOTE: this condition is intended to optimize the case in which the frame order in the output
+	// segment is <video1><audio1> while on disk it's <audio1><video1>. in this case it would be
+	// better to start reading from the beginning, even though the first frame that is requested is
+	// the second one
 	hint = &request->hint;
-	if (hint->min_offset < offset &&
-		hint->min_offset + state->buffer_size / 4 > offset &&
-		request->end_offset < (hint->min_offset & ~alignment) + state->buffer_size)
-	{
+	if (hint->min_offset < offset
+	    && hint->min_offset + state->buffer_size / 4 > offset
+	    && request->end_offset < (hint->min_offset & ~alignment) + state->buffer_size) {
 		offset = hint->min_offset;
 		cache_slot_id = hint->min_offset_slot_id;
 	}
@@ -98,30 +89,22 @@ read_cache_get_from_cache(
 	target_buffer = &state->buffers[cache_slot_id % state->buffer_count];
 
 	// don't read anything that is already in the cache
-	for (cur_buffer = state->buffers; cur_buffer < state->buffers_end; cur_buffer++)
-	{
-		if (cur_buffer == target_buffer ||
-			cur_buffer->source != source)
-		{
+	for (cur_buffer = state->buffers; cur_buffer < state->buffers_end; cur_buffer++) {
+		if (cur_buffer == target_buffer || cur_buffer->source != source) {
 			continue;
 		}
 
-		if (cur_buffer->start_offset > offset)
-		{
+		if (cur_buffer->start_offset > offset) {
 			read_size = vod_min(read_size, cur_buffer->start_offset - offset);
-		}
-		else if (cur_buffer->end_offset > offset)
-		{
+		} else if (cur_buffer->end_offset > offset) {
 			offset = cur_buffer->end_offset & ~alignment;
 		}
 	}
 
 	// don't read past the max required offset
-	if (offset + read_size > source->last_offset)
-	{
+	if (offset + read_size > source->last_offset) {
 		aligned_last_offset = (source->last_offset + alignment) & ~alignment;
-		if (aligned_last_offset > offset)
-		{
+		if (aligned_last_offset > offset) {
 			read_size = aligned_last_offset - offset;
 		}
 	}
@@ -135,16 +118,12 @@ read_cache_get_from_cache(
 }
 
 void
-read_cache_disable_buffer_reuse(read_cache_state_t* state)
-{
+read_cache_disable_buffer_reuse(read_cache_state_t* state) {
 	state->reuse_buffers = FALSE;
 }
 
 void
-read_cache_get_read_buffer(
-	read_cache_state_t* state,
-	read_cache_get_read_buffer_t* result)
-{
+read_cache_get_read_buffer(read_cache_state_t* state, read_cache_get_read_buffer_t* result) {
 	cache_buffer_t* target_buffer = state->target_buffer;
 
 	// return the target buffer pointer and size
@@ -155,8 +134,7 @@ read_cache_get_read_buffer(
 }
 
 void
-read_cache_read_completed(read_cache_state_t* state, vod_buf_t* buf)
-{
+read_cache_read_completed(read_cache_state_t* state, vod_buf_t* buf) {
 	cache_buffer_t* target_buffer = state->target_buffer;
 
 	// update the buffer size

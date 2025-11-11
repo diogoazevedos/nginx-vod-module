@@ -37,13 +37,13 @@ struct ngx_http_vod_loc_conf_s {
 	ngx_http_vod_submodule_t submodule;
 	ngx_str_t upstream_location;
 	ngx_str_t remote_upstream_location;
-	ngx_int_t(*request_handler)(ngx_http_request_t *r);
+	ngx_int_t (*request_handler)(ngx_http_request_t* r);
 	ngx_str_t multi_uri_suffix;
 	segmenter_conf_t segmenter;
-	ngx_http_complex_value_t *secret_key;
-	ngx_http_complex_value_t *encryption_iv_seed;
-	ngx_http_complex_value_t *base_url;
-	ngx_http_complex_value_t *segments_base_url;
+	ngx_http_complex_value_t* secret_key;
+	ngx_http_complex_value_t* encryption_iv_seed;
+	ngx_http_complex_value_t* base_url;
+	ngx_http_complex_value_t* segments_base_url;
 	ngx_buffer_cache_t* metadata_cache;
 	ngx_buffer_cache_t* response_cache[CACHE_TYPE_COUNT];
 	size_t initial_read_size;
@@ -58,7 +58,7 @@ struct ngx_http_vod_loc_conf_s {
 	ngx_flag_t parse_hdlr_name;
 	ngx_flag_t parse_udta_name;
 	int parse_flags;
-	ngx_http_complex_value_t *upstream_extra_args;
+	ngx_http_complex_value_t* upstream_extra_args;
 	ngx_buffer_cache_t* mapping_cache[CACHE_TYPE_COUNT];
 	ngx_buffer_cache_t* dynamic_mapping_cache;
 	ngx_str_t path_response_prefix;
@@ -79,8 +79,8 @@ struct ngx_http_vod_loc_conf_s {
 
 	time_t expires[EXPIRES_TYPE_COUNT];
 	time_t last_modified_time;
-	ngx_hash_t  last_modified_types;
-	ngx_array_t *last_modified_types_keys;
+	ngx_hash_t last_modified_types;
+	ngx_array_t* last_modified_types_keys;
 
 	ngx_flag_t drm_enabled;
 	ngx_flag_t drm_single_key;
@@ -88,7 +88,7 @@ struct ngx_http_vod_loc_conf_s {
 	ngx_str_t drm_upstream_location;
 	size_t drm_max_info_length;
 	ngx_buffer_cache_t* drm_info_cache;
-	ngx_http_complex_value_t *drm_request_uri;
+	ngx_http_complex_value_t* drm_request_uri;
 	ngx_uint_t min_single_nalu_per_frame_segment;
 
 	ngx_str_t clip_to_param_name;
@@ -101,7 +101,7 @@ struct ngx_http_vod_loc_conf_s {
 	ngx_shm_zone_t* perf_counters_zone;
 
 #if (NGX_THREADS)
-	ngx_thread_pool_t *open_file_thread_pool;
+	ngx_thread_pool_t* open_file_thread_pool;
 #endif // NGX_THREADS
 
 	// derived fields
@@ -111,7 +111,6 @@ struct ngx_http_vod_loc_conf_s {
 	// submodules
 	ngx_http_vod_dash_loc_conf_t dash;
 	ngx_http_vod_hls_loc_conf_t hls;
-
 
 #if (NGX_HAVE_LIB_AV_CODEC)
 	ngx_http_vod_thumb_loc_conf_t thumb;

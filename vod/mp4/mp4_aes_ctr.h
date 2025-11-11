@@ -20,28 +20,18 @@ typedef struct {
 } mp4_aes_ctr_state_t;
 
 // functions
-vod_status_t mp4_aes_ctr_init(
-	mp4_aes_ctr_state_t* state,
-	request_context_t* request_context,
-	u_char* key);
+vod_status_t
+mp4_aes_ctr_init(mp4_aes_ctr_state_t* state, request_context_t* request_context, u_char* key);
 
-void mp4_aes_ctr_set_iv(
-	mp4_aes_ctr_state_t* state,
-	u_char* iv);
+void mp4_aes_ctr_set_iv(mp4_aes_ctr_state_t* state, u_char* iv);
 
-vod_status_t mp4_aes_ctr_process(
-	mp4_aes_ctr_state_t* state,
-	u_char* dest,
-	const u_char* src,
-	uint32_t size);
+vod_status_t
+mp4_aes_ctr_process(mp4_aes_ctr_state_t* state, u_char* dest, const u_char* src, uint32_t size);
 
-void mp4_aes_ctr_increment_be64(
-	u_char* counter);
+void mp4_aes_ctr_increment_be64(u_char* counter);
 
 vod_status_t mp4_aes_ctr_write_encrypted(
-	mp4_aes_ctr_state_t* state,
-	write_buffer_state_t* write_buffer,
-	u_char* cur_pos,
-	uint32_t write_size);
+	mp4_aes_ctr_state_t* state, write_buffer_state_t* write_buffer, u_char* cur_pos, uint32_t write_size
+);
 
 #endif //__MP4_AES_CTR_H__

@@ -4,7 +4,7 @@
 
 #define THIS_FILTER (MEDIA_FILTER_MPEGTS)
 
-#define member_size(type, member) sizeof(((type *)0)->member)
+#define member_size(type, member) sizeof(((type*)0)->member)
 #define get_context(ctx) ((mpegts_encoder_state_t*)ctx->context[THIS_FILTER])
 
 #define PCR_PID (0x100)
@@ -24,7 +24,7 @@
 #define NO_TIMESTAMP ((uint64_t)-1)
 
 #ifndef FF_PROFILE_AAC_HE
-#define FF_PROFILE_AAC_HE   (4)
+#define FF_PROFILE_AAC_HE (4)
 #endif
 
 #ifndef FF_PROFILE_AAC_HE_V2
@@ -47,33 +47,25 @@ typedef struct {
 	u_char setup_data_length[1];
 } audio_setup_information_t;
 
+// clang-format off
 static const u_char pat_packet[] = {
-
-	/* TS */
-	0x47, 0x40, 0x00, 0x10, 0x00,
-	/* PSI */
-	0x00, 0xb0, 0x0d, 0x00, 0x01, 0xc1, 0x00, 0x00,
-	/* PAT */
-	0x00, 0x01, 0xef, 0xff,
-	/* CRC */
-	0x36, 0x90, 0xe2, 0x3d,
+	0x47, 0x40, 0x00, 0x10, 0x00,                   // TS
+	0x00, 0xb0, 0x0d, 0x00, 0x01, 0xc1, 0x00, 0x00, // PSI
+	0x00, 0x01, 0xef, 0xff,                         // PAT
+	0x36, 0x90, 0xe2, 0x3d,                         // CRC
 };
 
 static const u_char pmt_header_template[] = {
-	/* TS */
-	0x47, 0x4f, 0xff, 0x10,
-	/* PSI */
-	0x00, 0x02, 0xb0, 0x00, 0x00, 0x01, 0xc1, 0x00, 0x00,
-	/* PMT */
-	0xe1, 0x00, 0xf0, 0x11,
-	/* Program descriptors */
-	0x25, 0x0f, 0xff, 0xff, 0x49, 0x44, 0x33, 0x20, 0xff, 0x49,
+	0x47, 0x4f, 0xff, 0x10,                                     // TS
+	0x00, 0x02, 0xb0, 0x00, 0x00, 0x01, 0xc1, 0x00, 0x00,       // PSI
+	0xe1, 0x00, 0xf0, 0x11,                                     // PMT
+	0x25, 0x0f, 0xff, 0xff, 0x49, 0x44, 0x33, 0x20, 0xff, 0x49, // Program descriptors
 	0x44, 0x33, 0x20, 0x00, 0x1f, 0x00, 0x01,
 };
 
 static const u_char pmt_entry_template_hevc[] = {
 	0x06, 0xe0, 0x00, 0xf0, 0x06,
-	0x05, 0x04, 0x48, 0x45, 0x56, 0x43		// registration_descriptor('HEVC')
+	0x05, 0x04, 0x48, 0x45, 0x56, 0x43 // registration_descriptor('HEVC')
 };
 
 static const u_char pmt_entry_template_avc[] = {
@@ -98,22 +90,22 @@ static const u_char pmt_entry_template_ac3[] = {
 
 static const u_char pmt_entry_template_sample_aes_avc[] = {
 	0xdb, 0xe0, 0x00, 0xf0, 0x06,
-	0x0f, 0x04, 0x7a, 0x61, 0x76, 0x63		// private_data_indicator_descriptor('zavc')
+	0x0f, 0x04, 0x7a, 0x61, 0x76, 0x63 // private_data_indicator_descriptor('zavc')
 };
 
 static const u_char pmt_entry_template_sample_aes_aac[] = {
 	0xcf, 0xe1, 0x00, 0xf0, 0x00,
-	0x0f, 0x04, 0x61, 0x61, 0x63, 0x64		// private_data_indicator_descriptor('aacd')
+	0x0f, 0x04, 0x61, 0x61, 0x63, 0x64 // private_data_indicator_descriptor('aacd')
 };
 
 static const u_char pmt_entry_template_sample_aes_ac3[] = {
 	0xc1, 0xe1, 0x00, 0xf0, 0x00,
-	0x0f, 0x04, 0x61, 0x63, 0x33, 0x64		// private_data_indicator_descriptor('ac3d')
+	0x0f, 0x04, 0x61, 0x63, 0x33, 0x64 // private_data_indicator_descriptor('ac3d')
 };
 
 static const u_char pmt_entry_template_sample_aes_eac3[] = {
 	0xc2, 0xe1, 0x00, 0xf0, 0x00,
-	0x0f, 0x04, 0x65, 0x63, 0x33, 0x64		// private_data_indicator_descriptor('ec3d')
+	0x0f, 0x04, 0x65, 0x63, 0x33, 0x64 // private_data_indicator_descriptor('ec3d')
 };
 
 static const u_char pmt_entry_template_id3[] = {
@@ -121,8 +113,8 @@ static const u_char pmt_entry_template_id3[] = {
 	0x44, 0x33, 0x20, 0xff, 0x49, 0x44, 0x33, 0x20, 0x00, 0x0f,
 };
 
-// Note: according to the sample-aes spec, this should be the first 10 bytes of the audio data
-//		in practice, sending only the ac-3 syncframe magic is good enough (without the magic it doesn't play)
+// NOTE: according to the sample-aes spec, this should be the first 10 bytes of the audio data in
+// practice, sending only the AC-3 syncframe magic is good enough (without the magic it doesn't play)
 static u_char ac3_extra_data[SAMPLE_AES_AC3_EXTRA_DATA_SIZE] = {
 	0x0b, 0x77, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
@@ -173,15 +165,14 @@ static const uint32_t crc_table[256] = {
 	0x933eb0bb, 0x97ffad0c, 0xafb010b1, 0xab710d06, 0xa6322bdf, 0xa2f33668,
 	0xbcb4666d, 0xb8757bda, 0xb5365d03, 0xb1f740b4
 };
+// clang-format on
 
 static uint32_t
-mpegts_crc32(const u_char* data, int len)
-{
+mpegts_crc32(const u_char* data, int len) {
 	const u_char* end = data + len;
 	uint32_t crc = 0xffffffff;
 
-	for (; data < end; data++)
-	{
+	for (; data < end; data++) {
 		crc = (crc << 8) ^ crc_table[((crc >> 24) ^ *data) & 0xff];
 	}
 
@@ -189,120 +180,111 @@ mpegts_crc32(const u_char* data, int len)
 }
 
 // stateless writing functions - copied from ngx_hls_mpegts with some refactoring
-static u_char *
-mpegts_write_pcr(u_char *p, uint64_t pcr)
-{
-	*p++ = (u_char) (pcr >> 25);
-	*p++ = (u_char) (pcr >> 17);
-	*p++ = (u_char) (pcr >> 9);
-	*p++ = (u_char) (pcr >> 1);
-	*p++ = (u_char) (pcr << 7 | 0x7e);
+static u_char*
+mpegts_write_pcr(u_char* p, uint64_t pcr) {
+	*p++ = (u_char)(pcr >> 25);
+	*p++ = (u_char)(pcr >> 17);
+	*p++ = (u_char)(pcr >> 9);
+	*p++ = (u_char)(pcr >> 1);
+	*p++ = (u_char)(pcr << 7 | 0x7e);
 	*p++ = 0;
 
 	return p;
 }
 
-static u_char *
-mpegts_write_pts(u_char *p, unsigned fb, uint64_t pts)
-{
+static u_char*
+mpegts_write_pts(u_char* p, unsigned fb, uint64_t pts) {
 	unsigned val;
 
 	val = fb << 4 | (((pts >> 30) & 0x07) << 1) | 1;
-	*p++ = (u_char) val;
+	*p++ = (u_char)val;
 
 	val = (((pts >> 15) & 0x7fff) << 1) | 1;
-	*p++ = (u_char) (val >> 8);
-	*p++ = (u_char) val;
+	*p++ = (u_char)(val >> 8);
+	*p++ = (u_char)val;
 
 	val = (((pts) & 0x7fff) << 1) | 1;
-	*p++ = (u_char) (val >> 8);
-	*p++ = (u_char) val;
+	*p++ = (u_char)(val >> 8);
+	*p++ = (u_char)val;
 
 	return p;
 }
 
-static vod_inline u_char *
-mpegts_write_packet_header(u_char *p, unsigned pid, unsigned cc)
-{
+static vod_inline u_char*
+mpegts_write_packet_header(u_char* p, unsigned pid, unsigned cc) {
 	*p++ = 0x47;
-	*p++ = (u_char) (pid >> 8);
-	*p++ = (u_char) pid;
-	*p++ = 0x10 | (cc & 0x0f); /* payload */
+	*p++ = (u_char)(pid >> 8);
+	*p++ = (u_char)pid;
+	*p++ = 0x10 | (cc & 0x0f); // payload
 
 	return p;
 }
 
 static size_t
-mpegts_get_pes_header_size(mpegts_stream_info_t* stream_info)
-{
+mpegts_get_pes_header_size(mpegts_stream_info_t* stream_info) {
 	size_t result;
 	bool_t write_dts = stream_info->media_type == MEDIA_TYPE_VIDEO;
 
 	result = SIZEOF_PES_HEADER + SIZEOF_PES_OPTIONAL_HEADER + SIZEOF_PES_PTS;
 
-	if (stream_info->pid == PCR_PID)
-	{
+	if (stream_info->pid == PCR_PID) {
 		result += SIZEOF_MPEGTS_ADAPTATION_FIELD + SIZEOF_PCR;
 	}
-	if (write_dts)
-	{
+	if (write_dts) {
 		result += SIZEOF_PES_PTS;
 	}
 
 	return result;
 }
 
-static u_char *
+static u_char*
 mpegts_write_pes_header(
 	u_char* cur_packet_start,
 	mpegts_stream_info_t* stream_info,
 	output_frame_t* f,
 	u_char** pes_size_ptr,
-	bool_t data_aligned)
-{
+	bool_t data_aligned
+) {
 	unsigned header_size;
 	unsigned flags;
 	u_char* p = cur_packet_start + SIZEOF_MPEGTS_HEADER;
 	bool_t write_dts = stream_info->media_type == MEDIA_TYPE_VIDEO;
 
-	cur_packet_start[1] |= 0x40; /* payload start indicator */
+	cur_packet_start[1] |= 0x40; // payload start indicator
 
-	if (stream_info->pid == PCR_PID)
-	{
-		cur_packet_start[3] |= 0x20; /* adaptation */
+	if (stream_info->pid == PCR_PID) {
+		cur_packet_start[3] |= 0x20; // adaptation
 
-		*p++ = 1 + SIZEOF_PCR;	/* size */
-		*p++ = 0x10; /* PCR */
+		*p++ = 1 + SIZEOF_PCR; // size
+		*p++ = 0x10;           // PCR
 
 		p = mpegts_write_pcr(p, f->dts + INITIAL_PCR);
 	}
 
-	/* PES header */
+	// PES header
 
 	*p++ = 0x00;
 	*p++ = 0x00;
 	*p++ = 0x01;
-	*p++ = (u_char) stream_info->sid;
+	*p++ = (u_char)stream_info->sid;
 
 	header_size = SIZEOF_PES_PTS;
-	flags = 0x80; /* PTS */
+	flags = 0x80; // PTS
 
-	if (write_dts)
-	{
+	if (write_dts) {
 		header_size += SIZEOF_PES_PTS;
-		flags |= 0x40; /* DTS */
+		flags |= 0x40; // DTS
 	}
 
 	*pes_size_ptr = p;
-	p += 2;		// skip pes_size, updated later
-	*p++ = data_aligned ? 0x84 : 0x80; /* H222 */
-	*p++ = (u_char) flags;
-	*p++ = (u_char) header_size;
+	p += 2;                            // skip pes_size, updated later
+	*p++ = data_aligned ? 0x84 : 0x80; // H222
+	*p++ = (u_char)flags;
+	*p++ = (u_char)header_size;
 
 	p = mpegts_write_pts(p, flags >> 6, f->pts + INITIAL_DTS);
 
-	if (write_dts)
-	{
+	if (write_dts) {
 		p = mpegts_write_pts(p, 1, f->dts + INITIAL_DTS);
 	}
 
@@ -310,27 +292,22 @@ mpegts_write_pes_header(
 }
 
 static void
-mpegts_add_stuffing(u_char* packet, u_char* p, unsigned stuff_size)
-{
-	u_char  *base;
+mpegts_add_stuffing(u_char* packet, u_char* p, unsigned stuff_size) {
+	u_char* base;
 
-	if (packet[3] & 0x20)
-	{
-		/* has adaptation */
+	if (packet[3] & 0x20) {
+		// has adaptation
 		base = &packet[5] + packet[4];
 		vod_memmove(base + stuff_size, base, p - base);
 		vod_memset(base, 0xff, stuff_size);
-		packet[4] += (u_char) stuff_size;
-	}
-	else
-	{
-		/* no adaptation */
+		packet[4] += (u_char)stuff_size;
+	} else {
+		// no adaptation
 		packet[3] |= 0x20;
 		vod_memmove(&packet[4] + stuff_size, &packet[4], p - &packet[4]);
 
-		packet[4] = (u_char) (stuff_size - 1);
-		if (stuff_size >= 2)
-		{
+		packet[4] = (u_char)(stuff_size - 1);
+		if (stuff_size >= 2) {
 			packet[5] = 0;
 			vod_memset(&packet[6], 0xff, stuff_size - 2);
 		}
@@ -338,14 +315,12 @@ mpegts_add_stuffing(u_char* packet, u_char* p, unsigned stuff_size)
 }
 
 static void
-mpegts_copy_and_stuff(u_char* dest_packet, u_char* src_packet, u_char* src_pos, unsigned stuff_size)
-{
-	u_char  *base;
+mpegts_copy_and_stuff(u_char* dest_packet, u_char* src_packet, u_char* src_pos, unsigned stuff_size) {
+	u_char* base;
 	u_char* p;
 
-	if (src_packet[3] & 0x20)
-	{
-		/* has adaptation */
+	if (src_packet[3] & 0x20) {
+		// has adaptation
 		base = &src_packet[5] + src_packet[4];
 
 		p = vod_copy(dest_packet, src_packet, base - src_packet);
@@ -353,18 +328,15 @@ mpegts_copy_and_stuff(u_char* dest_packet, u_char* src_packet, u_char* src_pos, 
 
 		vod_memset(p, 0xff, stuff_size);
 		p += stuff_size;
-	}
-	else
-	{
-		/* no adaptation */
+	} else {
+		// no adaptation
 		base = &src_packet[4];
 
 		p = vod_copy(dest_packet, src_packet, 4);
 		dest_packet[3] |= 0x20;
 
 		*p++ = (u_char)(stuff_size - 1);
-		if (stuff_size >= 2)
-		{
+		if (stuff_size >= 2) {
 			*p++ = 0;
 			vod_memset(p, 0xff, stuff_size - 2);
 			p += stuff_size - 2;
@@ -382,8 +354,8 @@ mpegts_encoder_init_streams(
 	request_context_t* request_context,
 	hls_encryption_params_t* encryption_params,
 	mpegts_encoder_init_streams_state_t* stream_state,
-	uint32_t segment_index)
-{
+	uint32_t segment_index
+) {
 	u_char* cur_packet;
 
 	stream_state->request_context = request_context;
@@ -393,18 +365,17 @@ mpegts_encoder_init_streams(
 	stream_state->cur_video_sid = FIRST_VIDEO_SID;
 	stream_state->cur_audio_sid = FIRST_AUDIO_SID;
 
-	if (request_context->simulation_only)
-	{
+	if (request_context->simulation_only) {
 		stream_state->pmt_packet_start = NULL;
 		return VOD_OK;
 	}
 
 	// append PAT packet
 	cur_packet = vod_alloc(request_context->pool, MPEGTS_PACKET_SIZE * 2);
-	if (cur_packet == NULL)
-	{
-		vod_log_debug0(VOD_LOG_DEBUG_LEVEL, request_context->log, 0,
-			"mpegts_encoder_init_streams: vod_alloc failed");
+	if (cur_packet == NULL) {
+		vod_log_debug0(
+			VOD_LOG_DEBUG_LEVEL, request_context->log, 0, "mpegts_encoder_init_streams: vod_alloc failed"
+		);
 		return VOD_ALLOC_FAILED;
 	}
 
@@ -430,115 +401,116 @@ mpegts_encoder_init_streams(
 
 static void
 mpegts_encoder_write_sample_aes_audio_pmt_entry(
-	request_context_t* request_context,
-	u_char* start,
-	int entry_size,
-	media_info_t* media_info)
-{
+	request_context_t* request_context, u_char* start, int entry_size, media_info_t* media_info
+) {
 	vod_str_t extra_data;
 	u_char* p;
 
-	switch (media_info->codec_id)
-	{
+	switch (media_info->codec_id) {
 	case VOD_CODEC_ID_AC3:
 		extra_data.data = ac3_extra_data;
 		extra_data.len = sizeof(ac3_extra_data);
-		p = vod_copy(
-			start,
-			pmt_entry_template_sample_aes_ac3,
-			sizeof(pmt_entry_template_sample_aes_ac3));
+		p = vod_copy(start, pmt_entry_template_sample_aes_ac3, sizeof(pmt_entry_template_sample_aes_ac3));
 		break;
 
 	case VOD_CODEC_ID_EAC3:
 		extra_data = media_info->extra_data;
 		p = vod_copy(
-			start,
-			pmt_entry_template_sample_aes_eac3,
-			sizeof(pmt_entry_template_sample_aes_eac3));
+			start, pmt_entry_template_sample_aes_eac3, sizeof(pmt_entry_template_sample_aes_eac3)
+		);
 		break;
 
 	default:
 		extra_data = media_info->extra_data;
-		p = vod_copy(
-			start,
-			pmt_entry_template_sample_aes_aac,
-			sizeof(pmt_entry_template_sample_aes_aac));
+		p = vod_copy(start, pmt_entry_template_sample_aes_aac, sizeof(pmt_entry_template_sample_aes_aac));
 		break;
 	}
 	pmt_entry_set_es_info_length(start, entry_size - sizeof_pmt_entry);
 
 	// registration_descriptor
-	*p++ = 0x05;		// descriptor tag
-	*p++ =				// descriptor length
-		member_size(registration_descriptor_t, format_identifier) +
-		sizeof(audio_setup_information_t) +
-		extra_data.len;
-	*p++ = 'a';		*p++ = 'p';		*p++ = 'a';		*p++ = 'd';			// apad
+	*p++ = 0x05;                                                     // descriptor tag
+	*p++ = member_size(registration_descriptor_t, format_identifier) // descriptor length
+	     + sizeof(audio_setup_information_t)
+	     + extra_data.len;
+
+	*p++ = 'a';
+	*p++ = 'p';
+	*p++ = 'a';
+	*p++ = 'd';
 
 	// audio_setup_information
-	switch (media_info->codec_id)
-	{
+	switch (media_info->codec_id) {
 	case VOD_CODEC_ID_AC3:
-		*p++ = 'z';		*p++ = 'a';		*p++ = 'c';		*p++ = '3';			// zac3
+		*p++ = 'z';
+		*p++ = 'a';
+		*p++ = 'c';
+		*p++ = '3';
 		break;
 
 	case VOD_CODEC_ID_EAC3:
-		*p++ = 'z';		*p++ = 'e';		*p++ = 'c';		*p++ = '3';			// zec3
+		*p++ = 'z';
+		*p++ = 'e';
+		*p++ = 'c';
+		*p++ = '3';
 		break;
 
 	default:
-		switch (media_info->u.audio.codec_config.object_type - 1)
-		{
+		switch (media_info->u.audio.codec_config.object_type - 1) {
 		case FF_PROFILE_AAC_HE:
-			*p++ = 'z';		*p++ = 'a';		*p++ = 'c';		*p++ = 'h';			// zach
+			*p++ = 'z';
+			*p++ = 'a';
+			*p++ = 'c';
+			*p++ = 'h';
 			break;
 
 		case FF_PROFILE_AAC_HE_V2:
-			*p++ = 'z';		*p++ = 'a';		*p++ = 'c';		*p++ = 'p';			// zacp
+			*p++ = 'z';
+			*p++ = 'a';
+			*p++ = 'c';
+			*p++ = 'p';
 			break;
 
 		default:
-			*p++ = 'z';		*p++ = 'a';		*p++ = 'a';		*p++ = 'c';			// zaac
+			*p++ = 'z';
+			*p++ = 'a';
+			*p++ = 'a';
+			*p++ = 'c';
 			break;
 		}
 		break;
 	}
 
-	*p++ = 0;	*p++ = 0;		// priming
-	*p++ = 1;					// version
+	// priming
+	*p++ = 0;
+	*p++ = 0;
+
+	*p++ = 1; // version
+
 	*p++ = extra_data.len;
 	vod_memcpy(p, extra_data.data, extra_data.len);
 }
 
 static vod_status_t
 mpegts_encoder_add_stream(
-	mpegts_encoder_init_streams_state_t* stream_state,
-	media_track_t* track,
-	mpegts_stream_info_t* stream_info)
-{
+	mpegts_encoder_init_streams_state_t* stream_state, media_track_t* track, mpegts_stream_info_t* stream_info
+) {
 	const u_char* pmt_entry;
 	int pmt_entry_size;
 
 	stream_info->pid = stream_state->cur_pid++;
 
-	if (stream_state->pmt_packet_start == NULL)			// simulation only
-	{
+	if (stream_state->pmt_packet_start == NULL) { // simulation only
 		return VOD_OK;
 	}
 
-	switch (stream_info->media_type)
-	{
+	switch (stream_info->media_type) {
 	case MEDIA_TYPE_VIDEO:
 		stream_info->sid = stream_state->cur_video_sid++;
-		if (stream_state->encryption_params->type == HLS_ENC_SAMPLE_AES)
-		{
+		if (stream_state->encryption_params->type == HLS_ENC_SAMPLE_AES) {
 			pmt_entry = pmt_entry_template_sample_aes_avc;
 			pmt_entry_size = sizeof(pmt_entry_template_sample_aes_avc);
-		}
-		else
-		{
-			switch (track->media_info.codec_id)
-			{
+		} else {
+			switch (track->media_info.codec_id) {
 			case VOD_CODEC_ID_HEVC:
 				pmt_entry = pmt_entry_template_hevc;
 				pmt_entry_size = sizeof(pmt_entry_template_hevc);
@@ -554,39 +526,34 @@ mpegts_encoder_add_stream(
 
 	case MEDIA_TYPE_AUDIO:
 		stream_info->sid = stream_state->cur_audio_sid++;
-		if (stream_state->encryption_params->type == HLS_ENC_SAMPLE_AES)
-		{
-			switch (track->media_info.codec_id)
-			{
+		if (stream_state->encryption_params->type == HLS_ENC_SAMPLE_AES) {
+			switch (track->media_info.codec_id) {
 			case VOD_CODEC_ID_AC3:
 				pmt_entry = pmt_entry_template_sample_aes_ac3;
-				pmt_entry_size = sizeof(pmt_entry_template_sample_aes_ac3) +
-					sizeof(registration_descriptor_t) +
-					sizeof(audio_setup_information_t) +
-					SAMPLE_AES_AC3_EXTRA_DATA_SIZE;
+				pmt_entry_size = sizeof(pmt_entry_template_sample_aes_ac3)
+				               + sizeof(registration_descriptor_t)
+				               + sizeof(audio_setup_information_t)
+				               + SAMPLE_AES_AC3_EXTRA_DATA_SIZE;
 				break;
 
 			case VOD_CODEC_ID_EAC3:
 				pmt_entry = pmt_entry_template_sample_aes_eac3;
-				pmt_entry_size = sizeof(pmt_entry_template_sample_aes_eac3) +
-					sizeof(registration_descriptor_t) +
-					sizeof(audio_setup_information_t) +
-					track->media_info.extra_data.len;
+				pmt_entry_size = sizeof(pmt_entry_template_sample_aes_eac3)
+				               + sizeof(registration_descriptor_t)
+				               + sizeof(audio_setup_information_t)
+				               + track->media_info.extra_data.len;
 				break;
 
 			default:
 				pmt_entry = pmt_entry_template_sample_aes_aac;
-				pmt_entry_size = sizeof(pmt_entry_template_sample_aes_aac) +
-					sizeof(registration_descriptor_t) +
-					sizeof(audio_setup_information_t) +
-					track->media_info.extra_data.len;
+				pmt_entry_size = sizeof(pmt_entry_template_sample_aes_aac)
+				               + sizeof(registration_descriptor_t)
+				               + sizeof(audio_setup_information_t)
+				               + track->media_info.extra_data.len;
 				break;
 			}
-		}
-		else
-		{
-			switch (track->media_info.codec_id)
-			{
+		} else {
+			switch (track->media_info.codec_id) {
 			case VOD_CODEC_ID_MP3:
 				pmt_entry = pmt_entry_template_mp3;
 				pmt_entry_size = sizeof(pmt_entry_template_mp3);
@@ -618,30 +585,33 @@ mpegts_encoder_add_stream(
 		break;
 
 	default:
-		vod_log_error(VOD_LOG_ERR, stream_state->request_context->log, 0,
-			"mpegts_encoder_add_stream: invalid media type %d", stream_info->media_type);
+		vod_log_error(
+			VOD_LOG_ERR,
+			stream_state->request_context->log,
+			0,
+			"mpegts_encoder_add_stream: invalid media type %d",
+			stream_info->media_type
+		);
 		return VOD_BAD_REQUEST;
 	}
 
-	if (stream_state->pmt_packet_pos + pmt_entry_size + sizeof(uint32_t) >=
-		stream_state->pmt_packet_end)
-	{
-		vod_log_error(VOD_LOG_ERR, stream_state->request_context->log, 0,
-			"mpegts_encoder_add_stream: stream definitions overflow PMT size");
+	if (stream_state->pmt_packet_pos + pmt_entry_size + sizeof(uint32_t)
+	    >= stream_state->pmt_packet_end) {
+		vod_log_error(
+			VOD_LOG_ERR,
+			stream_state->request_context->log,
+			0,
+			"mpegts_encoder_add_stream: stream definitions overflow PMT size"
+		);
 		return VOD_BAD_DATA;
 	}
 
-	if (stream_info->media_type == MEDIA_TYPE_AUDIO &&
-		stream_state->encryption_params->type == HLS_ENC_SAMPLE_AES)
-	{
+	if (stream_info->media_type == MEDIA_TYPE_AUDIO
+	    && stream_state->encryption_params->type == HLS_ENC_SAMPLE_AES) {
 		mpegts_encoder_write_sample_aes_audio_pmt_entry(
-			stream_state->request_context,
-			stream_state->pmt_packet_pos,
-			pmt_entry_size,
-			&track->media_info);
-	}
-	else
-	{
+			stream_state->request_context, stream_state->pmt_packet_pos, pmt_entry_size, &track->media_info
+		);
+	} else {
 		vod_memcpy(stream_state->pmt_packet_pos, pmt_entry, pmt_entry_size);
 	}
 	pmt_entry_set_elementary_pid(stream_state->pmt_packet_pos, stream_info->pid);
@@ -650,23 +620,24 @@ mpegts_encoder_add_stream(
 }
 
 void
-mpegts_encoder_finalize_streams(mpegts_encoder_init_streams_state_t* stream_state, vod_str_t* ts_header)
-{
+mpegts_encoder_finalize_streams(mpegts_encoder_init_streams_state_t* stream_state, vod_str_t* ts_header) {
 	u_char* p = stream_state->pmt_packet_pos;
 	u_char* crc_start_offset;
 	uint32_t crc;
 
-	if (stream_state->pmt_packet_start == NULL)			// simulation only
-	{
+	if (stream_state->pmt_packet_start == NULL) { // simulation only
 		return;
 	}
 
 	// update the length in the PMT header
-	pmt_set_section_length(stream_state->pmt_packet_start + SIZEOF_MPEGTS_HEADER,
-		p - (stream_state->pmt_packet_start + SIZEOF_MPEGTS_HEADER + PMT_LENGTH_END_OFFSET) + sizeof(crc));
+	pmt_set_section_length(
+		stream_state->pmt_packet_start + SIZEOF_MPEGTS_HEADER,
+		p - (stream_state->pmt_packet_start + SIZEOF_MPEGTS_HEADER + PMT_LENGTH_END_OFFSET) + sizeof(crc)
+	);
 
 	// append the CRC
-	crc_start_offset = stream_state->pmt_packet_start + SIZEOF_MPEGTS_HEADER + 1;	// the PMT pointer field is not part of the CRC
+	// NOTE: the PMT pointer field is not part of the CRC
+	crc_start_offset = stream_state->pmt_packet_start + SIZEOF_MPEGTS_HEADER + 1;
 	crc = mpegts_crc32(crc_start_offset, p - crc_start_offset);
 	*p++ = (u_char)(crc >> 24);
 	*p++ = (u_char)(crc >> 16);
@@ -682,48 +653,45 @@ mpegts_encoder_finalize_streams(mpegts_encoder_init_streams_state_t* stream_stat
 
 // stateful functions
 static vod_inline vod_status_t
-mpegts_encoder_init_packet(mpegts_encoder_state_t* state, bool_t write_direct)
-{
-	if (write_direct || !state->interleave_frames)
-	{
+mpegts_encoder_init_packet(mpegts_encoder_state_t* state, bool_t write_direct) {
+	if (write_direct || !state->interleave_frames) {
 		state->last_queue_offset = state->queue->cur_offset;
 
-		state->cur_packet_start = write_buffer_queue_get_buffer(state->queue, MPEGTS_PACKET_SIZE, state);
-		if (state->cur_packet_start == NULL)
-		{
-			vod_log_debug0(VOD_LOG_DEBUG_LEVEL, state->request_context->log, 0,
-				"mpegts_encoder_init_packet: write_buffer_queue_get_buffer failed");
+		state->cur_packet_start =
+			write_buffer_queue_get_buffer(state->queue, MPEGTS_PACKET_SIZE, state);
+		if (state->cur_packet_start == NULL) {
+			vod_log_debug0(
+				VOD_LOG_DEBUG_LEVEL,
+				state->request_context->log,
+				0,
+				"mpegts_encoder_init_packet: write_buffer_queue_get_buffer failed"
+			);
 			return VOD_ALLOC_FAILED;
 		}
-	}
-	else
-	{
+	} else {
 		state->cur_packet_start = state->temp_packet;
 	}
 
 	state->last_frame_pts = NO_TIMESTAMP;
 	state->cur_packet_end = state->cur_packet_start + MPEGTS_PACKET_SIZE;
-	state->cur_pos = mpegts_write_packet_header(state->cur_packet_start, state->stream_info.pid, state->cc);
+	state->cur_pos =
+		mpegts_write_packet_header(state->cur_packet_start, state->stream_info.pid, state->cc);
 	state->cc++;
 
 	return VOD_OK;
 }
 
 static vod_status_t
-mpegts_encoder_stuff_cur_packet(mpegts_encoder_state_t* state)
-{
+mpegts_encoder_stuff_cur_packet(mpegts_encoder_state_t* state) {
 	unsigned stuff_size = state->cur_packet_end - state->cur_pos;
 	unsigned pes_size;
 	u_char* cur_packet;
 
-	if (state->pes_bytes_written != 0 &&
-		state->stream_info.media_type != MEDIA_TYPE_VIDEO)
-	{
+	if (state->pes_bytes_written != 0 && state->stream_info.media_type != MEDIA_TYPE_VIDEO) {
 		// the trailing part of the last pes was not counted in its size, add it now
 		pes_size = ((uint16_t)(state->cur_pes_size_ptr[0]) << 8) | state->cur_pes_size_ptr[1];
 		pes_size += state->pes_bytes_written;
-		if (pes_size > 0xffff)
-		{
+		if (pes_size > 0xffff) {
 			pes_size = 0;
 		}
 		state->cur_pes_size_ptr[0] = (u_char)(pes_size >> 8);
@@ -732,37 +700,32 @@ mpegts_encoder_stuff_cur_packet(mpegts_encoder_state_t* state)
 		state->pes_bytes_written = 0;
 	}
 
-	if (state->cur_packet_start == state->temp_packet &&
-		state->interleave_frames)
-	{
+	if (state->cur_packet_start == state->temp_packet && state->interleave_frames) {
 		// allocate a packet from the queue
 		state->last_queue_offset = state->queue->cur_offset;
 
 		cur_packet = write_buffer_queue_get_buffer(state->queue, MPEGTS_PACKET_SIZE, state);
-		if (cur_packet == NULL)
-		{
-			vod_log_debug0(VOD_LOG_DEBUG_LEVEL, state->request_context->log, 0,
-				"mpegts_encoder_stuff_cur_packet: write_buffer_queue_get_buffer failed");
+		if (cur_packet == NULL) {
+			vod_log_debug0(
+				VOD_LOG_DEBUG_LEVEL,
+				state->request_context->log,
+				0,
+				"mpegts_encoder_stuff_cur_packet: write_buffer_queue_get_buffer failed"
+			);
 			return VOD_ALLOC_FAILED;
 		}
 
 		state->cur_packet_start = NULL;
 
 		// copy the temp packet and stuff it
-		if (stuff_size > 0)
-		{
+		if (stuff_size > 0) {
 			mpegts_copy_and_stuff(cur_packet, state->temp_packet, state->cur_pos, stuff_size);
-		}
-		else
-		{
+		} else {
 			vod_memcpy(cur_packet, state->temp_packet, MPEGTS_PACKET_SIZE);
 		}
-	}
-	else
-	{
+	} else {
 		// stuff the current packet in place
-		if (stuff_size > 0)
-		{
+		if (stuff_size > 0) {
 			mpegts_add_stuffing(state->cur_packet_start, state->cur_pos, stuff_size);
 		}
 	}
@@ -774,8 +737,7 @@ mpegts_encoder_stuff_cur_packet(mpegts_encoder_state_t* state)
 }
 
 static vod_status_t
-mpegts_encoder_start_frame(media_filter_context_t* context, output_frame_t* frame)
-{
+mpegts_encoder_start_frame(media_filter_context_t* context, output_frame_t* frame) {
 	mpegts_encoder_state_t* state = get_context(context);
 	mpegts_encoder_state_t* last_writer_state;
 	vod_status_t rc;
@@ -788,12 +750,10 @@ mpegts_encoder_start_frame(media_filter_context_t* context, output_frame_t* fram
 	bool_t write_direct;
 
 	last_writer_state = state->queue->last_writer_context;
-	if (!state->interleave_frames && last_writer_state != state && last_writer_state != NULL)
-	{
+	if (!state->interleave_frames && last_writer_state != state && last_writer_state != NULL) {
 		// frame interleaving is disabled and the last packet that was written belongs to a different stream, close it
 		rc = mpegts_encoder_stuff_cur_packet(last_writer_state);
-		if (rc != VOD_OK)
-		{
+		if (rc != VOD_OK) {
 			return rc;
 		}
 	}
@@ -805,44 +765,41 @@ mpegts_encoder_start_frame(media_filter_context_t* context, output_frame_t* fram
 
 	pes_header_size = mpegts_get_pes_header_size(&state->stream_info);
 
-	if (state->cur_pos >= state->cur_packet_end)
-	{
+	if (state->cur_pos >= state->cur_packet_end) {
 		// current packet is full, start a new packet
 		write_direct = pes_header_size + frame->size >= MPEGTS_PACKET_USABLE_SIZE;
 
 		rc = mpegts_encoder_init_packet(state, write_direct);
-		if (rc != VOD_OK)
-		{
+		if (rc != VOD_OK) {
 			return rc;
 		}
 
-		state->cur_pos = mpegts_write_pes_header(state->cur_packet_start, &state->stream_info, frame, &state->cur_pes_size_ptr, TRUE);
+		state->cur_pos = mpegts_write_pes_header(
+			state->cur_packet_start, &state->stream_info, frame, &state->cur_pes_size_ptr, TRUE
+		);
 
 		state->packet_bytes_left = state->cur_packet_end - state->cur_pos;
 
 		return VOD_OK;
 	}
 
-	if (state->last_frame_pts != NO_TIMESTAMP)
-	{
+	if (state->last_frame_pts != NO_TIMESTAMP) {
 		frame->pts = state->last_frame_pts;
 	}
 
-	if (state->cur_pos + pes_header_size < state->cur_packet_end)
-	{
+	if (state->cur_pos + pes_header_size < state->cur_packet_end) {
 		// current packet has enough room to push the pes without getting full
 		pes_packet_start = state->cur_packet_start;
 		pes_start = pes_packet_start + SIZEOF_MPEGTS_HEADER;
 
-		vod_memmove(
-			pes_start + pes_header_size,
-			pes_start,
-			state->cur_pos - pes_start);
+		vod_memmove(pes_start + pes_header_size, pes_start, state->cur_pos - pes_start);
 
 		state->cur_pos += pes_header_size;
 
-		// write the pes
-		mpegts_write_pes_header(pes_packet_start, &state->stream_info, frame, &state->cur_pes_size_ptr, FALSE);
+		// write the PES
+		mpegts_write_pes_header(
+			pes_packet_start, &state->stream_info, frame, &state->cur_pes_size_ptr, FALSE
+		);
 
 		state->packet_bytes_left = state->cur_packet_end - state->cur_pos;
 
@@ -853,45 +810,43 @@ mpegts_encoder_start_frame(media_filter_context_t* context, output_frame_t* fram
 	excess_size = state->cur_pos + pes_header_size - state->cur_packet_end;
 	excess_pos = state->cur_pos - excess_size;
 
-	if (state->cur_packet_start == state->temp_packet &&
-		state->interleave_frames)
-	{
+	if (state->cur_packet_start == state->temp_packet && state->interleave_frames) {
 		// allocate packet from the queue
 		state->last_queue_offset = state->queue->cur_offset;
 
 		pes_packet_start = write_buffer_queue_get_buffer(state->queue, MPEGTS_PACKET_SIZE, state);
-		if (pes_packet_start == NULL)
-		{
-			vod_log_debug0(VOD_LOG_DEBUG_LEVEL, state->request_context->log, 0,
-				"mpegts_encoder_start_frame: write_buffer_queue_get_buffer failed");
+		if (pes_packet_start == NULL) {
+			vod_log_debug0(
+				VOD_LOG_DEBUG_LEVEL,
+				state->request_context->log,
+				0,
+				"mpegts_encoder_start_frame: write_buffer_queue_get_buffer failed"
+			);
 			return VOD_ALLOC_FAILED;
 		}
 
 		// copy the packet and push in the pes
 		vod_memcpy(pes_packet_start, state->temp_packet, SIZEOF_MPEGTS_HEADER);
 
-		p = mpegts_write_pes_header(pes_packet_start, &state->stream_info, frame, &state->cur_pes_size_ptr, FALSE);
+		p = mpegts_write_pes_header(
+			pes_packet_start, &state->stream_info, frame, &state->cur_pes_size_ptr, FALSE
+		);
 
 		vod_memcpy(
-			p,
-			state->temp_packet + SIZEOF_MPEGTS_HEADER,
-			MPEGTS_PACKET_USABLE_SIZE - pes_header_size);
+			p, state->temp_packet + SIZEOF_MPEGTS_HEADER, MPEGTS_PACKET_USABLE_SIZE - pes_header_size
+		);
 
 		pes_packet_start = NULL;
-	}
-	else
-	{
+	} else {
 		pes_packet_start = state->cur_packet_start;
 	}
 
-	if (excess_size > 0)
-	{
+	if (excess_size > 0) {
 		// copy the excess to a new packet
 		write_direct = excess_size + frame->size >= MPEGTS_PACKET_USABLE_SIZE;
 
 		rc = mpegts_encoder_init_packet(state, write_direct);
-		if (rc != VOD_OK)
-		{
+		if (rc != VOD_OK) {
 			return rc;
 		}
 
@@ -899,35 +854,30 @@ mpegts_encoder_start_frame(media_filter_context_t* context, output_frame_t* fram
 		state->cur_pos += excess_size;
 
 		state->packet_bytes_left = state->cur_packet_end - state->cur_pos;
-	}
-	else
-	{
+	} else {
 		state->cur_pos = state->cur_packet_end;
 		state->cur_packet_start = NULL;
 
 		state->packet_bytes_left = MPEGTS_PACKET_USABLE_SIZE;
 	}
 
-	if (pes_packet_start != NULL)
-	{
-		// make room for the pes
+	if (pes_packet_start != NULL) {
+		// make room for the PES
 		pes_start = pes_packet_start + SIZEOF_MPEGTS_HEADER;
 
-		vod_memmove(
-			pes_start + pes_header_size,
-			pes_start,
-			MPEGTS_PACKET_USABLE_SIZE - pes_header_size);
+		vod_memmove(pes_start + pes_header_size, pes_start, MPEGTS_PACKET_USABLE_SIZE - pes_header_size);
 
-		// write the pes
-		mpegts_write_pes_header(pes_packet_start, &state->stream_info, frame, &state->cur_pes_size_ptr, FALSE);
+		// write the PES
+		mpegts_write_pes_header(
+			pes_packet_start, &state->stream_info, frame, &state->cur_pes_size_ptr, FALSE
+		);
 	}
 
 	return VOD_OK;
 }
 
 static vod_status_t
-mpegts_encoder_write(media_filter_context_t* context, const u_char* buffer, uint32_t size)
-{
+mpegts_encoder_write(media_filter_context_t* context, const u_char* buffer, uint32_t size) {
 	mpegts_encoder_state_t* state = get_context(context);
 	uint32_t packet_used_size;
 	uint32_t cur_size;
@@ -939,20 +889,17 @@ mpegts_encoder_write(media_filter_context_t* context, const u_char* buffer, uint
 	state->pes_bytes_written += size;
 
 	// make sure we have a packet
-	if (state->cur_pos >= state->cur_packet_end)
-	{
+	if (state->cur_pos >= state->cur_packet_end) {
 		write_direct = size >= MPEGTS_PACKET_USABLE_SIZE;
 
 		rc = mpegts_encoder_init_packet(state, write_direct);
-		if (rc != VOD_OK)
-		{
+		if (rc != VOD_OK) {
 			return rc;
 		}
 	}
 
 	// if current packet has enough room for the whole buffer, just add it
-	if (state->cur_pos + size < state->cur_packet_end)
-	{
+	if (state->cur_pos + size < state->cur_packet_end) {
 		state->cur_pos = vod_copy(state->cur_pos, buffer, size);
 		return VOD_OK;
 	}
@@ -960,25 +907,26 @@ mpegts_encoder_write(media_filter_context_t* context, const u_char* buffer, uint
 	// fill the current packet
 	cur_size = state->cur_packet_end - state->cur_pos;
 
-	if (state->cur_packet_start == state->temp_packet &&
-		state->interleave_frames)
-	{
+	if (state->cur_packet_start == state->temp_packet && state->interleave_frames) {
 		// flush the temp packet
 		state->last_queue_offset = state->queue->cur_offset;
 
 		cur_packet = write_buffer_queue_get_buffer(state->queue, MPEGTS_PACKET_SIZE, state);
-		if (cur_packet == NULL)
-		{
-			vod_log_debug0(VOD_LOG_DEBUG_LEVEL, state->request_context->log, 0,
-				"mpegts_encoder_write: write_buffer_queue_get_buffer failed");
+		if (cur_packet == NULL) {
+			vod_log_debug0(
+				VOD_LOG_DEBUG_LEVEL,
+				state->request_context->log,
+				0,
+				"mpegts_encoder_write: write_buffer_queue_get_buffer failed"
+			);
 			return VOD_ALLOC_FAILED;
 		}
 
 		state->cur_packet_start = NULL;
 
-		// update the pes size ptr if needed
-		if (state->cur_pes_size_ptr >= state->temp_packet && state->cur_pes_size_ptr < state->temp_packet + MPEGTS_PACKET_SIZE)
-		{
+		// update the PES size ptr if needed
+		if (state->cur_pes_size_ptr >= state->temp_packet
+		    && state->cur_pes_size_ptr < state->temp_packet + MPEGTS_PACKET_SIZE) {
 			state->cur_pes_size_ptr = cur_packet + (state->cur_pes_size_ptr - state->temp_packet);
 		}
 
@@ -986,9 +934,7 @@ mpegts_encoder_write(media_filter_context_t* context, const u_char* buffer, uint
 		packet_used_size = state->cur_pos - state->temp_packet;
 		vod_memcpy(cur_packet, state->temp_packet, packet_used_size);
 		vod_memcpy(cur_packet + packet_used_size, buffer, cur_size);
-	}
-	else
-	{
+	} else {
 		vod_memcpy(state->cur_pos, buffer, cur_size);
 	}
 
@@ -1001,11 +947,9 @@ mpegts_encoder_write(media_filter_context_t* context, const u_char* buffer, uint
 	// write full packets
 	initial_size = size;
 
-	while (size >= MPEGTS_PACKET_USABLE_SIZE)
-	{
+	while (size >= MPEGTS_PACKET_USABLE_SIZE) {
 		rc = mpegts_encoder_init_packet(state, TRUE);
-		if (rc != VOD_OK)
-		{
+		if (rc != VOD_OK) {
 			return rc;
 		}
 
@@ -1017,18 +961,14 @@ mpegts_encoder_write(media_filter_context_t* context, const u_char* buffer, uint
 	state->flushed_frame_bytes += initial_size - size;
 
 	// write any residue
-	if (size > 0)
-	{
+	if (size > 0) {
 		rc = mpegts_encoder_init_packet(state, FALSE);
-		if (rc != VOD_OK)
-		{
+		if (rc != VOD_OK) {
 			return rc;
 		}
 
 		state->cur_pos = vod_copy(state->cur_pos, buffer, size);
-	}
-	else
-	{
+	} else {
 		state->cur_pos = state->cur_packet_end;
 	}
 
@@ -1036,14 +976,12 @@ mpegts_encoder_write(media_filter_context_t* context, const u_char* buffer, uint
 }
 
 static vod_status_t
-mpegts_append_null_packet(mpegts_encoder_state_t* state)
-{
+mpegts_append_null_packet(mpegts_encoder_state_t* state) {
 	u_char* packet;
 	vod_status_t rc;
 
 	rc = mpegts_encoder_init_packet(state, TRUE);
-	if (rc != VOD_OK)
-	{
+	if (rc != VOD_OK) {
 		return rc;
 	}
 
@@ -1056,44 +994,35 @@ mpegts_append_null_packet(mpegts_encoder_state_t* state)
 }
 
 static vod_status_t
-mpegts_encoder_flush_frame(media_filter_context_t* context, bool_t last_stream_frame)
-{
+mpegts_encoder_flush_frame(media_filter_context_t* context, bool_t last_stream_frame) {
 	mpegts_encoder_state_t* state = get_context(context);
 	unsigned pes_size;
 	vod_status_t rc;
 	bool_t stuff_packet;
 
-	stuff_packet = state->align_frames ||
-		state->cur_pos >= state->cur_packet_end ||
-		state->flushed_frame_bytes < state->header_size ||
-		last_stream_frame;
+	stuff_packet = state->align_frames
+	            || state->cur_pos >= state->cur_packet_end
+	            || state->flushed_frame_bytes < state->header_size
+	            || last_stream_frame;
 
-	// update the size in the pes header
-	if (state->stream_info.media_type == MEDIA_TYPE_VIDEO && !state->align_frames)
-	{
+	// update the size in the PES header
+	if (state->stream_info.media_type == MEDIA_TYPE_VIDEO && !state->align_frames) {
 		pes_size = 0;
-	}
-	else
-	{
+	} else {
 		pes_size = SIZEOF_PES_OPTIONAL_HEADER + SIZEOF_PES_PTS + state->pes_bytes_written;
-		if (state->stream_info.media_type == MEDIA_TYPE_VIDEO)
-		{
-			pes_size += SIZEOF_PES_PTS;		// dts
+		if (state->stream_info.media_type == MEDIA_TYPE_VIDEO) {
+			pes_size += SIZEOF_PES_PTS; // dts
 		}
 
-		if (pes_size > 0xffff)
-		{
+		if (pes_size > 0xffff) {
 			pes_size = 0;
 		}
 
-		if (!stuff_packet)
-		{
-			// the last ts packet was not closed, its size should be counted in the next pes packet
+		if (!stuff_packet) {
+			// the last ts packet was not closed, its size should be counted in the next PES packet
 			state->pes_bytes_written = state->cur_pos - state->cur_packet_start - SIZEOF_MPEGTS_HEADER;
 			pes_size -= state->pes_bytes_written;
-		}
-		else
-		{
+		} else {
 			state->pes_bytes_written = 0;
 		}
 	}
@@ -1102,24 +1031,20 @@ mpegts_encoder_flush_frame(media_filter_context_t* context, bool_t last_stream_f
 	state->cur_pes_size_ptr[1] = (u_char)pes_size;
 
 	// stuff the packet if needed and update the send offset
-	if (stuff_packet)
-	{
+	if (stuff_packet) {
 		rc = mpegts_encoder_stuff_cur_packet(state);
-		if (rc != VOD_OK)
-		{
+		if (rc != VOD_OK) {
 			return rc;
 		}
 	}
 
 	// on the last frame, add null packets to set the continuity counters
-	if (last_stream_frame &&
-		state->stream_info.media_type != MEDIA_TYPE_NONE)		// don't output null packets in id3
+	if (last_stream_frame
+	    && state->stream_info.media_type != MEDIA_TYPE_NONE) // don't output null packets in id3
 	{
-		while (state->cc & 0x0F)
-		{
+		while (state->cc & 0x0F) {
 			rc = mpegts_append_null_packet(state);
-			if (rc != VOD_OK)
-			{
+			if (rc != VOD_OK) {
 				return rc;
 			}
 		}
@@ -1131,19 +1056,16 @@ mpegts_encoder_flush_frame(media_filter_context_t* context, bool_t last_stream_f
 }
 
 vod_status_t
-mpegts_encoder_start_sub_frame(media_filter_context_t* context, output_frame_t* frame)
-{
+mpegts_encoder_start_sub_frame(media_filter_context_t* context, output_frame_t* frame) {
 	mpegts_encoder_state_t* state = get_context(context);
 	vod_status_t rc;
 	bool_t write_direct;
 
-	if (state->cur_pos >= state->cur_packet_end)
-	{
+	if (state->cur_pos >= state->cur_packet_end) {
 		write_direct = frame->size >= MPEGTS_PACKET_USABLE_SIZE;
 
 		rc = mpegts_encoder_init_packet(state, write_direct);
-		if (rc != VOD_OK)
-		{
+		if (rc != VOD_OK) {
 			return rc;
 		}
 
@@ -1152,50 +1074,42 @@ mpegts_encoder_start_sub_frame(media_filter_context_t* context, output_frame_t* 
 		return VOD_OK;
 	}
 
-	if (state->last_frame_pts == NO_TIMESTAMP)
-	{
+	if (state->last_frame_pts == NO_TIMESTAMP) {
 		state->last_frame_pts = frame->pts;
 	}
 
 	return VOD_OK;
 }
 
-
 void
-mpegts_encoder_simulated_start_segment(write_buffer_queue_t* queue)
-{
-	queue->cur_offset = 2 * MPEGTS_PACKET_SIZE;		// PAT & PMT
+mpegts_encoder_simulated_start_segment(write_buffer_queue_t* queue) {
+	queue->cur_offset = 2 * MPEGTS_PACKET_SIZE; // PAT & PMT
 	queue->last_writer_context = NULL;
 }
 
 static void
-mpegts_encoder_simulated_stuff_cur_packet(mpegts_encoder_state_t* state)
-{
+mpegts_encoder_simulated_stuff_cur_packet(mpegts_encoder_state_t* state) {
 	write_buffer_queue_t* queue = state->queue;
 
-	if (state->cur_frame_start_pos == -1)
-	{
+	if (state->cur_frame_start_pos == -1) {
 		state->cur_frame_start_pos = queue->cur_offset;
 	}
 
-	if (state->temp_packet_size > 0)
-	{
+	if (state->temp_packet_size > 0) {
 		queue->cur_offset += MPEGTS_PACKET_SIZE;
 		queue->last_writer_context = state;
 		state->cc++;
 		state->temp_packet_size = 0;
 	}
 
-	if (state->last_frame_end_pos == -1)
-	{
+	if (state->last_frame_end_pos == -1) {
 		state->last_frame_end_pos = queue->cur_offset;
 	}
 	state->cur_frame_end_pos = queue->cur_offset;
 }
 
 static void
-mpegts_encoder_simulated_start_frame(media_filter_context_t* context, output_frame_t* frame)
-{
+mpegts_encoder_simulated_start_frame(media_filter_context_t* context, output_frame_t* frame) {
 	mpegts_encoder_state_t* state = get_context(context);
 	write_buffer_queue_t* queue = state->queue;
 	mpegts_encoder_state_t* last_writer_state = queue->last_writer_context;
@@ -1205,11 +1119,10 @@ mpegts_encoder_simulated_start_frame(media_filter_context_t* context, output_fra
 	state->cur_frame_start_pos = -1;
 	state->cur_frame_end_pos = -1;
 
-	if (!state->interleave_frames &&
-		last_writer_state != state &&
-		last_writer_state != NULL &&
-		last_writer_state->temp_packet_size > 0)
-	{
+	if (!state->interleave_frames
+	    && last_writer_state != state
+	    && last_writer_state != NULL
+	    && last_writer_state->temp_packet_size > 0) {
 		mpegts_encoder_simulated_stuff_cur_packet(last_writer_state);
 	}
 
@@ -1218,8 +1131,7 @@ mpegts_encoder_simulated_start_frame(media_filter_context_t* context, output_fra
 
 	state->temp_packet_size += mpegts_get_pes_header_size(&state->stream_info);
 
-	if (state->temp_packet_size >= MPEGTS_PACKET_USABLE_SIZE)
-	{
+	if (state->temp_packet_size >= MPEGTS_PACKET_USABLE_SIZE) {
 		state->cur_frame_start_pos = queue->cur_offset;
 
 		queue->cur_offset += MPEGTS_PACKET_SIZE;
@@ -1227,8 +1139,7 @@ mpegts_encoder_simulated_start_frame(media_filter_context_t* context, output_fra
 		state->cc++;
 		state->temp_packet_size -= MPEGTS_PACKET_USABLE_SIZE;
 
-		if (state->temp_packet_size == 0)
-		{
+		if (state->temp_packet_size == 0) {
 			state->last_frame_end_pos = queue->cur_offset;
 		}
 	}
@@ -1237,8 +1148,7 @@ mpegts_encoder_simulated_start_frame(media_filter_context_t* context, output_fra
 }
 
 static void
-mpegts_encoder_simulated_write(media_filter_context_t* context, uint32_t size)
-{
+mpegts_encoder_simulated_write(media_filter_context_t* context, uint32_t size) {
 	mpegts_encoder_state_t* state = get_context(context);
 	write_buffer_queue_t* queue;
 	uint32_t packet_count;
@@ -1248,23 +1158,21 @@ mpegts_encoder_simulated_write(media_filter_context_t* context, uint32_t size)
 	packet_count = size / MPEGTS_PACKET_USABLE_SIZE;
 	state->temp_packet_size = size - packet_count * MPEGTS_PACKET_USABLE_SIZE;
 
-	if (packet_count <= 0)
-	{
+	if (packet_count <= 0) {
 		return;
 	}
 
-	state->flushed_frame_bytes += state->packet_bytes_left + (packet_count - 1) * MPEGTS_PACKET_USABLE_SIZE;
+	state->flushed_frame_bytes +=
+		state->packet_bytes_left + (packet_count - 1) * MPEGTS_PACKET_USABLE_SIZE;
 	state->packet_bytes_left = MPEGTS_PACKET_USABLE_SIZE;
 
 	queue = state->queue;
 
-	if (state->cur_frame_start_pos == -1)
-	{
+	if (state->cur_frame_start_pos == -1) {
 		state->cur_frame_start_pos = queue->cur_offset;
 	}
 
-	if (state->last_frame_end_pos == -1)
-	{
+	if (state->last_frame_end_pos == -1) {
 		state->last_frame_end_pos = queue->cur_offset + MPEGTS_PACKET_SIZE;
 	}
 
@@ -1274,32 +1182,27 @@ mpegts_encoder_simulated_write(media_filter_context_t* context, uint32_t size)
 }
 
 static void
-mpegts_encoder_simulated_flush_frame(media_filter_context_t* context, bool_t last_stream_frame)
-{
+mpegts_encoder_simulated_flush_frame(media_filter_context_t* context, bool_t last_stream_frame) {
 	mpegts_encoder_state_t* state = get_context(context);
 	write_buffer_queue_t* queue = state->queue;
 
-	if (state->align_frames ||
-		state->temp_packet_size == 0 ||
-		state->flushed_frame_bytes < state->header_size ||
-		last_stream_frame)
-	{
+	if (state->align_frames
+	    || state->temp_packet_size == 0
+	    || state->flushed_frame_bytes < state->header_size
+	    || last_stream_frame) {
 		mpegts_encoder_simulated_stuff_cur_packet(state);
 	}
 
 	// on the last frame, add null packets to set the continuity counters
-	if (last_stream_frame)
-	{
-		if ((state->cc & 0x0F) != 0 &&
-			state->stream_info.media_type != MEDIA_TYPE_NONE)	// don't output null packets in id3
-		{
+	if (last_stream_frame) {
+		if ((state->cc & 0x0F) != 0
+		    && state->stream_info.media_type != MEDIA_TYPE_NONE) { // don't output null packets in id3
 			queue->cur_offset += (0x10 - (state->cc & 0x0F)) * MPEGTS_PACKET_SIZE;
 			queue->last_writer_context = state;
 		}
 		state->cc = state->initial_cc;
 	}
 }
-
 
 static const media_filter_t mpegts_encoder = {
 	mpegts_encoder_start_frame,
@@ -1318,8 +1221,8 @@ mpegts_encoder_init(
 	media_track_t* track,
 	write_buffer_queue_t* queue,
 	bool_t interleave_frames,
-	bool_t align_frames)
-{
+	bool_t align_frames
+) {
 	request_context_t* request_context = stream_state->request_context;
 	vod_status_t rc;
 
@@ -1329,38 +1232,30 @@ mpegts_encoder_init(
 	state->interleave_frames = interleave_frames;
 	state->align_frames = align_frames;
 
-	if (track != NULL)
-	{
+	if (track != NULL) {
 		state->stream_info.media_type = track->media_info.media_type;
-	}
-	else
-	{
+	} else {
 		// id3 track
 		state->stream_info.media_type = MEDIA_TYPE_NONE;
 		state->initial_cc = state->cc = stream_state->segment_index & 0x0f;
 	}
 
-	rc = mpegts_encoder_add_stream(
-		stream_state,
-		track,
-		&state->stream_info);
-	if (rc != VOD_OK)
-	{
+	rc = mpegts_encoder_add_stream(stream_state, track, &state->stream_info);
+	if (rc != VOD_OK) {
 		return rc;
 	}
 
 	*filter = mpegts_encoder;
 
-	if (request_context->simulation_only || !interleave_frames)
-	{
+	if (request_context->simulation_only || !interleave_frames) {
 		return VOD_OK;
 	}
 
 	state->temp_packet = vod_alloc(request_context->pool, MPEGTS_PACKET_SIZE);
-	if (state->temp_packet == NULL)
-	{
-		vod_log_debug0(VOD_LOG_DEBUG_LEVEL, request_context->log, 0,
-			"mpegts_encoder_init: vod_alloc failed");
+	if (state->temp_packet == NULL) {
+		vod_log_debug0(
+			VOD_LOG_DEBUG_LEVEL, request_context->log, 0, "mpegts_encoder_init: vod_alloc failed"
+		);
 		return VOD_ALLOC_FAILED;
 	}
 

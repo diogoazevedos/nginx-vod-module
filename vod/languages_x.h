@@ -1,4 +1,6 @@
 // The table below is based on data from http://www-01.sil.org/iso639-3/download.asp
+// clang-format off
+
 LANG(UND, "un", "und", "und", "", "")
 
 LANG(AA , "aa", "aar", "aar", "Afar", "Afaraf")

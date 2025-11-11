@@ -9,9 +9,7 @@
 
 // functions
 vod_status_t webvtt_builder_build(
-	request_context_t* request_context,
-	media_set_t* media_set,
-	bool_t clip_relative_timestamps,
-	vod_str_t* result);
+	request_context_t* request_context, media_set_t* media_set, bool_t clip_relative_timestamps, vod_str_t* result
+);
 
 #endif //__WEBVTT_BUILDER_H__

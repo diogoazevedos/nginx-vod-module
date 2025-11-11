@@ -12,10 +12,10 @@ typedef vod_status_t (*codec_config_get_nal_units_t)(
 	vod_str_t* extra_data,
 	bool_t size_only,
 	uint32_t* nal_packet_size_length,
-	vod_str_t* result);
+	vod_str_t* result
+);
 
-typedef struct
-{
+typedef struct {
 	u_char version;
 	u_char profile;
 	u_char compatibility;
@@ -23,8 +23,7 @@ typedef struct
 	u_char nula_length_size;
 } avcc_config_t;
 
-typedef struct
-{
+typedef struct {
 	uint8_t configurationVersion;
 	uint8_t profile_space;
 	uint8_t tier_flag;
@@ -34,8 +33,8 @@ typedef struct
 	uint8_t interlaced_source_flag;
 	uint8_t non_packed_constraint_flag;
 	uint8_t frame_only_constraint_flag;
-	/*only lowest 44 bits used*/
-	uint64_t constraint_indicator_flags;
+
+	uint64_t constraint_indicator_flags; // only lowest 44 bits used
 	uint8_t level_idc;
 	uint16_t min_spatial_segmentation_idc;
 
@@ -50,10 +49,10 @@ typedef struct
 
 	uint8_t nal_unit_size;
 
-	//set by libisomedia at import/export time
+	// set by libisomedia at import/export time
 	bool_t is_shvc;
 
-	//used in SHVC config
+	// used in SHVC config
 	bool_t complete_representation;
 	bool_t non_hevc_base_layer;
 	uint8_t num_layers;
@@ -72,28 +71,29 @@ vod_status_t codec_config_hevc_get_nal_units(
 	vod_str_t* extra_data,
 	bool_t size_only,
 	uint32_t* nal_packet_size_length,
-	vod_str_t* result);
+	vod_str_t* result
+);
 
 vod_status_t codec_config_avcc_get_nal_units(
 	request_context_t* request_context,
 	vod_str_t* extra_data,
 	bool_t size_only,
 	uint32_t* nal_packet_size_length,
-	vod_str_t* result);
+	vod_str_t* result
+);
 
 // get codec name according to http://tools.ietf.org/html/rfc6381
-vod_status_t codec_config_get_video_codec_name(request_context_t* request_context, struct media_info_s* media_info);
-vod_status_t codec_config_get_audio_codec_name(request_context_t* request_context, struct media_info_s* media_info);
+vod_status_t
+codec_config_get_video_codec_name(request_context_t* request_context, struct media_info_s* media_info);
+vod_status_t
+codec_config_get_audio_codec_name(request_context_t* request_context, struct media_info_s* media_info);
 
 vod_status_t codec_config_mp4a_config_parse(
-	request_context_t* request_context,
-	vod_str_t* extra_data,
-	struct media_info_s* media_info);
+	request_context_t* request_context, vod_str_t* extra_data, struct media_info_s* media_info
+);
 
 vod_status_t codec_config_hevc_config_parse(
-	request_context_t* request_context,
-	vod_str_t* extra_data,
-	hevc_config_t* cfg,
-	const u_char** end_pos);
+	request_context_t* request_context, vod_str_t* extra_data, hevc_config_t* cfg, const u_char** end_pos
+);
 
 #endif // __CODEC_CONFIG_H__

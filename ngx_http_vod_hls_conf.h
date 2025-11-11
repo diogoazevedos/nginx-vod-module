@@ -6,8 +6,7 @@
 #include "vod/hls/hls_muxer.h"
 
 // typedefs
-typedef struct
-{
+typedef struct {
 	ngx_flag_t absolute_master_urls;
 	ngx_flag_t absolute_index_urls;
 	ngx_flag_t absolute_iframe_urls;
@@ -26,7 +25,7 @@ typedef struct
 } ngx_http_vod_hls_loc_conf_t;
 
 // globals
-extern ngx_conf_enum_t  hls_encryption_methods[];
-extern ngx_conf_enum_t  hls_container_formats[];
+extern ngx_conf_enum_t hls_encryption_methods[];
+extern ngx_conf_enum_t hls_container_formats[];
 
 #endif // _NGX_HTTP_VOD_HLS_CONF_H_INCLUDED_

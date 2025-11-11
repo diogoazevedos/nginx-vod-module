@@ -20,9 +20,7 @@ typedef struct {
 } media_filter_parse_context_t;
 
 // main functions
-vod_status_t media_set_parser_init(
-	vod_pool_t* pool,
-	vod_pool_t* temp_pool);
+vod_status_t media_set_parser_init(vod_pool_t* pool, vod_pool_t* temp_pool);
 
 vod_status_t media_set_parse_json(
 	request_context_t* request_context,
@@ -32,35 +30,26 @@ vod_status_t media_set_parse_json(
 	struct segmenter_conf_s* segmenter,
 	media_clip_source_t* source,
 	int request_flags,
-	media_set_t* result);
+	media_set_t* result
+);
 
-vod_status_t media_set_map_source(
-	request_context_t* request_context,
-	u_char* string,
-	media_clip_source_t* source);
+vod_status_t
+media_set_map_source(request_context_t* request_context, u_char* string, media_clip_source_t* source);
 
 // filter utility functions
-vod_status_t media_set_parse_null_term_string(
-	void* ctx,
-	vod_json_value_t* value,
-	void* dest);
+vod_status_t media_set_parse_null_term_string(void* ctx, vod_json_value_t* value, void* dest);
 
-vod_status_t media_set_parse_filter_sources(
-	void* ctx,
-	vod_json_value_t* value,
-	void* dest);
+vod_status_t media_set_parse_filter_sources(void* ctx, vod_json_value_t* value, void* dest);
 
-vod_status_t media_set_parse_clip(
-	void* ctx,
-	vod_json_object_t* element,
-	media_clip_t* parent,
-	media_clip_t** result);
+vod_status_t
+media_set_parse_clip(void* ctx, vod_json_object_t* element, media_clip_t* parent, media_clip_t** result);
 
 vod_status_t media_set_parse_notifications(
 	request_context_t* request_context,
 	vod_json_array_t* array,
 	int64_t min_offset,
 	int64_t max_offset,
-	media_notification_t** result);
+	media_notification_t** result
+);
 
 #endif //__MEDIA_SET_PARSER_H__

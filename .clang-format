@@ -1,0 +1,56 @@
+Language: C
+
+# Alignment
+AlignAfterOpenBracket: BlockIndent
+AlignEscapedNewlines: Left
+AlignOperands: AlignAfterOperator
+PointerAlignment: Left
+
+# Short Constructs
+AllowShortBlocksOnASingleLine: Empty
+AllowShortCaseExpressionOnASingleLine: false
+AllowShortEnumsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Empty
+
+# Breaking and Wrapping
+AlwaysBreakBeforeMultilineStrings: true
+BreakAfterReturnType: TopLevelDefinitions
+BreakBeforeBinaryOperators: NonAssignment
+BreakBinaryOperations: RespectPrecedence
+BreakStringLiterals: false
+ColumnLimit: 100
+
+# Bin Packing
+BinPackArguments: false
+BinPackLongBracedList: false
+BinPackParameters: OnePerLine
+
+# Indentation
+IndentGotoLabels: false
+IndentWidth: 4
+TabWidth: 4
+UseTab: AlignWithSpaces
+
+# Braces and Blocks
+InsertBraces: true
+SeparateDefinitionBlocks: Always
+
+# Empty Lines
+KeepEmptyLines:
+  AtEndOfFile: true
+  AtStartOfBlock: false
+  AtStartOfFile: false
+RemoveEmptyLinesInUnwrappedLines: true
+
+# Includes
+IncludeBlocks: Merge
+SortIncludes:
+  Enabled: false # Preserve existing order
+
+# Line Endings and File Format
+InsertNewlineAtEOF: true
+LineEnding: LF
+
+# Penalties
+PenaltyExcessCharacter: 5
+PenaltyReturnTypeOnItsOwnLine: 0

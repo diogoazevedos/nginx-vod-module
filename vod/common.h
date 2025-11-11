@@ -21,16 +21,19 @@
 #define vod_is_bit_set(mask, index) (((mask)[(index) / 64] >> ((index) % 64)) & 1)
 #define vod_set_bit(mask, index) ((mask)[(index) / 64] |= ((uint64_t)1 << ((index) % 64)))
 #define vod_reset_bit(mask, index) ((mask)[(index) / 64] &= ~((uint64_t)1 << ((index) % 64)))
-#define vod_set_all_bits(mask, max_bits) vod_memset((mask), 0xff, sizeof(uint64_t) * vod_array_length_for_bits(max_bits));
-#define vod_reset_all_bits(mask, max_bits) vod_memzero((mask), sizeof(uint64_t) * vod_array_length_for_bits(max_bits));
+#define vod_set_all_bits(mask, max_bits) \
+	vod_memset((mask), 0xff, sizeof(uint64_t) * vod_array_length_for_bits(max_bits));
+#define vod_reset_all_bits(mask, max_bits) \
+	vod_memzero((mask), sizeof(uint64_t) * vod_array_length_for_bits(max_bits));
 
 #define vod_no_flag_set(mask, f) (((mask) & (f)) == 0)
 #define vod_all_flags_set(mask, f) (((mask) & (f)) == (f))
 
-// Note: comparing the pointers since in the case of labels if both were derived by the language,
-//		they will have the same pointer and we can skip the memcmp
+// NOTE: comparing the pointers since in the case of labels if both were derived by the language,
+// they will have the same pointer and we can skip the memcmp
 #define vod_str_equals(l1, l2) \
-	((l1).len == (l2).len && ((l1).data == (l2).data || vod_memcmp((l1).data, (l2).data, (l1).len) == 0))
+	((l1).len == (l2).len      \
+	 && ((l1).data == (l2).data || vod_memcmp((l1).data, (l2).data, (l1).len) == 0))
 
 #ifdef VOD_STAND_ALONE
 
@@ -45,12 +48,12 @@
 #define vod_max(x, y) (((x) > (y)) ? (x) : (y))
 
 #ifndef offsetof
-#define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
+#define offsetof(TYPE, MEMBER) ((size_t)&((TYPE*)0)->MEMBER)
 #endif // offsetof
 
 // error codes
-#define  VOD_OK          0
-#define  VOD_AGAIN      -2
+#define VOD_OK 0
+#define VOD_AGAIN -2
 
 // memory set/copy functions
 #define vod_memcpy(dst, src, n) memcpy(dst, src, n)
@@ -64,14 +67,14 @@
 
 #include "vod_array.h"
 
-#define VOD_LOG_STDERR            1
-#define VOD_LOG_EMERG             2
-#define VOD_LOG_ALERT             3
-#define VOD_LOG_CRIT              4
-#define VOD_LOG_ERR               5
-#define VOD_LOG_WARN              6
-#define VOD_LOG_NOTICE            7
-#define VOD_LOG_INFO              8
+#define VOD_LOG_STDERR 1
+#define VOD_LOG_EMERG 2
+#define VOD_LOG_ALERT 3
+#define VOD_LOG_CRIT 4
+#define VOD_LOG_ERR 5
+#define VOD_LOG_WARN 6
+#define VOD_LOG_NOTICE 7
+#define VOD_LOG_INFO 8
 
 #define VOD_LOG_DEBUG_LEVEL (0x100)
 
@@ -90,10 +93,9 @@ typedef unsigned int vod_uint_t;
 typedef void vod_pool_t;
 typedef void vod_log_t;
 
-void vod_log_error(vod_uint_t level, vod_log_t *log, int err,
- const char *fmt, ...);
+void vod_log_error(vod_uint_t level, vod_log_t* log, int err, const char* fmt, ...);
 
-#else	// VOD_STAND_ALONE
+#else // VOD_STAND_ALONE
 
 // includes
 #include <ngx_core.h>
@@ -129,14 +131,14 @@ void vod_log_error(vod_uint_t level, vod_log_t *log, int err,
 #endif
 
 // macros
-#define vod_container_of(ptr, type, member) (type *)((char *)(ptr) - offsetof(type, member))
+#define vod_container_of(ptr, type, member) (type*)((char*)(ptr) - offsetof(type, member))
 #define vod_min(x, y) ngx_min(x, y)
 #define vod_max(x, y) ngx_max(x, y)
 
 // errors codes
-#define  VOD_OK         NGX_OK
-#define  VOD_DONE       NGX_DONE
-#define  VOD_AGAIN      NGX_AGAIN
+#define VOD_OK NGX_OK
+#define VOD_DONE NGX_DONE
+#define VOD_AGAIN NGX_AGAIN
 
 #define vod_inline ngx_inline
 #define vod_cdecl ngx_cdecl
@@ -196,19 +198,21 @@ void vod_log_error(vod_uint_t level, vod_log_t *log, int err,
 
 // time functions
 #if (VOD_DEBUG)
-#define vod_time(request_context) ((request_context)->time > 0 ? (request_context)->time : (ngx_time() + (request_context)->time_offset))
+#define vod_time(request_context)                          \
+	((request_context)->time > 0 ? (request_context)->time \
+	                             : (ngx_time() + (request_context)->time_offset))
 #else
 #define vod_time(request_context) (ngx_time() + (request_context)->time_offset)
 #endif
 
 #define vod_gmtime(t, tp) ngx_gmtime(t, tp)
-#define vod_tm_sec   ngx_tm_sec
-#define vod_tm_min   ngx_tm_min
-#define vod_tm_hour  ngx_tm_hour
-#define vod_tm_mday  ngx_tm_mday
-#define vod_tm_mon   ngx_tm_mon
-#define vod_tm_year  ngx_tm_year
-#define vod_tm_wday  ngx_tm_wday
+#define vod_tm_sec ngx_tm_sec
+#define vod_tm_min ngx_tm_min
+#define vod_tm_hour ngx_tm_hour
+#define vod_tm_mday ngx_tm_mday
+#define vod_tm_mon ngx_tm_mon
+#define vod_tm_year ngx_tm_year
+#define vod_tm_wday ngx_tm_wday
 #define vod_tm_isdst ngx_tm_isdst
 
 // types
@@ -238,43 +242,41 @@ void vod_log_error(vod_uint_t level, vod_log_t *log, int err,
 
 #define VOD_MAX_ERROR_STR NGX_MAX_ERROR_STR
 
-#define VOD_LOG_STDERR            NGX_LOG_STDERR
-#define VOD_LOG_EMERG             NGX_LOG_EMERG
-#define VOD_LOG_ALERT             NGX_LOG_ALERT
-#define VOD_LOG_CRIT              NGX_LOG_CRIT
-#define VOD_LOG_ERR               NGX_LOG_ERR
-#define VOD_LOG_WARN              NGX_LOG_WARN
-#define VOD_LOG_NOTICE            NGX_LOG_NOTICE
-#define VOD_LOG_INFO              NGX_LOG_INFO
-#define VOD_LOG_DEBUG             NGX_LOG_DEBUG
+#define VOD_LOG_STDERR NGX_LOG_STDERR
+#define VOD_LOG_EMERG NGX_LOG_EMERG
+#define VOD_LOG_ALERT NGX_LOG_ALERT
+#define VOD_LOG_CRIT NGX_LOG_CRIT
+#define VOD_LOG_ERR NGX_LOG_ERR
+#define VOD_LOG_WARN NGX_LOG_WARN
+#define VOD_LOG_NOTICE NGX_LOG_NOTICE
+#define VOD_LOG_INFO NGX_LOG_INFO
+#define VOD_LOG_DEBUG NGX_LOG_DEBUG
 
 #define vod_log_error ngx_log_error
 
 #define VOD_LOG_DEBUG_LEVEL (NGX_LOG_DEBUG_HTTP)
 
-#define vod_log_debug0(level, log, err, fmt) \
-        ngx_log_debug0(level, log, err, fmt)
+#define vod_log_debug0(level, log, err, fmt) ngx_log_debug0(level, log, err, fmt)
 
-#define vod_log_debug1(level, log, err, fmt, arg1) \
-        ngx_log_debug1(level, log, err, fmt, arg1)
+#define vod_log_debug1(level, log, err, fmt, arg1) ngx_log_debug1(level, log, err, fmt, arg1)
 
 #define vod_log_debug2(level, log, err, fmt, arg1, arg2) \
-        ngx_log_debug2(level, log, err, fmt, arg1, arg2)
+	ngx_log_debug2(level, log, err, fmt, arg1, arg2)
 
 #define vod_log_debug3(level, log, err, fmt, arg1, arg2, arg3) \
-        ngx_log_debug3(level, log, err, fmt, arg1, arg2, arg3)
+	ngx_log_debug3(level, log, err, fmt, arg1, arg2, arg3)
 
 #define vod_log_debug4(level, log, err, fmt, arg1, arg2, arg3, arg4) \
-		ngx_log_debug4(level, log, err, fmt, arg1, arg2, arg3, arg4)
+	ngx_log_debug4(level, log, err, fmt, arg1, arg2, arg3, arg4)
 
 #define vod_log_debug5(level, log, err, fmt, arg1, arg2, arg3, arg4, arg5) \
-		ngx_log_debug5(level, log, err, fmt, arg1, arg2, arg3, arg4, arg5)
+	ngx_log_debug5(level, log, err, fmt, arg1, arg2, arg3, arg4, arg5)
 
 #define vod_log_debug6(level, log, err, fmt, arg1, arg2, arg3, arg4, arg5, arg6) \
-		ngx_log_debug6(level, log, err, fmt, arg1, arg2, arg3, arg4, arg5, arg6)
+	ngx_log_debug6(level, log, err, fmt, arg1, arg2, arg3, arg4, arg5, arg6)
 
 #define vod_log_debug7(level, log, err, fmt, arg1, arg2, arg3, arg4, arg5, arg6, arg7) \
-		ngx_log_debug7(level, log, err, fmt, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+	ngx_log_debug7(level, log, err, fmt, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
 
 #define vod_errno ngx_errno
 
@@ -284,26 +286,25 @@ typedef ngx_int_t vod_int_t;
 typedef ngx_uint_t vod_uint_t;
 typedef ngx_err_t vod_err_t;
 
-#endif	// VOD_STAND_ALONE
+#endif // VOD_STAND_ALONE
 
 #if (VOD_DEBUG)
 
-#define vod_log_buffer(level, log, err, prefix, buffer, size)	\
-	if ((log)->log_level & level)								\
-		log_buffer(level, log, err, prefix, buffer, size)
+#define vod_log_buffer(level, log, err, prefix, buffer, size) \
+	if ((log)->log_level & level) {                           \
+		log_buffer(level, log, err, prefix, buffer, size);    \
+	}
 
 #define MAX_DUMP_BUFFER_SIZE (100)
 
 static vod_inline void
-log_buffer(unsigned level, vod_log_t* log, int err, const char* prefix, const u_char* buffer, int size)
-{
+log_buffer(unsigned level, vod_log_t* log, int err, const char* prefix, const u_char* buffer, int size) {
 	static const char hex_chars[] = "0123456789abcdef";
 	char hex[MAX_DUMP_BUFFER_SIZE * 3 + 1];
 	char* hex_pos = hex;
 
 	size = vod_min(size, MAX_DUMP_BUFFER_SIZE);
-	for (; size > 0; size--, buffer++)
-	{
+	for (; size > 0; size--, buffer++) {
 		*hex_pos++ = hex_chars[*buffer >> 4];
 		*hex_pos++ = hex_chars[*buffer & 0xF];
 		*hex_pos++ = ' ';
@@ -313,11 +314,11 @@ log_buffer(unsigned level, vod_log_t* log, int err, const char* prefix, const u_
 	vod_log_debug2(level, log, err, "%s %s", prefix, hex);
 }
 
-#else	// VOD_DEBUG
+#else // VOD_DEBUG
 
 #define vod_log_buffer(level, log, err, prefix, buffer, size)
 
-#endif	// VOD_DEBUG
+#endif // VOD_DEBUG
 
 enum {
 	VOD_ERROR_FIRST = -1000,
@@ -341,7 +342,7 @@ typedef struct vod_array_part_s {
 	struct vod_array_part_s* next;
 } vod_array_part_t;
 
-typedef vod_status_t(*write_callback_t)(void* context, u_char* buffer, uint32_t size);
+typedef vod_status_t (*write_callback_t)(void* context, u_char* buffer, uint32_t size);
 
 typedef struct {
 	write_callback_t write_tail;
@@ -354,7 +355,7 @@ typedef struct buffer_pool_s buffer_pool_t;
 
 typedef struct {
 	vod_pool_t* pool;
-	vod_log_t *log;
+	vod_log_t* log;
 	buffer_pool_t* output_buffer_pool;
 	bool_t simulation_only;
 	time_t time_offset;
@@ -375,8 +376,8 @@ enum {
 int vod_get_int_print_len(uint64_t n);
 
 #if defined(__GNUC__) || defined(__clang__)
-// On x86 this still uses the slow SWAR algorithm unless "-mpopcnt"
-// is set or any other flag that implies it like "-mavx2"
+// On x86 this still uses the slow SWAR algorithm unless "-mpopcnt" is set or any other flag that
+// implies it like "-mavx2"
 #define vod_get_number_of_set_bits32(i) __builtin_popcount(i)
 #define vod_get_number_of_set_bits64(i) __builtin_popcountll(i)
 #define vod_get_trailing_zeroes64(i) __builtin_ctzll(i)
@@ -392,30 +393,21 @@ uint32_t vod_get_trailing_zeroes64(uint64_t i);
 // -> n = max_bits / 64 (integer division)
 // -> residual elements are not handled!
 static vod_inline uint32_t
-vod_get_number_of_set_bits_in_mask(
-	uint64_t* mask,
-	uint32_t max_bits)
-{
+vod_get_number_of_set_bits_in_mask(uint64_t* mask, uint32_t max_bits) {
 	uint32_t i;
 	uint32_t result = 0;
 	// due to inlining, the loop is unrolled and optimized
-	for (i = 0; i < max_bits / 64; i++)
-	{
+	for (i = 0; i < max_bits / 64; i++) {
 		result += vod_get_number_of_set_bits64(mask[i]);
 	}
 	return result;
 }
 
 static vod_inline bool_t
-vod_are_all_bits_set(
-	uint64_t* mask,
-	uint32_t max_bits)
-{
+vod_are_all_bits_set(uint64_t* mask, uint32_t max_bits) {
 	uint32_t i;
-	for (i = 0; i < max_bits / 64; i++)
-	{
-		if (mask[i] != ~(uint64_t)0)
-		{
+	for (i = 0; i < max_bits / 64; i++) {
+		if (mask[i] != ~(uint64_t)0) {
 			return FALSE;
 		}
 	}
@@ -424,15 +416,10 @@ vod_are_all_bits_set(
 }
 
 static vod_inline bool_t
-vod_is_any_bit_set(
-	uint64_t* mask,
-	uint32_t max_bits)
-{
+vod_is_any_bit_set(uint64_t* mask, uint32_t max_bits) {
 	uint32_t i;
-	for (i = 0; i < max_bits / 64; i++)
-	{
-		if (mask[i] != (uint64_t)0)
-		{
+	for (i = 0; i < max_bits / 64; i++) {
+		if (mask[i] != (uint64_t)0) {
 			return TRUE;
 		}
 	}
@@ -441,15 +428,10 @@ vod_is_any_bit_set(
 }
 
 static vod_inline int32_t
-vod_get_lowest_bit_set(
-	uint64_t* mask,
-	uint32_t max_bits)
-{
+vod_get_lowest_bit_set(uint64_t* mask, uint32_t max_bits) {
 	uint32_t i;
-	for (i = 0; i < max_bits / 64; i++)
-	{
-		if (mask[i] != (uint64_t)0)
-		{
+	for (i = 0; i < max_bits / 64; i++) {
+		if (mask[i] != (uint64_t)0) {
 			return i * 64 + vod_get_trailing_zeroes64(mask[i]);
 		}
 	}
@@ -459,15 +441,9 @@ vod_get_lowest_bit_set(
 }
 
 static vod_inline void
-vod_and_bits(
-	uint64_t* dst,
-	uint64_t* a,
-	uint64_t* b,
-	uint32_t max_bits)
-{
+vod_and_bits(uint64_t* dst, uint64_t* a, uint64_t* b, uint32_t max_bits) {
 	uint32_t i;
-	for (i = 0; i < vod_array_length_for_bits(max_bits); i++)
-	{
+	for (i = 0; i < vod_array_length_for_bits(max_bits); i++) {
 		dst[i] = a[i] & b[i];
 	}
 }

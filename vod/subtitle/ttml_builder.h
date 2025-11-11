@@ -17,6 +17,7 @@ vod_status_t ttml_build_mp4(
 	media_set_t* media_set,
 	uint32_t segment_index,
 	uint32_t timescale,
-	vod_str_t* result);
+	vod_str_t* result
+);
 
 #endif //__TTML_BUILDER_H__

@@ -10,18 +10,12 @@
 
 // audio filter encoder functions
 vod_status_t volume_map_encoder_init(
-	request_context_t* request_context,
-	uint32_t timescale,
-	vod_array_t* frames_array,
-	void** result);
+	request_context_t* request_context, uint32_t timescale, vod_array_t* frames_array, void** result
+);
 
-vod_status_t volume_map_encoder_update_media_info(
-	void* context,
-	media_info_t* media_info);
+vod_status_t volume_map_encoder_update_media_info(void* context, media_info_t* media_info);
 
-vod_status_t volume_map_encoder_write_frame(
-	void* context,
-	AVFrame* frame);
+vod_status_t volume_map_encoder_write_frame(void* context, AVFrame* frame);
 
 // writer functions
 vod_status_t volume_map_writer_init(
@@ -30,9 +24,9 @@ vod_status_t volume_map_writer_init(
 	uint32_t interval,
 	write_callback_t write_callback,
 	void* write_context,
-	void** result);
+	void** result
+);
 
-vod_status_t volume_map_writer_process(
-	void* state);
+vod_status_t volume_map_writer_process(void* state);
 
 #endif // __VOLUME_MAP_H__

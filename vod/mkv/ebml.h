@@ -45,7 +45,8 @@ typedef struct {
 typedef vod_status_t (*ebml_parser_t)(ebml_context_t* context, ebml_spec_t* spec, void* dest);
 
 // functions
-vod_status_t ebml_read_num(ebml_context_t* context, uint64_t* result, size_t max_size, int remove_first_bit);
+vod_status_t
+ebml_read_num(ebml_context_t* context, uint64_t* result, size_t max_size, int remove_first_bit);
 
 vod_status_t ebml_parse_header(ebml_context_t* context, ebml_header_t* header);
 

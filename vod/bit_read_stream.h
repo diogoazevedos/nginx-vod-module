@@ -13,8 +13,7 @@ typedef struct {
 
 // functions
 static vod_inline void
-bit_read_stream_init(bit_reader_state_t* state, const u_char* buffer, int size)
-{
+bit_read_stream_init(bit_reader_state_t* state, const u_char* buffer, int size) {
 	state->stream.cur_pos = buffer;
 	state->stream.end_pos = buffer + size;
 	state->stream.eof_reached = FALSE;
@@ -23,12 +22,10 @@ bit_read_stream_init(bit_reader_state_t* state, const u_char* buffer, int size)
 }
 
 static vod_inline int
-bit_read_stream_get_one(bit_reader_state_t* state)
-{
+bit_read_stream_get_one(bit_reader_state_t* state) {
 	int result;
 
-	if (state->cur_bit < 0)
-	{
+	if (state->cur_bit < 0) {
 		state->cur_byte = read_stream_get_byte(&state->stream);
 		state->cur_bit = 7;
 	}
@@ -40,13 +37,11 @@ bit_read_stream_get_one(bit_reader_state_t* state)
 }
 
 static vod_inline void
-bit_read_stream_skip(bit_reader_state_t* state, int count)
-{
+bit_read_stream_skip(bit_reader_state_t* state, int count) {
 	int skip_bytes;
 
 	state->cur_bit -= count - 1;
-	if (state->cur_bit < 0)
-	{
+	if (state->cur_bit < 0) {
 		skip_bytes = ((-state->cur_bit + 7) >> 3);
 		read_stream_skip(&state->stream, skip_bytes - 1);
 		state->cur_byte = read_stream_get_byte(&state->stream);
@@ -56,14 +51,11 @@ bit_read_stream_skip(bit_reader_state_t* state, int count)
 }
 
 static vod_inline int
-bit_read_stream_get(bit_reader_state_t* state, int count)
-{
+bit_read_stream_get(bit_reader_state_t* state, int count) {
 	int result = 0;
 
-	for (; count; count--)
-	{
-		if (state->cur_bit < 0)
-		{
+	for (; count; count--) {
+		if (state->cur_bit < 0) {
 			state->cur_byte = read_stream_get_byte(&state->stream);
 			state->cur_bit = 7;
 		}
@@ -75,14 +67,11 @@ bit_read_stream_get(bit_reader_state_t* state, int count)
 }
 
 static vod_inline int64_t
-bit_read_stream_get_long(bit_reader_state_t* state, int count)
-{
+bit_read_stream_get_long(bit_reader_state_t* state, int count) {
 	int64_t result = 0;
 
-	for (; count; count--)
-	{
-		if (state->cur_bit < 0)
-		{
+	for (; count; count--) {
+		if (state->cur_bit < 0) {
 			state->cur_byte = read_stream_get_byte(&state->stream);
 			state->cur_bit = 7;
 		}

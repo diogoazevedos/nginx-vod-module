@@ -15,7 +15,8 @@ vod_status_t thumb_grabber_init_state(
 	bool_t accurate,
 	write_callback_t write_callback,
 	void* write_context,
-	void** result);
+	void** result
+);
 
 vod_status_t thumb_grabber_process(void* context);
 

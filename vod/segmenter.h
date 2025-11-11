@@ -7,7 +7,8 @@
 
 // constants
 #define INVALID_SEGMENT_COUNT UINT_MAX
-#define SEGMENT_FROM_TIMESTAMP_MARGIN (100)		// in case of clipping, a segment may start up to 2 frames before the segment boundary
+// in case of clipping, a segment may start up to 2 frames before the segment boundary
+#define SEGMENT_FROM_TIMESTAMP_MARGIN (100)
 #define MIN_SEGMENT_DURATION (500)
 #define MAX_SEGMENT_DURATION (600000)
 
@@ -76,16 +77,17 @@ typedef vod_status_t (*segmenter_get_segment_durations_t)(
 	media_set_t* media_set,
 	media_sequence_t* sequence,
 	uint32_t media_type,
-	segment_durations_t* result);
+	segment_durations_t* result
+);
 
 struct segmenter_conf_s {
 	// config fields
 	uintptr_t segment_duration;
-	vod_array_t* bootstrap_segments;		// array of vod_str_t
+	vod_array_t* bootstrap_segments; // array of vod_str_t
 	bool_t align_to_key_frames;
 	intptr_t live_window_duration;
-	segmenter_get_segment_count_t get_segment_count;			// last short / last long / last rounded
-	segmenter_get_segment_durations_t get_segment_durations;	// estimate / accurate
+	segmenter_get_segment_count_t get_segment_count; // last short / last long / last rounded
+	segmenter_get_segment_durations_t get_segment_durations; // estimate / accurate
 	vod_uint_t manifest_duration_policy;
 	uintptr_t gop_look_behind;
 	uintptr_t gop_look_ahead;
@@ -120,10 +122,8 @@ uint32_t segmenter_get_segment_count_last_long(segmenter_conf_t* conf, uint64_t 
 uint32_t segmenter_get_segment_count_last_rounded(segmenter_conf_t* conf, uint64_t duration_millis);
 
 // key frames
-int64_t segmenter_align_to_key_frames(
-	align_to_key_frames_context_t* context,
-	int64_t offset,
-	int64_t limit);
+int64_t
+segmenter_align_to_key_frames(align_to_key_frames_context_t* context, int64_t offset, int64_t limit);
 
 // live window
 vod_status_t segmenter_get_live_window(
@@ -132,7 +132,8 @@ vod_status_t segmenter_get_live_window(
 	media_set_t* media_set,
 	bool_t parse_all_clips,
 	get_clip_ranges_result_t* clip_ranges,
-	uint32_t* base_clip_index);
+	uint32_t* base_clip_index
+);
 
 // manifest duration
 uint64_t segmenter_get_total_duration(
@@ -140,7 +141,8 @@ uint64_t segmenter_get_total_duration(
 	media_set_t* media_set,
 	media_sequence_t* sequence,
 	media_sequence_t* sequences_end,
-	uint32_t media_type);
+	uint32_t media_type
+);
 
 // get segment durations modes
 vod_status_t segmenter_get_segment_durations_estimate(
@@ -149,7 +151,8 @@ vod_status_t segmenter_get_segment_durations_estimate(
 	media_set_t* media_set,
 	media_sequence_t* sequence,
 	uint32_t media_type,
-	segment_durations_t* result);
+	segment_durations_t* result
+);
 
 vod_status_t segmenter_get_segment_durations_accurate(
 	request_context_t* request_context,
@@ -157,12 +160,11 @@ vod_status_t segmenter_get_segment_durations_accurate(
 	media_set_t* media_set,
 	media_sequence_t* sequence,
 	uint32_t media_type,
-	segment_durations_t* result);
+	segment_durations_t* result
+);
 
 // get segment index
-uint32_t segmenter_get_segment_index_no_discontinuity(
-	segmenter_conf_t* conf,
-	uint64_t time_millis);
+uint32_t segmenter_get_segment_index_no_discontinuity(segmenter_conf_t* conf, uint64_t time_millis);
 
 vod_status_t segmenter_get_segment_index_discontinuity(
 	request_context_t* request_context,
@@ -170,19 +172,19 @@ vod_status_t segmenter_get_segment_index_discontinuity(
 	uint32_t initial_segment_index,
 	media_clip_timing_t* timing,
 	uint64_t time_millis,
-	uint32_t* result);
+	uint32_t* result
+);
 
 // get start end ranges
-vod_status_t segmenter_get_start_end_ranges_gop(
-	get_clip_ranges_params_t* params,
-	get_clip_ranges_result_t* result);
+vod_status_t
+segmenter_get_start_end_ranges_gop(get_clip_ranges_params_t* params, get_clip_ranges_result_t* result);
 
 vod_status_t segmenter_get_start_end_ranges_no_discontinuity(
-	get_clip_ranges_params_t* params,
-	get_clip_ranges_result_t* result);
+	get_clip_ranges_params_t* params, get_clip_ranges_result_t* result
+);
 
 vod_status_t segmenter_get_start_end_ranges_discontinuity(
-	get_clip_ranges_params_t* params,
-	get_clip_ranges_result_t* result);
+	get_clip_ranges_params_t* params, get_clip_ranges_result_t* result
+);
 
 #endif // __SEGMENTER_H__

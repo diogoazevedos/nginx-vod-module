@@ -60,46 +60,37 @@ static vod_status_t mp4_muxer_start_frame(mp4_muxer_state_t* state);
 // trun write functions
 static u_char*
 mp4_muxer_write_trun_header(
-	u_char* p,
-	uint32_t offset,
-	uint32_t frame_count,
-	uint32_t frame_size,
-	uint32_t flags)
-{
+	u_char* p, uint32_t offset, uint32_t frame_count, uint32_t frame_size, uint32_t flags
+) {
 	size_t atom_size;
 
 	atom_size = ATOM_HEADER_SIZE + sizeof(trun_atom_t) + frame_size * frame_count;
 
 	write_atom_header(p, atom_size, 't', 'r', 'u', 'n');
-	write_be32(p, flags);				// flags
-	write_be32(p, frame_count);			// frame count
-	write_be32(p, offset);				// offset from mdat start to frame raw data (excluding the tag)
+	write_be32(p, flags);       // flags
+	write_be32(p, frame_count); // frame count
+	write_be32(p, offset);      // offset from mdat start to frame raw data (excluding the tag)
 
 	return p;
 }
 
 static u_char*
-mp4_muxer_write_video_trun_frame(u_char* p, input_frame_t* frame, uint32_t initial_pts_delay)
-{
+mp4_muxer_write_video_trun_frame(u_char* p, input_frame_t* frame, uint32_t initial_pts_delay) {
 	int32_t pts_delay = frame->pts_delay - initial_pts_delay;
 
 	write_be32(p, frame->duration);
 	write_be32(p, frame->size);
-	if (frame->key_frame)
-	{
-		write_be32(p, 0x02000000);		// I-frame
-	}
-	else
-	{
-		write_be32(p, 0x01010000);		// not I-frame + non key sample
+	if (frame->key_frame) {
+		write_be32(p, 0x02000000); // I-frame
+	} else {
+		write_be32(p, 0x01010000); // not I-frame + non key sample
 	}
 	write_be32(p, pts_delay);
 	return p;
 }
 
 static u_char*
-mp4_muxer_write_audio_trun_frame(u_char* p, input_frame_t* frame)
-{
+mp4_muxer_write_audio_trun_frame(u_char* p, input_frame_t* frame) {
 	write_be32(p, frame->duration);
 	write_be32(p, frame->size);
 	return p;
@@ -107,11 +98,8 @@ mp4_muxer_write_audio_trun_frame(u_char* p, input_frame_t* frame)
 
 static u_char*
 mp4_muxer_write_video_trun_atoms(
-	u_char* p,
-	media_set_t* media_set,
-	mp4_muxer_stream_state_t* cur_stream,
-	uint32_t base_offset)
-{
+	u_char* p, media_set_t* media_set, mp4_muxer_stream_state_t* cur_stream, uint32_t base_offset
+) {
 	media_track_t* cur_track;
 	frame_list_part_t* part;
 	input_frame_t* cur_frame;
@@ -127,17 +115,12 @@ mp4_muxer_write_video_trun_atoms(
 	clip_index = 0;
 	cur_track = media_set->filtered_tracks + cur_stream->index;
 	initial_pts_delay = cur_track->media_info.u.video.initial_pts_delay;
-	for (;;)
-	{
+	for (;;) {
 		part = &cur_track->frames;
 		last_frame = part->last_frame;
-		for (cur_frame = part->first_frame; ;
-			cur_frame++, output_offset++)
-		{
-			if (cur_frame >= last_frame)
-			{
-				if (part->next == NULL)
-				{
+		for (cur_frame = part->first_frame;; cur_frame++, output_offset++) {
+			if (cur_frame >= last_frame) {
+				if (part->next == NULL) {
 					break;
 				}
 				part = part->next;
@@ -145,17 +128,16 @@ mp4_muxer_write_video_trun_atoms(
 				last_frame = part->last_frame;
 			}
 
-			if (*output_offset != cur_offset)
-			{
-				if (trun_header != NULL)
-				{
+			if (*output_offset != cur_offset) {
+				if (trun_header != NULL) {
 					// close current trun atom
 					mp4_muxer_write_trun_header(
 						trun_header,
 						base_offset + start_offset,
 						frame_count,
 						sizeof(trun_video_frame_t),
-						(1 << 24) | TRUN_VIDEO_FLAGS);		// version = 1
+						(1 << 24) | TRUN_VIDEO_FLAGS // version = 1
+					);
 				}
 
 				// start a new trun atom
@@ -172,23 +154,22 @@ mp4_muxer_write_video_trun_atoms(
 		}
 
 		clip_index++;
-		if (clip_index >= media_set->clip_count)
-		{
+		if (clip_index >= media_set->clip_count) {
 			break;
 		}
 		cur_track += media_set->total_track_count;
 		initial_pts_delay = cur_track->media_info.u.video.initial_pts_delay;
 	}
 
-	if (trun_header != NULL)
-	{
+	if (trun_header != NULL) {
 		// close current trun atom
 		mp4_muxer_write_trun_header(
 			trun_header,
 			base_offset + start_offset,
 			frame_count,
 			sizeof(trun_video_frame_t),
-			(1 << 24) | TRUN_VIDEO_FLAGS);		// version = 1
+			(1 << 24) | TRUN_VIDEO_FLAGS // version = 1
+		);
 	}
 
 	return p;
@@ -196,11 +177,8 @@ mp4_muxer_write_video_trun_atoms(
 
 static u_char*
 mp4_muxer_write_audio_trun_atoms(
-	u_char* p,
-	media_set_t* media_set,
-	mp4_muxer_stream_state_t* cur_stream,
-	uint32_t base_offset)
-{
+	u_char* p, media_set_t* media_set, mp4_muxer_stream_state_t* cur_stream, uint32_t base_offset
+) {
 	media_track_t* cur_track;
 	frame_list_part_t* part;
 	input_frame_t* cur_frame;
@@ -214,17 +192,12 @@ mp4_muxer_write_audio_trun_atoms(
 
 	clip_index = 0;
 	cur_track = media_set->filtered_tracks + cur_stream->index;
-	for (;;)
-	{
+	for (;;) {
 		part = &cur_track->frames;
 		last_frame = part->last_frame;
-		for (cur_frame = part->first_frame; ;
-			cur_frame++, output_offset++)
-		{
-			if (cur_frame >= last_frame)
-			{
-				if (part->next == NULL)
-				{
+		for (cur_frame = part->first_frame;; cur_frame++, output_offset++) {
+			if (cur_frame >= last_frame) {
+				if (part->next == NULL) {
 					break;
 				}
 				part = part->next;
@@ -232,17 +205,12 @@ mp4_muxer_write_audio_trun_atoms(
 				last_frame = part->last_frame;
 			}
 
-			if (*output_offset != cur_offset)
-			{
-				if (trun_header != NULL)
-				{
+			if (*output_offset != cur_offset) {
+				if (trun_header != NULL) {
 					// close current trun atom
 					mp4_muxer_write_trun_header(
-						trun_header,
-						base_offset + start_offset,
-						frame_count,
-						sizeof(trun_audio_frame_t),
-						TRUN_AUDIO_FLAGS);
+						trun_header, base_offset + start_offset, frame_count, sizeof(trun_audio_frame_t), TRUN_AUDIO_FLAGS
+					);
 				}
 
 				// add the frame to the trun atom
@@ -259,22 +227,17 @@ mp4_muxer_write_audio_trun_atoms(
 		}
 
 		clip_index++;
-		if (clip_index >= media_set->clip_count)
-		{
+		if (clip_index >= media_set->clip_count) {
 			break;
 		}
 		cur_track += media_set->total_track_count;
 	}
 
-	if (trun_header != NULL)
-	{
+	if (trun_header != NULL) {
 		// close current trun atom
 		mp4_muxer_write_trun_header(
-			trun_header,
-			base_offset + start_offset,
-			frame_count,
-			sizeof(trun_audio_frame_t),
-			TRUN_AUDIO_FLAGS);
+			trun_header, base_offset + start_offset, frame_count, sizeof(trun_audio_frame_t), TRUN_AUDIO_FLAGS
+		);
 	}
 
 	return p;
@@ -283,11 +246,7 @@ mp4_muxer_write_audio_trun_atoms(
 ////// Muxer
 
 static void
-mp4_muxer_init_track(
-	mp4_muxer_state_t* state,
-	mp4_muxer_stream_state_t* cur_stream,
-	media_track_t* cur_track)
-{
+mp4_muxer_init_track(mp4_muxer_state_t* state, mp4_muxer_stream_state_t* cur_stream, media_track_t* cur_track) {
 	cur_stream->timescale = cur_track->media_info.timescale;
 	cur_stream->media_type = cur_track->media_info.media_type;
 	cur_stream->first_frame_part = &cur_track->frames;
@@ -296,48 +255,41 @@ mp4_muxer_init_track(
 	cur_stream->source = get_frame_part_source_clip(cur_stream->cur_frame_part);
 
 	cur_stream->first_frame_time_offset =
-		mp4_rescale_millis(cur_track->clip_start_time, cur_track->media_info.timescale) +
-		cur_track->first_frame_time_offset;
+		mp4_rescale_millis(cur_track->clip_start_time, cur_track->media_info.timescale)
+		+ cur_track->first_frame_time_offset;
 	cur_stream->next_frame_time_offset = cur_stream->first_frame_time_offset;
 
-	if (!state->reuse_buffers)
-	{
+	if (!state->reuse_buffers) {
 		cur_stream->cur_frame_part.frames_source->disable_buffer_reuse(
-			cur_stream->cur_frame_part.frames_source_context);
+			cur_stream->cur_frame_part.frames_source_context
+		);
 	}
 }
 
 static void
-mp4_muxer_reinit_tracks(mp4_muxer_state_t* state)
-{
+mp4_muxer_reinit_tracks(mp4_muxer_state_t* state) {
 	media_track_t* cur_track;
 	mp4_muxer_stream_state_t* cur_stream;
 
 	state->first_time = TRUE;
 
 	cur_track = state->first_clip_track;
-	for (cur_stream = state->first_stream; cur_stream < state->last_stream; cur_stream++, cur_track++)
-	{
+	for (cur_stream = state->first_stream; cur_stream < state->last_stream; cur_stream++, cur_track++) {
 		mp4_muxer_init_track(state, cur_stream, cur_track);
 	}
 	state->first_clip_track = cur_track;
 }
 
 static vod_status_t
-mp4_muxer_choose_stream(mp4_muxer_state_t* state)
-{
+mp4_muxer_choose_stream(mp4_muxer_state_t* state) {
 	mp4_muxer_stream_state_t* cur_stream;
 	mp4_muxer_stream_state_t* min_dts = NULL;
 	uint64_t min_time_offset = 0;
 
-	for (;;)
-	{
-		for (cur_stream = state->first_stream; cur_stream < state->last_stream; cur_stream++)
-		{
-			if (cur_stream->cur_frame >= cur_stream->cur_frame_part.last_frame)
-			{
-				if (cur_stream->cur_frame_part.next == NULL)
-				{
+	for (;;) {
+		for (cur_stream = state->first_stream; cur_stream < state->last_stream; cur_stream++) {
+			if (cur_stream->cur_frame >= cur_stream->cur_frame_part.last_frame) {
+				if (cur_stream->cur_frame_part.next == NULL) {
 					continue;
 				}
 
@@ -347,27 +299,23 @@ mp4_muxer_choose_stream(mp4_muxer_state_t* state)
 				state->first_time = TRUE;
 			}
 
-			if (min_dts == NULL ||
-				cur_stream->next_frame_time_offset < min_time_offset)
-			{
+			if (min_dts == NULL || cur_stream->next_frame_time_offset < min_time_offset) {
 				min_dts = cur_stream;
 
 				min_time_offset = min_dts->next_frame_time_offset;
-				if (min_dts != state->selected_stream)
-				{
-					min_time_offset += min_dts->timescale / 4;		// prefer the last selected stream, allow 0.25s delay
+				if (min_dts != state->selected_stream) {
+					// prefer the last selected stream, allow 0.25s delay
+					min_time_offset += min_dts->timescale / 4;
 				}
 			}
 		}
 
-		if (min_dts != NULL)
-		{
+		if (min_dts != NULL) {
 			state->selected_stream = min_dts;
 			return VOD_OK;
 		}
 
-		if (state->first_clip_track >= state->media_set->filtered_tracks_end)
-		{
+		if (state->first_clip_track >= state->media_set->filtered_tracks_end) {
 			break;
 		}
 
@@ -378,11 +326,7 @@ mp4_muxer_choose_stream(mp4_muxer_state_t* state)
 }
 
 static vod_status_t
-mp4_calculate_output_offsets(
-	mp4_muxer_state_t* state,
-	size_t* frames_size,
-	uint32_t* trun_atom_count)
-{
+mp4_calculate_output_offsets(mp4_muxer_state_t* state, size_t* frames_size, uint32_t* trun_atom_count) {
 	mp4_muxer_stream_state_t* selected_stream;
 	mp4_muxer_stream_state_t* cur_stream;
 	uint32_t cur_offset = 0;
@@ -390,15 +334,12 @@ mp4_calculate_output_offsets(
 
 	*trun_atom_count = 0;
 
-	for (;;)
-	{
+	for (;;) {
 		// choose a stream
 		rc = mp4_muxer_choose_stream(state);
-		if (rc != VOD_OK)
-		{
-			if (rc == VOD_NOT_FOUND)
-			{
-				break;		// done
+		if (rc != VOD_OK) {
+			if (rc == VOD_NOT_FOUND) {
+				break; // done
 			}
 			return rc;
 		}
@@ -406,9 +347,9 @@ mp4_calculate_output_offsets(
 		selected_stream = state->selected_stream;
 
 		// check for a stream switch
-		if (selected_stream->last_frame_size == UINT_MAX ||
-			cur_offset != selected_stream->cur_frame_output_offset[-1] + selected_stream->last_frame_size)
-		{
+		if (selected_stream->last_frame_size == UINT_MAX
+		    || cur_offset
+		           != selected_stream->cur_frame_output_offset[-1] + selected_stream->last_frame_size) {
 			(*trun_atom_count)++;
 		}
 		selected_stream->last_frame_size = selected_stream->cur_frame->size;
@@ -426,20 +367,15 @@ mp4_calculate_output_offsets(
 	}
 
 	// reset the state
-	if (state->media_set->clip_count > 1)
-	{
+	if (state->media_set->clip_count > 1) {
 		state->first_clip_track = state->media_set->filtered_tracks;
 		mp4_muxer_reinit_tracks(state);
 
-		for (cur_stream = state->first_stream; cur_stream < state->last_stream; cur_stream++)
-		{
+		for (cur_stream = state->first_stream; cur_stream < state->last_stream; cur_stream++) {
 			cur_stream->cur_frame_output_offset = cur_stream->first_frame_output_offset;
 		}
-	}
-	else
-	{
-		for (cur_stream = state->first_stream; cur_stream < state->last_stream; cur_stream++)
-		{
+	} else {
+		for (cur_stream = state->first_stream; cur_stream < state->last_stream; cur_stream++) {
 			cur_stream->cur_frame_part = *cur_stream->first_frame_part;
 			cur_stream->cur_frame = cur_stream->cur_frame_part.first_frame;
 			cur_stream->source = get_frame_part_source_clip(cur_stream->cur_frame_part);
@@ -461,8 +397,8 @@ mp4_muxer_init_state(
 	segment_writer_t* track_writers,
 	bool_t per_stream_writer,
 	bool_t reuse_buffers,
-	mp4_muxer_state_t** result)
-{
+	mp4_muxer_state_t** result
+) {
 	media_track_t* cur_track;
 	mp4_muxer_stream_state_t* cur_stream;
 	mp4_muxer_state_t* state;
@@ -471,20 +407,19 @@ mp4_muxer_init_state(
 
 	// allocate the state and stream states
 	state = vod_alloc(request_context->pool, sizeof(*state));
-	if (state == NULL)
-	{
-		vod_log_debug0(VOD_LOG_DEBUG_LEVEL, request_context->log, 0,
-			"mp4_muxer_init_state: vod_alloc failed (1)");
+	if (state == NULL) {
+		vod_log_debug0(
+			VOD_LOG_DEBUG_LEVEL, request_context->log, 0, "mp4_muxer_init_state: vod_alloc failed (1)"
+		);
 		return VOD_ALLOC_FAILED;
 	}
 
-	state->first_stream = vod_alloc(
-		request_context->pool,
-		sizeof(state->first_stream[0]) * media_set->total_track_count);
-	if (state->first_stream == NULL)
-	{
-		vod_log_debug0(VOD_LOG_DEBUG_LEVEL, request_context->log, 0,
-			"mp4_muxer_init_state: vod_alloc failed (2)");
+	state->first_stream =
+		vod_alloc(request_context->pool, sizeof(state->first_stream[0]) * media_set->total_track_count);
+	if (state->first_stream == NULL) {
+		vod_log_debug0(
+			VOD_LOG_DEBUG_LEVEL, request_context->log, 0, "mp4_muxer_init_state: vod_alloc failed (2)"
+		);
 		return VOD_ALLOC_FAILED;
 	}
 
@@ -499,31 +434,30 @@ mp4_muxer_init_state(
 
 	index = 0;
 	cur_track = media_set->filtered_tracks;
-	for (cur_stream = state->first_stream; cur_stream < state->last_stream; cur_stream++, cur_track++, index++)
-	{
+	for (cur_stream = state->first_stream; cur_stream < state->last_stream;
+	     cur_stream++, cur_track++, index++) {
 		cur_stream->index = index;
 		cur_stream->write_callback = track_writers->write_tail;
 		cur_stream->write_context = track_writers->context;
-		if (per_stream_writer)
-		{
+		if (per_stream_writer) {
 			track_writers++;
 		}
 
 		// get total frame count for this stream
 		cur_stream->frame_count = cur_track->frame_count;
-		for (clip_index = 1; clip_index < media_set->clip_count; clip_index++)
-		{
+		for (clip_index = 1; clip_index < media_set->clip_count; clip_index++) {
 			cur_stream->frame_count += cur_track[clip_index * media_set->total_track_count].frame_count;
 		}
 
 		// allocate the output offset
 		cur_stream->first_frame_output_offset = vod_alloc(
 			request_context->pool,
-			cur_stream->frame_count * sizeof(cur_stream->first_frame_output_offset[0]));
-		if (cur_stream->first_frame_output_offset == NULL)
-		{
-			vod_log_debug0(VOD_LOG_DEBUG_LEVEL, request_context->log, 0,
-				"mp4_muxer_init_state: vod_alloc failed (3)");
+			cur_stream->frame_count * sizeof(cur_stream->first_frame_output_offset[0])
+		);
+		if (cur_stream->first_frame_output_offset == NULL) {
+			vod_log_debug0(
+				VOD_LOG_DEBUG_LEVEL, request_context->log, 0, "mp4_muxer_init_state: vod_alloc failed (3)"
+			);
 			return VOD_ALLOC_FAILED;
 		}
 		cur_stream->cur_frame_output_offset = cur_stream->first_frame_output_offset;
@@ -541,26 +475,21 @@ mp4_muxer_init_state(
 }
 
 static uint64_t
-mp4_muxer_get_earliest_pres_time(media_set_t* media_set, uint32_t index)
-{
+mp4_muxer_get_earliest_pres_time(media_set_t* media_set, uint32_t index) {
 	media_track_t* track;
 	uint64_t result = 0;
 	uint32_t clip_index;
 
-	for (clip_index = 0, track = media_set->filtered_tracks + index;
-		clip_index < media_set->clip_count;
-		clip_index++, track += media_set->total_track_count)
-	{
-		result = mp4_rescale_millis(track->clip_start_time, track->media_info.timescale) +
-			track->first_frame_time_offset;
+	for (clip_index = 0, track = media_set->filtered_tracks + index; clip_index < media_set->clip_count;
+	     clip_index++, track += media_set->total_track_count) {
+		result = mp4_rescale_millis(track->clip_start_time, track->media_info.timescale)
+		       + track->first_frame_time_offset;
 
-		if (track->frame_count <= 0)
-		{
+		if (track->frame_count <= 0) {
 			continue;
 		}
 
-		if (track->media_info.media_type == MEDIA_TYPE_VIDEO)
-		{
+		if (track->media_info.media_type == MEDIA_TYPE_VIDEO) {
 			result += track->frames.first_frame[0].pts_delay;
 			result -= track->media_info.u.video.initial_pts_delay;
 		}
@@ -582,8 +511,8 @@ mp4_muxer_init_fragment(
 	bool_t size_only,
 	vod_str_t* header,
 	size_t* total_fragment_size,
-	mp4_muxer_state_t** processor_state)
-{
+	mp4_muxer_state_t** processor_state
+) {
 	mp4_muxer_stream_state_t* cur_stream;
 	mp4_muxer_state_t* state;
 	vod_status_t rc;
@@ -598,40 +527,37 @@ mp4_muxer_init_fragment(
 
 	// initialize the muxer state
 	rc = mp4_muxer_init_state(
-		request_context,
-		media_set,
-		track_writers,
-		per_stream_writer,
-		reuse_buffers,
-		&state);
-	if (rc != VOD_OK)
-	{
-		vod_log_debug1(VOD_LOG_DEBUG_LEVEL, request_context->log, 0,
-			"mp4_muxer_init_fragment: mp4_muxer_init_state failed %i", rc);
+		request_context, media_set, track_writers, per_stream_writer, reuse_buffers, &state
+	);
+	if (rc != VOD_OK) {
+		vod_log_debug1(
+			VOD_LOG_DEBUG_LEVEL,
+			request_context->log,
+			0,
+			"mp4_muxer_init_fragment: mp4_muxer_init_state failed %i",
+			rc
+		);
 		return rc;
 	}
 
 	// init output offsets and get the mdat size
 	rc = mp4_calculate_output_offsets(state, &mdat_atom_size, &trun_atom_count);
-	if (rc != VOD_OK)
-	{
+	if (rc != VOD_OK) {
 		return rc;
 	}
 	mdat_atom_size += MDAT_HEADER_SIZE;
 
 	// get the moof size
-	moof_atom_size =
-		ATOM_HEADER_SIZE +		// moof
-		ATOM_HEADER_SIZE + sizeof(mfhd_atom_t) +
-		(ATOM_HEADER_SIZE +		// traf
-		ATOM_HEADER_SIZE + sizeof(tfhd_atom_t) +
-		ATOM_HEADER_SIZE + sizeof(tfdt64_atom_t)) * media_set->total_track_count +
-		(ATOM_HEADER_SIZE + sizeof(trun_atom_t)) * trun_atom_count;
+	moof_atom_size = ATOM_HEADER_SIZE // moof
+	               + (ATOM_HEADER_SIZE + sizeof(mfhd_atom_t))
+	               + (ATOM_HEADER_SIZE // traf
+	                  + (ATOM_HEADER_SIZE + sizeof(tfhd_atom_t))
+	                  + (ATOM_HEADER_SIZE + sizeof(tfdt64_atom_t)))
+	                     * media_set->total_track_count
+	               + (ATOM_HEADER_SIZE + sizeof(trun_atom_t)) * trun_atom_count;
 
-	for (cur_stream = state->first_stream; cur_stream < state->last_stream; cur_stream++)
-	{
-		switch (cur_stream->media_type)
-		{
+	for (cur_stream = state->first_stream; cur_stream < state->last_stream; cur_stream++) {
+		switch (cur_stream->media_type) {
 		case MEDIA_TYPE_VIDEO:
 			moof_atom_size += cur_stream->frame_count * sizeof(trun_video_frame_t);
 			break;
@@ -641,26 +567,21 @@ mp4_muxer_init_fragment(
 		}
 	}
 
-	*total_fragment_size =
-		moof_atom_size +
-		mdat_atom_size;
+	*total_fragment_size = moof_atom_size + mdat_atom_size;
 
 	// head request optimization
-	if (size_only)
-	{
+	if (size_only) {
 		return VOD_OK;
 	}
 
 	// allocate the response
-	result_size =
-		moof_atom_size +
-		MDAT_HEADER_SIZE;
+	result_size = moof_atom_size + MDAT_HEADER_SIZE;
 
 	header->data = vod_alloc(request_context->pool, result_size);
-	if (header->data == NULL)
-	{
-		vod_log_debug0(VOD_LOG_DEBUG_LEVEL, request_context->log, 0,
-			"mp4_muxer_init_fragment: vod_alloc failed");
+	if (header->data == NULL) {
+		vod_log_debug0(
+			VOD_LOG_DEBUG_LEVEL, request_context->log, 0, "mp4_muxer_init_fragment: vod_alloc failed"
+		);
 		return VOD_ALLOC_FAILED;
 	}
 
@@ -672,8 +593,7 @@ mp4_muxer_init_fragment(
 	// moof.mfhd
 	p = mp4_fragment_write_mfhd_atom(p, segment_index);
 
-	for (cur_stream = state->first_stream; cur_stream < state->last_stream; cur_stream++)
-	{
+	for (cur_stream = state->first_stream; cur_stream < state->last_stream; cur_stream++) {
 		// skip moof.traf
 		traf_header = p;
 		p += ATOM_HEADER_SIZE;
@@ -682,28 +602,21 @@ mp4_muxer_init_fragment(
 		p = mp4_fragment_write_tfhd_atom(p, cur_stream->index + 1, 0);
 
 		// moof.traf.tfdt
-		earliest_pres_time = mp4_muxer_get_earliest_pres_time(
-			media_set,
-			cur_stream->index);
+		earliest_pres_time = mp4_muxer_get_earliest_pres_time(media_set, cur_stream->index);
 		p = mp4_fragment_write_tfdt64_atom(p, earliest_pres_time);
 
 		// moof.traf.trun
-		switch (cur_stream->media_type)
-		{
+		switch (cur_stream->media_type) {
 		case MEDIA_TYPE_VIDEO:
 			p = mp4_muxer_write_video_trun_atoms(
-				p,
-				media_set,
-				cur_stream,
-				moof_atom_size + MDAT_HEADER_SIZE);
+				p, media_set, cur_stream, moof_atom_size + MDAT_HEADER_SIZE
+			);
 			break;
 
 		case MEDIA_TYPE_AUDIO:
 			p = mp4_muxer_write_audio_trun_atoms(
-				p,
-				media_set,
-				cur_stream,
-				moof_atom_size + MDAT_HEADER_SIZE);
+				p, media_set, cur_stream, moof_atom_size + MDAT_HEADER_SIZE
+			);
 			break;
 		}
 
@@ -717,25 +630,32 @@ mp4_muxer_init_fragment(
 
 	header->len = p - header->data;
 
-	if (header->len != result_size)
-	{
-		vod_log_error(VOD_LOG_ERR, request_context->log, 0,
+	if (header->len != result_size) {
+		vod_log_error(
+			VOD_LOG_ERR,
+			request_context->log,
+			0,
 			"mp4_muxer_init_fragment: result length %uz exceeded allocated length %uz",
-			header->len, result_size);
+			header->len,
+			result_size
+		);
 		return VOD_UNEXPECTED;
 	}
 
 	rc = mp4_muxer_start_frame(state);
-	if (rc != VOD_OK)
-	{
-		if (rc == VOD_NOT_FOUND)
-		{
-			*processor_state = NULL;		// no frames, nothing to do
+	if (rc != VOD_OK) {
+		if (rc == VOD_NOT_FOUND) {
+			*processor_state = NULL; // no frames, nothing to do
 			return VOD_OK;
 		}
 
-		vod_log_debug1(VOD_LOG_DEBUG_LEVEL, request_context->log, 0,
-			"mp4_muxer_init_fragment: mp4_muxer_start_frame failed %i", rc);
+		vod_log_debug1(
+			VOD_LOG_DEBUG_LEVEL,
+			request_context->log,
+			0,
+			"mp4_muxer_init_fragment: mp4_muxer_start_frame failed %i",
+			rc
+		);
 		return rc;
 	}
 
@@ -744,8 +664,7 @@ mp4_muxer_init_fragment(
 }
 
 static vod_status_t
-mp4_muxer_start_frame(mp4_muxer_state_t* state)
-{
+mp4_muxer_start_frame(mp4_muxer_state_t* state) {
 	mp4_muxer_stream_state_t* selected_stream;
 	mp4_muxer_stream_state_t* cur_stream;
 	read_cache_hint_t cache_hint;
@@ -753,8 +672,7 @@ mp4_muxer_start_frame(mp4_muxer_state_t* state)
 	vod_status_t rc;
 
 	rc = mp4_muxer_choose_stream(state);
-	if (rc != VOD_OK)
-	{
+	if (rc != VOD_OK) {
 		return rc;
 	}
 	selected_stream = state->selected_stream;
@@ -773,26 +691,22 @@ mp4_muxer_start_frame(mp4_muxer_state_t* state)
 	// find the min offset
 	cache_hint.min_offset = ULLONG_MAX;
 
-	for (cur_stream = state->first_stream; cur_stream < state->last_stream; cur_stream++)
-	{
-		if (selected_stream == cur_stream)
-		{
+	for (cur_stream = state->first_stream; cur_stream < state->last_stream; cur_stream++) {
+		if (selected_stream == cur_stream) {
 			continue;
 		}
 
 		cur_frame = cur_stream->cur_frame;
-		if (cur_frame < cur_stream->cur_frame_part.last_frame &&
-			cur_frame->offset < cache_hint.min_offset &&
-			cur_stream->source == selected_stream->source)
-		{
+		if (cur_frame < cur_stream->cur_frame_part.last_frame
+		    && cur_frame->offset < cache_hint.min_offset
+		    && cur_stream->source == selected_stream->source) {
 			cache_hint.min_offset = cur_frame->offset;
 			cache_hint.min_offset_slot_id = cur_stream->media_type;
 		}
 	}
 
 	rc = state->frames_source->start_frame(state->frames_source_context, state->cur_frame, &cache_hint);
-	if (rc != VOD_OK)
-	{
+	if (rc != VOD_OK) {
 		return rc;
 	}
 
@@ -800,8 +714,7 @@ mp4_muxer_start_frame(mp4_muxer_state_t* state)
 }
 
 vod_status_t
-mp4_muxer_process_frames(mp4_muxer_state_t* state)
-{
+mp4_muxer_process_frames(mp4_muxer_state_t* state) {
 	mp4_muxer_stream_state_t* selected_stream = state->selected_stream;
 	mp4_muxer_stream_state_t* last_stream = NULL;
 	u_char* read_buffer;
@@ -812,30 +725,31 @@ mp4_muxer_process_frames(mp4_muxer_state_t* state)
 	bool_t processed_data = FALSE;
 	bool_t frame_done;
 
-	for (;;)
-	{
+	for (;;) {
 		// read some data from the frame
-		rc = state->frames_source->read(state->frames_source_context, &read_buffer, &read_size, &frame_done);
-		if (rc != VOD_OK)
-		{
-			if (rc != VOD_AGAIN)
-			{
+		rc = state->frames_source->read(
+			state->frames_source_context, &read_buffer, &read_size, &frame_done
+		);
+		if (rc != VOD_OK) {
+			if (rc != VOD_AGAIN) {
 				return rc;
 			}
 
-			if (write_buffer_size != 0)
-			{
+			if (write_buffer_size != 0) {
 				// flush the write buffer
-				rc = last_stream->write_callback(last_stream->write_context, write_buffer, write_buffer_size);
-				if (rc != VOD_OK)
-				{
+				rc = last_stream->write_callback(
+					last_stream->write_context, write_buffer, write_buffer_size
+				);
+				if (rc != VOD_OK) {
 					return rc;
 				}
-			}
-			else if (!processed_data && !state->first_time)
-			{
-				vod_log_error(VOD_LOG_ERR, state->request_context->log, 0,
-					"mp4_muxer_process_frames: no data was handled, probably a truncated file");
+			} else if (!processed_data && !state->first_time) {
+				vod_log_error(
+					VOD_LOG_ERR,
+					state->request_context->log,
+					0,
+					"mp4_muxer_process_frames: no data was handled, probably a truncated file"
+				);
 				return VOD_BAD_DATA;
 			}
 
@@ -845,28 +759,22 @@ mp4_muxer_process_frames(mp4_muxer_state_t* state)
 
 		processed_data = TRUE;
 
-		if (state->reuse_buffers)
-		{
+		if (state->reuse_buffers) {
 			rc = selected_stream->write_callback(selected_stream->write_context, read_buffer, read_size);
-			if (rc != VOD_OK)
-			{
+			if (rc != VOD_OK) {
 				return rc;
 			}
-		}
-		else if (write_buffer_size != 0)
-		{
+		} else if (write_buffer_size != 0) {
 			// if the buffers are contiguous, just increment the size
-			if (write_buffer + write_buffer_size == read_buffer &&
-				(last_stream == selected_stream || !state->per_stream_writer))
-			{
+			if (write_buffer + write_buffer_size == read_buffer
+			    && (last_stream == selected_stream || !state->per_stream_writer)) {
 				write_buffer_size += read_size;
-			}
-			else
-			{
+			} else {
 				// buffers not contiguous, flush the write buffer
-				rc = last_stream->write_callback(last_stream->write_context, write_buffer, write_buffer_size);
-				if (rc != VOD_OK)
-				{
+				rc = last_stream->write_callback(
+					last_stream->write_context, write_buffer, write_buffer_size
+				);
+				if (rc != VOD_OK) {
 					return rc;
 				}
 
@@ -875,28 +783,24 @@ mp4_muxer_process_frames(mp4_muxer_state_t* state)
 				write_buffer_size = read_size;
 				last_stream = selected_stream;
 			}
-		}
-		else
-		{
+		} else {
 			// reset the write buffer
 			write_buffer = read_buffer;
 			write_buffer_size = read_size;
 			last_stream = selected_stream;
 		}
 
-		if (!frame_done)
-		{
+		if (!frame_done) {
 			continue;
 		}
 
-		if (selected_stream->cur_frame >= selected_stream->cur_frame_part.last_frame)
-		{
-			if (write_buffer_size != 0)
-			{
+		if (selected_stream->cur_frame >= selected_stream->cur_frame_part.last_frame) {
+			if (write_buffer_size != 0) {
 				// flush the write buffer
-				rc = last_stream->write_callback(last_stream->write_context, write_buffer, write_buffer_size);
-				if (rc != VOD_OK)
-				{
+				rc = last_stream->write_callback(
+					last_stream->write_context, write_buffer, write_buffer_size
+				);
+				if (rc != VOD_OK) {
 					return rc;
 				}
 
@@ -906,15 +810,18 @@ mp4_muxer_process_frames(mp4_muxer_state_t* state)
 
 		// start a new frame
 		rc = mp4_muxer_start_frame(state);
-		if (rc != VOD_OK)
-		{
-			if (rc == VOD_NOT_FOUND)
-			{
-				break;		// done
+		if (rc != VOD_OK) {
+			if (rc == VOD_NOT_FOUND) {
+				break; // done
 			}
 
-			vod_log_debug1(VOD_LOG_DEBUG_LEVEL, state->request_context->log, 0,
-				"mp4_muxer_process_frames: mp4_muxer_start_frame failed %i", rc);
+			vod_log_debug1(
+				VOD_LOG_DEBUG_LEVEL,
+				state->request_context->log,
+				0,
+				"mp4_muxer_process_frames: mp4_muxer_start_frame failed %i",
+				rc
+			);
 			return rc;
 		}
 

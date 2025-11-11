@@ -16,13 +16,10 @@ typedef struct {
 } mp4_cenc_passthrough_context_t;
 
 // functions
-bool_t mp4_cenc_passthrough_init(
-	mp4_cenc_passthrough_context_t* context,
-	media_sequence_t* sequence);
+bool_t mp4_cenc_passthrough_init(mp4_cenc_passthrough_context_t* context, media_sequence_t* sequence);
 
 u_char* mp4_cenc_passthrough_write_saiz_saio(
-	mp4_cenc_passthrough_context_t* context,
-	u_char* p,
-	size_t auxiliary_data_offset);
+	mp4_cenc_passthrough_context_t* context, u_char* p, size_t auxiliary_data_offset
+);
 
 #endif //__MP4_CENC_PASSTHROUGH_H__

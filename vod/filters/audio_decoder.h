@@ -30,15 +30,11 @@ typedef struct {
 void audio_decoder_process_init(vod_log_t* log);
 
 vod_status_t audio_decoder_init(
-	audio_decoder_state_t* state,
-	request_context_t* request_context,
-	media_track_t* track,
-	int cache_slot_id);
+	audio_decoder_state_t* state, request_context_t* request_context, media_track_t* track, int cache_slot_id
+);
 
 void audio_decoder_free(audio_decoder_state_t* state);
 
-vod_status_t audio_decoder_get_frame(
-	audio_decoder_state_t* state,
-	AVFrame** result);
+vod_status_t audio_decoder_get_frame(audio_decoder_state_t* state, AVFrame** result);
 
 #endif // __AUDIO_DECODER_H__

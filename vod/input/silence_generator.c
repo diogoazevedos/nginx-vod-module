@@ -9,19 +9,15 @@
 #define AAC_SILENCE_FRAME_SIZE (sizeof(AAC_SILENCE_FRAME) - 1)
 
 vod_status_t
-silence_generator_parse(
-	void* ctx,
-	vod_json_object_t* element,
-	void** result)
-{
+silence_generator_parse(void* ctx, vod_json_object_t* element, void** result) {
 	media_filter_parse_context_t* context = ctx;
 	media_clip_source_t* source;
 
 	source = vod_alloc(context->request_context->pool, sizeof(*source));
-	if (source == NULL)
-	{
-		vod_log_debug0(VOD_LOG_DEBUG_LEVEL, context->request_context->log, 0,
-			"silence_generator_parse: vod_alloc failed");
+	if (source == NULL) {
+		vod_log_debug0(
+			VOD_LOG_DEBUG_LEVEL, context->request_context->log, 0, "silence_generator_parse: vod_alloc failed"
+		);
 		return VOD_ALLOC_FAILED;
 	}
 
@@ -34,20 +30,18 @@ silence_generator_parse(
 	source->clip_time = context->clip_time;
 	vod_set_bit(source->tracks_mask[MEDIA_TYPE_AUDIO], 0);
 
-	if (context->duration == UINT_MAX)
-	{
+	if (context->duration == UINT_MAX) {
 		source->clip_to = ULLONG_MAX;
-	}
-	else
-	{
+	} else {
 		source->clip_to = context->duration;
 	}
 
 	source->next = context->generators_head;
 	context->generators_head = source;
 
-	vod_log_debug0(VOD_LOG_DEBUG_LEVEL, context->request_context->log, 0,
-		"silence_generator_parse: parsed silence source");
+	vod_log_debug0(
+		VOD_LOG_DEBUG_LEVEL, context->request_context->log, 0, "silence_generator_parse: parsed silence source"
+	);
 
 	*result = &source->base;
 
@@ -56,10 +50,8 @@ silence_generator_parse(
 
 static vod_status_t
 silence_generator_generate(
-	request_context_t* request_context,
-	media_parse_params_t* parse_params,
-	media_track_array_t* result)
-{
+	request_context_t* request_context, media_parse_params_t* parse_params, media_track_array_t* result
+) {
 	media_sequence_t* sequence = parse_params->source->sequence;
 	input_frame_t* cur_frame;
 	media_track_t* track;
@@ -70,10 +62,10 @@ silence_generator_generate(
 	u_char* data;
 
 	track = vod_alloc(request_context->pool, sizeof(*track));
-	if (track == NULL)
-	{
-		vod_log_debug0(VOD_LOG_DEBUG_LEVEL, request_context->log, 0,
-			"silence_generator_generate: vod_alloc failed (1)");
+	if (track == NULL) {
+		vod_log_debug0(
+			VOD_LOG_DEBUG_LEVEL, request_context->log, 0, "silence_generator_generate: vod_alloc failed (1)"
+		);
 		return VOD_ALLOC_FAILED;
 	}
 
@@ -100,16 +92,13 @@ silence_generator_generate(
 	track->media_info.timescale = track->media_info.u.audio.sample_rate;
 	track->media_info.frames_timescale = track->media_info.u.audio.sample_rate;
 	track->media_info.duration_millis = parse_params->clip_to - parse_params->clip_from;
-	track->media_info.full_duration = (uint64_t)track->media_info.duration_millis * track->media_info.timescale;
+	track->media_info.full_duration =
+		(uint64_t)track->media_info.duration_millis * track->media_info.timescale;
 	track->media_info.duration = track->media_info.full_duration;
 	track->media_info.tags = sequence->tags;
 
-	rc = media_format_finalize_track(
-		request_context,
-		parse_params->parse_type,
-		&track->media_info);
-	if (rc != VOD_OK)
-	{
+	rc = media_format_finalize_track(request_context, parse_params->parse_type, &track->media_info);
+	if (rc != VOD_OK) {
 		return rc;
 	}
 
@@ -118,15 +107,13 @@ silence_generator_generate(
 	result->total_track_count = 1;
 	result->track_count[MEDIA_TYPE_AUDIO] = 1;
 
-	if ((parse_params->parse_type & PARSE_FLAG_FRAMES_ALL) == 0)
-	{
+	if ((parse_params->parse_type & PARSE_FLAG_FRAMES_ALL) == 0) {
 		return VOD_OK;
 	}
 
 	// frames source
 	rc = frames_source_memory_init(request_context, &track->frames.frames_source_context);
-	if (rc != VOD_OK)
-	{
+	if (rc != VOD_OK) {
 		return rc;
 	}
 
@@ -139,10 +126,14 @@ silence_generator_generate(
 	track->first_frame_index = vod_div_ceil(start_time, AAC_FRAME_SAMPLES);
 	track->frame_count = vod_div_ceil(end_time, AAC_FRAME_SAMPLES) - track->first_frame_index;
 
-	if (track->frame_count > parse_params->max_frame_count)
-	{
-		vod_log_error(VOD_LOG_ERR, request_context->log, 0,
-			"silence_generator_generate: frame count exceeds the limit %uD", parse_params->max_frame_count);
+	if (track->frame_count > parse_params->max_frame_count) {
+		vod_log_error(
+			VOD_LOG_ERR,
+			request_context->log,
+			0,
+			"silence_generator_generate: frame count exceeds the limit %uD",
+			parse_params->max_frame_count
+		);
 		return VOD_BAD_DATA;
 	}
 
@@ -150,39 +141,36 @@ silence_generator_generate(
 	track->total_frames_size = (uint64_t)AAC_SILENCE_FRAME_SIZE * track->frame_count;
 	track->total_frames_duration = (uint64_t)AAC_FRAME_SAMPLES * track->frame_count;
 
-	cur_frame = vod_alloc(request_context->pool, sizeof(track->frames.first_frame[0]) * track->frame_count);
-	if (cur_frame == NULL)
-	{
-		vod_log_debug0(VOD_LOG_DEBUG_LEVEL, request_context->log, 0,
-			"silence_generator_generate: vod_alloc failed (2)");
+	cur_frame =
+		vod_alloc(request_context->pool, sizeof(track->frames.first_frame[0]) * track->frame_count);
+	if (cur_frame == NULL) {
+		vod_log_debug0(
+			VOD_LOG_DEBUG_LEVEL, request_context->log, 0, "silence_generator_generate: vod_alloc failed (2)"
+		);
 		return VOD_ALLOC_FAILED;
 	}
 
 	track->frames.first_frame = cur_frame;
 	track->frames.last_frame = cur_frame + track->frame_count;
 
-	if (track->first_frame_time_offset + track->total_frames_duration >
-		(uint64_t)(parse_params->clip_to - parse_params->clip_from) * track->media_info.timescale / 1000)
-	{
+	if (track->first_frame_time_offset + track->total_frames_duration
+	    > (uint64_t)(parse_params->clip_to - parse_params->clip_from) * track->media_info.timescale / 1000) {
 		track->frames.clip_to = parse_params->clip_to - parse_params->clip_from;
-	}
-	else
-	{
+	} else {
 		track->frames.clip_to = UINT_MAX;
 	}
 
 	data = vod_alloc(request_context->pool, AAC_SILENCE_FRAME_SIZE + VOD_BUFFER_PADDING_SIZE);
-	if (data == NULL)
-	{
-		vod_log_debug0(VOD_LOG_DEBUG_LEVEL, request_context->log, 0,
-			"silence_generator_generate: vod_alloc failed (3)");
+	if (data == NULL) {
+		vod_log_debug0(
+			VOD_LOG_DEBUG_LEVEL, request_context->log, 0, "silence_generator_generate: vod_alloc failed (3)"
+		);
 		return VOD_ALLOC_FAILED;
 	}
 
 	vod_memcpy(data, AAC_SILENCE_FRAME, AAC_SILENCE_FRAME_SIZE);
 
-	for (; cur_frame < track->frames.last_frame; cur_frame++)
-	{
+	for (; cur_frame < track->frames.last_frame; cur_frame++) {
 		cur_frame->offset = (uintptr_t)data;
 		cur_frame->size = AAC_SILENCE_FRAME_SIZE;
 		cur_frame->duration = AAC_FRAME_SAMPLES;
@@ -193,8 +181,4 @@ silence_generator_generate(
 	return VOD_OK;
 }
 
-media_generator_t silence_generator = {
-	VOD_CODEC_FLAG(AAC),
-	{ {0}, {1}, {0} },
-	silence_generator_generate
-};
+media_generator_t silence_generator = {VOD_CODEC_FLAG(AAC), {{0}, {1}, {0}}, silence_generator_generate};

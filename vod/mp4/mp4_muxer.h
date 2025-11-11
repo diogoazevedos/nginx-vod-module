@@ -21,7 +21,8 @@ vod_status_t mp4_muxer_init_fragment(
 	bool_t size_only,
 	vod_str_t* header,
 	size_t* total_fragment_size,
-	mp4_muxer_state_t** processor_state);
+	mp4_muxer_state_t** processor_state
+);
 
 vod_status_t mp4_muxer_process_frames(mp4_muxer_state_t* state);
 

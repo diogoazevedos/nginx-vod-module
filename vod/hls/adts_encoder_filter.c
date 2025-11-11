@@ -18,20 +18,16 @@ typedef struct {
 } adts_encoder_state_t;
 
 vod_status_t
-adts_encoder_set_media_info(
-	media_filter_context_t* context,
-	media_info_t* media_info)
-{
+adts_encoder_set_media_info(media_filter_context_t* context, media_info_t* media_info) {
 	adts_encoder_state_t* state = get_context(context);
 	mp4a_config_t* codec_config = &media_info->u.audio.codec_config;
 
-	if (context->request_context->simulation_only)
-	{
+	if (context->request_context->simulation_only) {
 		return VOD_OK;
 	}
 
-	// Note: not parsing all the special cases handled in ffmpeg's avpriv_mpeg4audio_get_config
-	// Note: not handling pce_data
+	// NOTE: not parsing all the special cases handled in ffmpeg's avpriv_mpeg4audio_get_config
+	// NOTE: not handling pce_data
 
 	vod_memzero(&state->header, sizeof(state->header));
 
@@ -46,8 +42,7 @@ adts_encoder_set_media_info(
 }
 
 static vod_status_t
-adts_encoder_start_frame(media_filter_context_t* context, output_frame_t* frame)
-{
+adts_encoder_start_frame(media_filter_context_t* context, output_frame_t* frame) {
 	adts_encoder_state_t* state = get_context(context);
 	vod_status_t rc;
 
@@ -55,8 +50,7 @@ adts_encoder_start_frame(media_filter_context_t* context, output_frame_t* frame)
 	frame->header_size += 1;
 
 	rc = state->start_frame(context, frame);
-	if (rc != VOD_OK)
-	{
+	if (rc != VOD_OK) {
 		return rc;
 	}
 
@@ -65,10 +59,8 @@ adts_encoder_start_frame(media_filter_context_t* context, output_frame_t* frame)
 	return state->write(context, state->header, sizeof(state->header));
 }
 
-
 static void
-adts_encoder_simulated_start_frame(media_filter_context_t* context, output_frame_t* frame)
-{
+adts_encoder_simulated_start_frame(media_filter_context_t* context, output_frame_t* frame) {
 	adts_encoder_state_t* state = get_context(context);
 
 	frame->header_size += 1;
@@ -78,19 +70,14 @@ adts_encoder_simulated_start_frame(media_filter_context_t* context, output_frame
 }
 
 vod_status_t
-adts_encoder_init(
-	media_filter_t* filter,
-	media_filter_context_t* context)
-{
+adts_encoder_init(media_filter_t* filter, media_filter_context_t* context) {
 	adts_encoder_state_t* state;
 	request_context_t* request_context = context->request_context;
 
 	// allocate state
 	state = vod_alloc(request_context->pool, sizeof(*state));
-	if (state == NULL)
-	{
-		vod_log_debug0(VOD_LOG_DEBUG_LEVEL, request_context->log, 0,
-			"adts_encoder_init: vod_alloc failed");
+	if (state == NULL) {
+		vod_log_debug0(VOD_LOG_DEBUG_LEVEL, request_context->log, 0, "adts_encoder_init: vod_alloc failed");
 		return VOD_ALLOC_FAILED;
 	}
 

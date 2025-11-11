@@ -46,7 +46,6 @@ typedef struct media_clip_s {
 	uint32_t source_count;
 } media_clip_t;
 
-
 typedef enum {
 	MCS_ENC_CENC,
 	MCS_ENC_AES_CBC,
@@ -76,15 +75,15 @@ struct media_clip_source_s {
 	// input params
 	vod_str_t id;
 	media_clip_source_type_t source_type;
-	vod_str_t uri;				// original uri
+	vod_str_t uri; // original uri
 	uint64_t clip_from;
 	track_mask_t tracks_mask[MEDIA_TYPE_COUNT];
 	uint32_t time_shift[MEDIA_TYPE_COUNT];
 	media_clip_source_enc_t encryption;
 
 	// derived params
-	vod_str_t stripped_uri;		// without any params like clipTo
-	vod_str_t mapped_uri;		// in case of mapped mode holds the file path
+	vod_str_t stripped_uri; // without any params like clipTo
+	vod_str_t mapped_uri;   // in case of mapped mode holds the file path
 	u_char file_key[MEDIA_CLIP_KEY_SIZE];
 
 	// runtime members
@@ -100,10 +99,9 @@ struct media_clip_source_s {
 typedef struct {
 	int codec_mask;
 	track_mask_t tracks_mask[MEDIA_TYPE_COUNT];
-	vod_status_t(*generate)(
-		request_context_t* request_context,
-		media_parse_params_t* parse_params,
-		media_track_array_t* result);
+	vod_status_t (*generate)(
+		request_context_t* request_context, media_parse_params_t* parse_params, media_track_array_t* result
+	);
 } media_generator_t;
 
 #endif //__MEDIA_CLIP_H__
