@@ -16,15 +16,11 @@ typedef struct {
 } subtitle_base_metadata_t;
 
 // functions
-vod_status_t subtitle_reader_init(
-	request_context_t* request_context,
-	void** ctx);
+vod_status_t subtitle_reader_init(request_context_t* request_context, void** ctx);
 
 vod_status_t subtitle_reader_read(
-	void* ctx,
-	uint64_t offset,
-	vod_str_t* buffer,
-	media_format_read_metadata_result_t* result);
+	void* ctx, uint64_t offset, vod_str_t* buffer, media_format_read_metadata_result_t* result
+);
 
 vod_status_t subtitle_parse(
 	request_context_t* request_context,
@@ -33,6 +29,7 @@ vod_status_t subtitle_parse(
 	void* context,
 	uint64_t full_duration,
 	size_t metadata_part_count,
-	media_base_metadata_t** result);
+	media_base_metadata_t** result
+);
 
 #endif //__SUBTITLE_FORMAT_H__

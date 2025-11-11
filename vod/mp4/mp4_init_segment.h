@@ -14,9 +14,8 @@ typedef struct {
 } atom_writer_t;
 
 // functions
-vod_status_t mp4_init_segment_build_stsd_atom(
-	request_context_t* request_context,
-	media_track_t* track);
+vod_status_t
+mp4_init_segment_build_stsd_atom(request_context_t* request_context, media_track_t* track);
 
 vod_status_t mp4_init_segment_build(
 	request_context_t* request_context,
@@ -24,7 +23,8 @@ vod_status_t mp4_init_segment_build(
 	bool_t size_only,
 	atom_writer_t* extra_moov_atoms_writer,
 	atom_writer_t* stsd_atom_writers,
-	vod_str_t* result);
+	vod_str_t* result
+);
 
 vod_status_t mp4_init_segment_get_encrypted_stsd_writers(
 	request_context_t* request_context,
@@ -33,6 +33,7 @@ vod_status_t mp4_init_segment_get_encrypted_stsd_writers(
 	bool_t has_clear_lead,
 	u_char* default_kid,
 	u_char* iv,
-	atom_writer_t** result);
+	atom_writer_t** result
+);
 
 #endif // __MP4_INIT_SEGMENT_H__

@@ -6,8 +6,10 @@
 #include "read_cache.h"
 
 // macros
-#define get_frame_part_source_clip(part) 	\
-	(part.frames_source == &frames_source_cache ? ((frames_source_cache_state_t*)part.frames_source_context)->req.source : NULL)
+#define get_frame_part_source_clip(part)                                          \
+	(part.frames_source == &frames_source_cache                                   \
+	     ? ((frames_source_cache_state_t*)part.frames_source_context)->req.source \
+	     : NULL)
 
 // typedefs
 typedef struct {
@@ -24,6 +26,7 @@ vod_status_t frames_source_cache_init(
 	read_cache_state_t* read_cache_state,
 	void* source,
 	int cache_slot_id,
-	void** result);
+	void** result
+);
 
 #endif //__FRAMES_SOURCE_CACHE_H__

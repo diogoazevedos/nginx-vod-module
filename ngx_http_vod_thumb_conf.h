@@ -5,8 +5,7 @@
 #include <ngx_http.h>
 
 // typedefs
-typedef struct
-{
+typedef struct {
 	ngx_str_t file_name_prefix;
 	ngx_flag_t accurate;
 } ngx_http_vod_thumb_loc_conf_t;

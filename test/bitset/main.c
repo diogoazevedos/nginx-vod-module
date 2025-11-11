@@ -6,24 +6,26 @@
 #if (NGX_HAVE_VARIADIC_MACROS)
 
 void
-ngx_log_error_core(ngx_uint_t level, ngx_log_t *log, ngx_err_t err,
-    const char *fmt, ...)
-
+ngx_log_error_core(ngx_uint_t level, ngx_log_t* log, ngx_err_t err, const char* fmt, ...)
 #else
 
 void
-ngx_log_error_core(ngx_uint_t level, ngx_log_t *log, ngx_err_t err,
-    const char *fmt, va_list args)
+ngx_log_error_core(ngx_uint_t level, ngx_log_t* log, ngx_err_t err, const char* fmt, va_list args)
 
 #endif
 {
 }
 
-#define assert(cond) if (!(cond)) { printf("Error: assertion failed, file=%s line=%d\n", __FILE__, __LINE__); success = FALSE; }
+#define assert(cond)                                                              \
+	if (!(cond)) {                                                                \
+		printf("Error: assertion failed, file=%s line=%d\n", __FILE__, __LINE__); \
+		success = FALSE;                                                          \
+	}
 
 #define BITS (128)
-bool_t test_bitset()
-{
+
+bool_t
+test_bitset() {
 	bool_t success = TRUE;
 	uint64_t mask[vod_array_length_for_bits(BITS)]; // [2]
 	uint64_t mask2[vod_array_length_for_bits(BITS)];
@@ -38,8 +40,7 @@ bool_t test_bitset()
 
 	assert(mask[0] == 0);
 	assert(mask[1] == 0);
-	for (int i = 0; i < BITS; i++)
-	{
+	for (int i = 0; i < BITS; i++) {
 		assert(vod_is_bit_set(mask, i) == FALSE);
 	}
 	assert(vod_get_number_of_set_bits_in_mask(mask, BITS) == 0);
@@ -123,10 +124,9 @@ bool_t test_bitset()
 	return success;
 }
 
-int main()
-{
-	if (!test_bitset())
-	{
+int
+main() {
+	if (!test_bitset()) {
 		printf("One or more tests failed.\n");
 		return 1;
 	}

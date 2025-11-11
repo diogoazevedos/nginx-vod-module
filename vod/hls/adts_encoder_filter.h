@@ -9,12 +9,8 @@
 #include "../common.h"
 
 // functions
-vod_status_t adts_encoder_init(
-	media_filter_t* filter,
-	media_filter_context_t* context);
+vod_status_t adts_encoder_init(media_filter_t* filter, media_filter_context_t* context);
 
-vod_status_t adts_encoder_set_media_info(
-	media_filter_context_t* context,
-	media_info_t* media_info);
+vod_status_t adts_encoder_set_media_info(media_filter_context_t* context, media_info_t* media_info);
 
 #endif // __ADTS_ENCODER_FILTER_H__

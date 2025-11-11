@@ -29,13 +29,9 @@ typedef struct {
 
 // functions
 vod_status_t udrm_parse_response(
-	request_context_t* request_context,
-	vod_str_t* drm_info,
-	bool_t base64_decode_pssh,
-	void** output);
+	request_context_t* request_context, vod_str_t* drm_info, bool_t base64_decode_pssh, void** output
+);
 
-vod_status_t udrm_init_parser(
-	vod_pool_t* pool,
-	vod_pool_t* temp_pool);
+vod_status_t udrm_init_parser(vod_pool_t* pool, vod_pool_t* temp_pool);
 
 #endif // __UDRM_H__

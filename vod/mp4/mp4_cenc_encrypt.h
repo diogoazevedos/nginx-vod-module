@@ -15,9 +15,8 @@ struct mp4_cenc_encrypt_video_state_s;
 typedef struct mp4_cenc_encrypt_video_state_s mp4_cenc_encrypt_video_state_t;
 
 typedef vod_status_t (*mp4_cenc_encrypt_video_build_fragment_header_t)(
-	mp4_cenc_encrypt_video_state_t* state,
-	vod_str_t* header,
-	size_t* total_fragment_size);
+	mp4_cenc_encrypt_video_state_t* state, vod_str_t* header, size_t* total_fragment_size
+);
 
 typedef struct {
 	// fixed
@@ -61,7 +60,7 @@ struct mp4_cenc_encrypt_video_state_s {
 	u_char* auxiliary_sample_sizes_pos;
 	uint16_t subsample_count;
 
-	// nal packet state
+	// NAL packet state
 	int cur_state;
 	uint32_t length_bytes_left;
 	uint32_t packet_size_left;
@@ -84,21 +83,27 @@ vod_status_t mp4_cenc_encrypt_video_get_fragment_writer(
 	mp4_cenc_encrypt_video_build_fragment_header_t build_fragment_header,
 	const u_char* iv,
 	vod_str_t* fragment_header,
-	size_t* total_fragment_size);
+	size_t* total_fragment_size
+);
 
 vod_status_t mp4_cenc_encrypt_audio_get_fragment_writer(
 	segment_writer_t* segment_writer,
 	request_context_t* request_context,
 	media_set_t* media_set,
 	uint32_t segment_index,
-	const u_char* iv);
+	const u_char* iv
+);
 
-u_char* mp4_cenc_encrypt_video_write_saiz_saio(mp4_cenc_encrypt_video_state_t* state, u_char* p, size_t auxiliary_data_offset);
+u_char* mp4_cenc_encrypt_video_write_saiz_saio(
+	mp4_cenc_encrypt_video_state_t* state, u_char* p, size_t auxiliary_data_offset
+);
 
 size_t mp4_cenc_encrypt_audio_get_auxiliary_data_size(mp4_cenc_encrypt_state_t* state);
 
 u_char* mp4_cenc_encrypt_audio_write_auxiliary_data(mp4_cenc_encrypt_state_t* state, u_char* p);
 
-u_char* mp4_cenc_encrypt_audio_write_saiz_saio(mp4_cenc_encrypt_state_t* state, u_char* p, size_t auxiliary_data_offset);
+u_char* mp4_cenc_encrypt_audio_write_saiz_saio(
+	mp4_cenc_encrypt_state_t* state, u_char* p, size_t auxiliary_data_offset
+);
 
 #endif //__MP4_CENC_ENCRYPT_H__

@@ -65,7 +65,8 @@ vod_status_t dash_packager_build_mpd(
 	vod_str_t* base_url,
 	media_set_t* media_set,
 	dash_manifest_extensions_t* extensions,
-	vod_str_t* result);
+	vod_str_t* result
+);
 
 vod_status_t dash_packager_build_fragment_header(
 	request_context_t* request_context,
@@ -75,6 +76,7 @@ vod_status_t dash_packager_build_fragment_header(
 	dash_fragment_header_extensions_t* extensions,
 	bool_t size_only,
 	vod_str_t* result,
-	size_t* total_fragment_size);
+	size_t* total_fragment_size
+);
 
 #endif // __DASH_PACKAGER_H__

@@ -22,29 +22,20 @@ struct media_clip_dynamic_s {
 };
 
 // functions
-vod_status_t dynamic_clip_parse(
-	void* context,
-	vod_json_object_t* element,
-	void** result);
+vod_status_t dynamic_clip_parse(void* context, vod_json_object_t* element, void** result);
 
-vod_status_t dynamic_clip_parser_init(
-	vod_pool_t* pool,
-	vod_pool_t* temp_pool);
+vod_status_t dynamic_clip_parser_init(vod_pool_t* pool, vod_pool_t* temp_pool);
 
 vod_status_t dynamic_clip_apply_mapping_json(
-	media_clip_dynamic_t* clip,
-	request_context_t* request_context,
-	u_char* mapping,
-	media_set_t* media_set);
+	media_clip_dynamic_t* clip, request_context_t* request_context, u_char* mapping, media_set_t* media_set
+);
 
 vod_status_t dynamic_clip_get_mapping_string(
-	request_context_t* request_context,
-	media_clip_dynamic_t* dynamic_clips_head,
-	vod_str_t* result);
+	request_context_t* request_context, media_clip_dynamic_t* dynamic_clips_head, vod_str_t* result
+);
 
 vod_status_t dynamic_clip_apply_mapping_string(
-	request_context_t* request_context,
-	media_set_t* media_set,
-	vod_str_t* mapping);
+	request_context_t* request_context, media_set_t* media_set, vod_str_t* mapping
+);
 
 #endif // __DYNAMIC_CLIP_H__

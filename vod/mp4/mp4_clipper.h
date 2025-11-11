@@ -27,7 +27,8 @@ vod_status_t mp4_clipper_parse_moov(
 	vod_str_t* metadata_parts,
 	size_t metadata_part_count,
 	bool_t copy_data,
-	media_clipper_parse_result_t** result);
+	media_clipper_parse_result_t** result
+);
 
 vod_status_t mp4_clipper_build_header(
 	request_context_t* request_context,
@@ -36,6 +37,7 @@ vod_status_t mp4_clipper_build_header(
 	media_clipper_parse_result_t* parse_result,
 	vod_chain_t** result,
 	size_t* response_size,
-	vod_str_t* content_type);
+	vod_str_t* content_type
+);
 
 #endif // __MP4_CLIPPER_H__
