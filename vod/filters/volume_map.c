@@ -13,8 +13,7 @@ typedef struct {
 	uint32_t samples;
 } volume_map_frame_t;
 
-typedef struct
-{
+typedef struct {
 	request_context_t* request_context;
 	vod_array_t* frames_array;
 	uint32_t timescale;
@@ -44,11 +43,7 @@ typedef struct {
 
 // common
 static vod_status_t
-volume_map_calc_frame(
-	request_context_t* request_context,
-	AVFrame* frame,
-	volume_map_frame_t* result)
-{
+volume_map_calc_frame(request_context_t* request_context, AVFrame* frame, volume_map_frame_t* result) {
 	const float** channel_cur;
 	const float** channel_end;
 	const float* cur;
@@ -57,18 +52,15 @@ volume_map_calc_frame(
 	double sample;
 	int channels = frame->ch_layout.nb_channels;
 
-	switch (frame->format)
-	{
+	switch (frame->format) {
 	case AV_SAMPLE_FMT_FLTP:
 		sum_squares = 0;
 		channel_cur = (const float**)frame->extended_data;
 		channel_end = channel_cur + channels;
-		for (; channel_cur < channel_end; channel_cur++)
-		{
+		for (; channel_cur < channel_end; channel_cur++) {
 			cur = *channel_cur;
 			end = cur + frame->nb_samples;
-			for (; cur < end; cur++)
-			{
+			for (; cur < end; cur++) {
 				sample = *cur;
 				sum_squares += sample * sample;
 			}
@@ -76,8 +68,13 @@ volume_map_calc_frame(
 		break;
 
 	default:
-		vod_log_error(VOD_LOG_ERR, request_context->log, 0,
-			"volume_map_calc_frame: unsupported sample format %d", frame->format);
+		vod_log_error(
+			VOD_LOG_ERR,
+			request_context->log,
+			0,
+			"volume_map_calc_frame: unsupported sample format %d",
+			frame->format
+		);
 		return VOD_UNEXPECTED;
 	}
 
@@ -89,18 +86,15 @@ volume_map_calc_frame(
 // audio filter encoder
 vod_status_t
 volume_map_encoder_init(
-	request_context_t* request_context,
-	uint32_t timescale,
-	vod_array_t* frames_array,
-	void** result)
-{
+	request_context_t* request_context, uint32_t timescale, vod_array_t* frames_array, void** result
+) {
 	volume_map_encoder_state_t* state;
 
 	state = vod_alloc(request_context->pool, sizeof(*state));
-	if (state == NULL)
-	{
-		vod_log_debug0(VOD_LOG_DEBUG_LEVEL, request_context->log, 0,
-			"volume_map_encoder_init: vod_alloc failed");
+	if (state == NULL) {
+		vod_log_debug0(
+			VOD_LOG_DEBUG_LEVEL, request_context->log, 0, "volume_map_encoder_init: vod_alloc failed"
+		);
 		return VOD_ALLOC_FAILED;
 	}
 
@@ -114,10 +108,7 @@ volume_map_encoder_init(
 }
 
 vod_status_t
-volume_map_encoder_update_media_info(
-	void* context,
-	media_info_t* media_info)
-{
+volume_map_encoder_update_media_info(void* context, media_info_t* media_info) {
 	volume_map_encoder_state_t* state = context;
 
 	media_info->timescale = state->timescale;
@@ -126,32 +117,22 @@ volume_map_encoder_update_media_info(
 }
 
 vod_status_t
-volume_map_encoder_write_frame(
-	void* context,
-	AVFrame* frame)
-{
+volume_map_encoder_write_frame(void* context, AVFrame* frame) {
 	volume_map_encoder_state_t* state = context;
 	volume_map_frame_t* data;
 	input_frame_t* cur_frame;
 	vod_status_t rc;
 
 	rc = audio_filter_alloc_memory_frame(
-		state->request_context,
-		state->frames_array,
-		sizeof(*data),
-		&cur_frame);
-	if (rc != VOD_OK)
-	{
+		state->request_context, state->frames_array, sizeof(*data), &cur_frame
+	);
+	if (rc != VOD_OK) {
 		return rc;
 	}
 
 	data = (void*)(uintptr_t)cur_frame->offset;
-	rc = volume_map_calc_frame(
-		state->request_context,
-		frame,
-		data);
-	if (rc != VOD_OK)
-	{
+	rc = volume_map_calc_frame(state->request_context, frame, data);
+	if (rc != VOD_OK) {
 		return rc;
 	}
 
@@ -159,10 +140,9 @@ volume_map_encoder_write_frame(
 	cur_frame->pts_delay = 0;
 
 	// update the duration of the previous frame
-	if (state->frames_array->nelts > 1 &&
-		frame->pts != AV_NOPTS_VALUE &&
-		state->last_pts != AV_NOPTS_VALUE)
-	{
+	if (state->frames_array->nelts > 1
+	    && frame->pts != AV_NOPTS_VALUE
+	    && state->last_pts != AV_NOPTS_VALUE) {
 		cur_frame[-1].duration = frame->pts - state->last_pts;
 	}
 	state->last_pts = frame->pts;
@@ -174,26 +154,20 @@ volume_map_encoder_write_frame(
 
 // memory frame reader
 static void
-volume_map_frame_reader_init(volume_map_frame_reader_state_t* state, media_track_t* track)
-{
+volume_map_frame_reader_init(volume_map_frame_reader_state_t* state, media_track_t* track) {
 	// initialize the frame state
 	state->cur_frame_part = track->frames;
 	state->cur_frame = track->frames.first_frame;
 	state->pts = track->first_frame_time_offset;
 
-	state->cur_frame_part.frames_source->set_cache_slot_id(
-		state->cur_frame_part.frames_source_context,
-		0);
+	state->cur_frame_part.frames_source->set_cache_slot_id(state->cur_frame_part.frames_source_context, 0);
 }
 
 static vod_status_t
 volume_map_frame_reader_get_frame(
-	volume_map_frame_reader_state_t* state,
-	volume_map_frame_t** data,
-	int64_t* pts)
-{
-	if (state->cur_frame >= state->cur_frame_part.last_frame)
-	{
+	volume_map_frame_reader_state_t* state, volume_map_frame_t** data, int64_t* pts
+) {
+	if (state->cur_frame >= state->cur_frame_part.last_frame) {
 		return VOD_DONE;
 	}
 
@@ -203,9 +177,7 @@ volume_map_frame_reader_get_frame(
 
 	// move to the next frame
 	state->cur_frame++;
-	if (state->cur_frame >= state->cur_frame_part.last_frame &&
-		state->cur_frame_part.next != NULL)
-	{
+	if (state->cur_frame >= state->cur_frame_part.last_frame && state->cur_frame_part.next != NULL) {
 		state->cur_frame_part = *state->cur_frame_part.next;
 		state->cur_frame = state->cur_frame_part.first_frame;
 	}
@@ -215,47 +187,40 @@ volume_map_frame_reader_get_frame(
 
 // writer
 static vod_status_t
-volume_map_writer_init_track(volume_map_writer_state_t* state)
-{
-	vod_pool_cleanup_t *cln;
+volume_map_writer_init_track(volume_map_writer_state_t* state) {
+	vod_pool_cleanup_t* cln;
 	media_track_t* track = state->cur_track;
 	vod_status_t rc;
 
-	if (track->media_info.codec_id == VOD_CODEC_ID_VOLUME_MAP)
-	{
+	if (track->media_info.codec_id == VOD_CODEC_ID_VOLUME_MAP) {
 		volume_map_frame_reader_init(&state->reader, state->cur_track);
 		return VOD_OK;
 	}
 
 	// init the decoder
 	state->decoder = vod_alloc(state->request_context->pool, sizeof(*state->decoder));
-	if (state->decoder == NULL)
-	{
-		vod_log_debug0(VOD_LOG_DEBUG_LEVEL, state->request_context->log, 0,
-			"volume_map_writer_init_track: vod_alloc failed");
+	if (state->decoder == NULL) {
+		vod_log_debug0(
+			VOD_LOG_DEBUG_LEVEL, state->request_context->log, 0, "volume_map_writer_init_track: vod_alloc failed"
+		);
 		return VOD_ALLOC_FAILED;
 	}
 
 	vod_memzero(state->decoder, sizeof(*state->decoder));
 
 	cln = vod_pool_cleanup_add(state->request_context->pool, 0);
-	if (cln == NULL)
-	{
-		vod_log_debug0(VOD_LOG_DEBUG_LEVEL, state->request_context->log, 0,
-			"volume_map_writer_init_track: vod_pool_cleanup_add failed");
+	if (cln == NULL) {
+		vod_log_debug0(
+			VOD_LOG_DEBUG_LEVEL, state->request_context->log, 0, "volume_map_writer_init_track: vod_pool_cleanup_add failed"
+		);
 		return VOD_ALLOC_FAILED;
 	}
 
 	cln->handler = (vod_pool_cleanup_pt)audio_decoder_free;
 	cln->data = state->decoder;
 
-	rc = audio_decoder_init(
-		state->decoder,
-		state->request_context,
-		track,
-		0);
-	if (rc != VOD_OK)
-	{
+	rc = audio_decoder_init(state->decoder, state->request_context, track, 0);
+	if (rc != VOD_OK) {
 		return rc;
 	}
 
@@ -269,25 +234,20 @@ volume_map_writer_init(
 	uint32_t interval,
 	write_callback_t write_callback,
 	void* write_context,
-	void** result)
-{
+	void** result
+) {
 	volume_map_writer_state_t* state;
 	vod_status_t rc;
 
 	state = vod_alloc(request_context->pool, sizeof(volume_map_writer_state_t));
-	if (state == NULL)
-	{
-		vod_log_debug0(VOD_LOG_DEBUG_LEVEL, request_context->log, 0,
-			"volume_map_writer_init: vod_alloc failed");
+	if (state == NULL) {
+		vod_log_debug0(
+			VOD_LOG_DEBUG_LEVEL, request_context->log, 0, "volume_map_writer_init: vod_alloc failed"
+		);
 		return VOD_ALLOC_FAILED;
 	}
 
-	write_buffer_init(
-		&state->write_buffer,
-		request_context,
-		write_callback,
-		write_context,
-		FALSE);
+	write_buffer_init(&state->write_buffer, request_context, write_callback, write_context, FALSE);
 
 	state->request_context = request_context;
 	state->cur_track = media_set->filtered_tracks;
@@ -298,8 +258,7 @@ volume_map_writer_init(
 	state->data.sum_squares = 0;
 
 	rc = volume_map_writer_init_track(state);
-	if (rc != VOD_OK)
-	{
+	if (rc != VOD_OK) {
 		return rc;
 	}
 
@@ -308,20 +267,17 @@ volume_map_writer_init(
 }
 
 static vod_status_t
-volume_map_writer_decode_frame(audio_decoder_state_t* state, volume_map_frame_t* data, int64_t* pts)
-{
+volume_map_writer_decode_frame(audio_decoder_state_t* state, volume_map_frame_t* data, int64_t* pts) {
 	AVFrame* frame;
 	vod_status_t rc;
 
 	rc = audio_decoder_get_frame(state, &frame);
-	if (rc != VOD_OK)
-	{
+	if (rc != VOD_OK) {
 		return rc;
 	}
 
 	rc = volume_map_calc_frame(state->request_context, frame, data);
-	if (rc != VOD_OK)
-	{
+	if (rc != VOD_OK) {
 		return rc;
 	}
 
@@ -331,8 +287,7 @@ volume_map_writer_decode_frame(audio_decoder_state_t* state, volume_map_frame_t*
 }
 
 static vod_status_t
-volume_map_writer_write_line(volume_map_writer_state_t* state, int64_t pts)
-{
+volume_map_writer_write_line(volume_map_writer_state_t* state, int64_t pts) {
 	vod_status_t rc;
 	int32_t rms_level;
 	size_t ignore;
@@ -340,12 +295,9 @@ volume_map_writer_write_line(volume_map_writer_state_t* state, int64_t pts)
 	u_char* p;
 
 	rc = write_buffer_get_bytes(
-		&state->write_buffer,
-		VOD_INT64_LEN + VOD_INT32_LEN * 2 + 3,
-		&ignore,
-		&start);
-	if (rc != VOD_OK)
-	{
+		&state->write_buffer, VOD_INT64_LEN + VOD_INT32_LEN * 2 + 3, &ignore, &start
+	);
+	if (rc != VOD_OK) {
 		return rc;
 	}
 
@@ -353,10 +305,10 @@ volume_map_writer_write_line(volume_map_writer_state_t* state, int64_t pts)
 
 	p = vod_sprintf(p, "%L,", pts);
 
-	rms_level = (int32_t)(log10(state->data.sum_squares / state->data.samples) * 10 * RMS_LEVEL_PRECISION);
+	rms_level =
+		(int32_t)(log10(state->data.sum_squares / state->data.samples) * 10 * RMS_LEVEL_PRECISION);
 
-	if (rms_level < 0)
-	{
+	if (rms_level < 0) {
 		*p++ = '-';
 		rms_level = -rms_level;
 	}
@@ -369,64 +321,52 @@ volume_map_writer_write_line(volume_map_writer_state_t* state, int64_t pts)
 }
 
 vod_status_t
-volume_map_writer_process(void* context)
-{
+volume_map_writer_process(void* context) {
 	volume_map_writer_state_t* state = context;
 	volume_map_frame_t data_buf;
 	volume_map_frame_t* data = NULL;
 	vod_status_t rc;
 	int64_t pts = 0;
 
-	for (;;)
-	{
+	for (;;) {
 		// get a frame
-		if (state->cur_track->media_info.codec_id == VOD_CODEC_ID_VOLUME_MAP)
-		{
+		if (state->cur_track->media_info.codec_id == VOD_CODEC_ID_VOLUME_MAP) {
 			rc = volume_map_frame_reader_get_frame(&state->reader, &data, &pts);
-		}
-		else
-		{
+		} else {
 			data = &data_buf;
 			rc = volume_map_writer_decode_frame(state->decoder, &data_buf, &pts);
 		}
 
-		if (rc == VOD_DONE)
-		{
+		if (rc == VOD_DONE) {
 			// move to the next track
 			state->cur_track++;
-			if (state->cur_track >= state->last_track)
-			{
+			if (state->cur_track >= state->last_track) {
 				return write_buffer_flush(&state->write_buffer, FALSE);
 			}
 
 			rc = volume_map_writer_init_track(state);
-			if (rc != VOD_OK)
-			{
+			if (rc != VOD_OK) {
 				return rc;
 			}
 			continue;
 		}
 
-		if (rc != VOD_OK)
-		{
+		if (rc != VOD_OK) {
 			return rc;
 		}
 
 		pts += state->cur_track->clip_start_time;
 
-		if (pts < state->flush_pts)
-		{
+		if (pts < state->flush_pts) {
 			state->data.sum_squares += data->sum_squares;
 			state->data.samples += data->samples;
 			continue;
 		}
 
 		// write a line
-		if (state->data.samples > 0 && state->data.sum_squares > 0)
-		{
+		if (state->data.samples > 0 && state->data.sum_squares > 0) {
 			rc = volume_map_writer_write_line(state, pts);
-			if (rc != VOD_OK)
-			{
+			if (rc != VOD_OK) {
 				return rc;
 			}
 		}
@@ -435,8 +375,7 @@ volume_map_writer_process(void* context)
 		state->data.sum_squares = data->sum_squares;
 		state->data.samples = data->samples;
 		state->flush_pts += state->interval;
-		if (state->flush_pts < pts)
-		{
+		if (state->flush_pts < pts) {
 			state->flush_pts = pts + state->interval;
 		}
 	}

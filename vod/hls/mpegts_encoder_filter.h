@@ -9,7 +9,7 @@
 
 // constants
 #define MPEGTS_PACKET_SIZE (188)
-#define HLS_DELAY (63000)			// 700 ms PCR delay
+#define HLS_DELAY (63000) // 700 ms PCR delay
 #define INITIAL_DTS (9090)
 #define INITIAL_PCR (4590)
 
@@ -79,11 +79,11 @@ vod_status_t mpegts_encoder_init_streams(
 	request_context_t* request_context,
 	hls_encryption_params_t* encryption_params,
 	mpegts_encoder_init_streams_state_t* stream_state,
-	uint32_t segment_index);
+	uint32_t segment_index
+);
 
-void mpegts_encoder_finalize_streams(
-	mpegts_encoder_init_streams_state_t* stream_state,
-	vod_str_t* ts_header);
+void
+mpegts_encoder_finalize_streams(mpegts_encoder_init_streams_state_t* stream_state, vod_str_t* ts_header);
 
 vod_status_t mpegts_encoder_init(
 	media_filter_t* filter,
@@ -92,11 +92,10 @@ vod_status_t mpegts_encoder_init(
 	media_track_t* track,
 	write_buffer_queue_t* queue,
 	bool_t interleave_frames,
-	bool_t align_frames);
+	bool_t align_frames
+);
 
-vod_status_t mpegts_encoder_start_sub_frame(
-	media_filter_context_t* context,
-	output_frame_t* frame);
+vod_status_t mpegts_encoder_start_sub_frame(media_filter_context_t* context, output_frame_t* frame);
 
 void mpegts_encoder_simulated_start_segment(write_buffer_queue_t* queue);
 

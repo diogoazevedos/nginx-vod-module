@@ -49,14 +49,14 @@ typedef struct {
 typedef struct {
 	media_track_t* first_track;
 	media_track_t* last_track;
-	media_track_t* ref_track[MEDIA_TYPE_COUNT];		// either longest or shortest, depending on segmenter conf
+	media_track_t* ref_track[MEDIA_TYPE_COUNT]; // either longest or shortest, depending on segmenter conf
 } media_clip_filtered_t;
 
 struct media_sequence_s {
 	// initialized during parsing
 	uint32_t index;
 	vod_array_part_t* unparsed_clips;
-	media_clip_t** clips;						// [clip_count]
+	media_clip_t** clips; // [clip_count]
 	vod_str_t stripped_uri;
 	vod_str_t id;
 	media_tags_t tags;
@@ -74,10 +74,10 @@ struct media_sequence_s {
 	void* drm_info;
 
 	// initialized while applying filters
-	uint32_t track_count[MEDIA_TYPE_COUNT];		// track count in each filtered_clips
+	uint32_t track_count[MEDIA_TYPE_COUNT]; // track count in each filtered_clips
 	uint32_t total_track_count;
 	int media_type;
-	media_clip_filtered_t* filtered_clips;		// [clip_count]		// XXXXX reduce usage, use filtered_tracks instead
+	media_clip_filtered_t* filtered_clips; // [clip_count] - XXXXX: reduce usage, use filtered_tracks instead
 	media_clip_filtered_t* filtered_clips_end;
 
 	uint64_t total_frame_size;
@@ -86,16 +86,16 @@ struct media_sequence_s {
 };
 
 typedef struct {
-	uint32_t* durations;				// [total_count] clip durations in millis
-	uint32_t total_count;				// number of clips in the whole set
-	uint64_t* times;					// [total_count] clip timestamps in millis
-	uint64_t* original_times;			// [total_count] clip timestamps in millis
-	uint64_t segment_base_time;			// the time of segment 0
-	uint64_t total_duration;			// = sum(durations)
-	uint64_t first_time;				// = times[0]
-	uint64_t original_first_time;		// start time of the first clip before it was trimmed to the live window
-	uint64_t first_clip_start_offset;	// difference between first clip time and the original first time of this clip
-	uint32_t first_segment_alignment_offset;	// difference between unaligned first segment time and first_time
+	uint32_t* durations;        // [total_count] clip durations in millis
+	uint32_t total_count;       // number of clips in the whole set
+	uint64_t* times;            // [total_count] clip timestamps in millis
+	uint64_t* original_times;   // [total_count] clip timestamps in millis
+	uint64_t segment_base_time; // the time of segment 0
+	uint64_t total_duration;    // = sum(durations)
+	uint64_t first_time;        // = times[0]
+	uint64_t original_first_time; // start time of the first clip before it was trimmed to the live window
+	uint64_t first_clip_start_offset; // difference between first clip time and the original first time of this clip
+	uint32_t first_segment_alignment_offset; // difference between unaligned first segment time and first_time
 } media_clip_timing_t;
 
 typedef struct media_notification_s {
@@ -122,17 +122,17 @@ typedef struct {
 
 	vod_str_t id;
 	uint32_t type;
-	uint32_t original_type;					// will contain live in case of a live playlist that was forced to vod
-	bool_t is_live_event;					// causes HLS playlist type to be event and infinite live_window_duration
+	uint32_t original_type; // will contain live in case of a live playlist that was forced to vod
+	bool_t is_live_event; // causes HLS playlist type to be event and infinite live_window_duration
 	media_clip_timing_t timing;
-	bool_t original_use_discontinuity;		// will be different than use_discontinuity in case force_continuous_timestamps is enabled
+	bool_t original_use_discontinuity; // will be different than use_discontinuity in case force_continuous_timestamps is enabled
 	bool_t use_discontinuity;
 	bool_t presentation_end;
 	bool_t cache_mapping;
 
-	uint32_t clip_count;					// number of clips relevant to serve the current request
+	uint32_t clip_count; // number of clips relevant to serve the current request
 	uint32_t sequence_count;
-	media_sequence_t* sequences;			// [sequence_count]
+	media_sequence_t* sequences; // [sequence_count]
 	media_sequence_t* sequences_end;
 	bool_t has_multi_sequences;
 
@@ -158,15 +158,15 @@ typedef struct {
 	media_closed_captions_t* closed_captions_end;
 
 	// initialized while applying filters
-	uint32_t track_count[MEDIA_TYPE_COUNT];	// sum of track count in all sequences per clip
+	uint32_t track_count[MEDIA_TYPE_COUNT]; // sum of track count in all sequences per clip
 	uint32_t total_track_count;
-	media_track_t* filtered_tracks;			// [total_track_count * clip_count] (all tracks of clip 0, then all tracks of clip1 etc.)
+	media_track_t* filtered_tracks; // [total_track_count * clip_count] (all tracks of clip 0, then all tracks of clip1 etc.)
 	media_track_t* filtered_tracks_end;
 	bool_t audio_filtering_needed;
 } media_set_t;
 
 typedef struct {
-	int32_t index;			// positive = sequence index (-f1), negative = index into sequence_ids (-s1)
+	int32_t index; // positive = sequence index (-f1), negative = index into sequence_ids (-s1)
 	track_mask_t tracks_mask[MEDIA_TYPE_COUNT];
 } sequence_tracks_mask_t;
 
@@ -181,12 +181,11 @@ typedef struct {
 	track_mask_t tracks_mask[MEDIA_TYPE_COUNT];
 	sequence_tracks_mask_t* sequence_tracks_mask;
 	sequence_tracks_mask_t* sequence_tracks_mask_end;
-	uint64_t* langs_mask;			// [LANG_MASK_SIZE]
+	uint64_t* langs_mask; // [LANG_MASK_SIZE]
 	uint32_t version;
 	uint32_t width;
 	uint32_t height;
 } request_params_t;
-
 
 int64_t media_set_get_segment_time_millis(media_set_t* media_set);
 

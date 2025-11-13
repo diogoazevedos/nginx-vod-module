@@ -16,12 +16,9 @@
 struct id3_context_s;
 typedef struct id3_context_s id3_context_t;
 
-typedef void(*hls_get_iframe_positions_callback_t)(
-	void* context,
-	uint32_t segment_index,
-	uint32_t frame_duration,
-	uint32_t frame_start,
-	uint32_t frame_size);
+typedef void (*hls_get_iframe_positions_callback_t)(
+	void* context, uint32_t segment_index, uint32_t frame_duration, uint32_t frame_start, uint32_t frame_size
+);
 
 typedef struct {
 	bool_t interleave_frames;
@@ -98,7 +95,8 @@ vod_status_t hls_muxer_init_segment(
 	void* write_context,
 	size_t* response_size,
 	vod_str_t* response_header,
-	hls_muxer_state_t** processor_state);
+	hls_muxer_state_t** processor_state
+);
 
 vod_status_t hls_muxer_process(hls_muxer_state_t* state);
 
@@ -109,6 +107,7 @@ vod_status_t hls_muxer_simulate_get_iframes(
 	hls_encryption_params_t* encryption_params,
 	media_set_t* media_set,
 	hls_get_iframe_positions_callback_t callback,
-	void* context);
+	void* context
+);
 
 #endif // __HLS_MUXER_H__

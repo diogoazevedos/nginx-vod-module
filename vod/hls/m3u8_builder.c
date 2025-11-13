@@ -39,7 +39,8 @@ static const char m3u8_media_characteristics[] = ",CHARACTERISTICS=\"%V\"";
 static const char m3u8_media_instream_id[] = ",INSTREAM-ID=\"%V\"";
 static const u_char m3u8_media_uri[] = ",URI=\"";
 
-static const char m3u8_stream_inf_video[] = "#EXT-X-STREAM-INF:BANDWIDTH=%uD,RESOLUTION=%uDx%uD,FRAME-RATE=%uD.%03uD,CODECS=\"%V";
+static const char m3u8_stream_inf_video[] =
+	"#EXT-X-STREAM-INF:BANDWIDTH=%uD,RESOLUTION=%uDx%uD,FRAME-RATE=%uD.%03uD,CODECS=\"%V";
 static const char m3u8_stream_inf_audio[] = "#EXT-X-STREAM-INF:BANDWIDTH=%uD,CODECS=\"%V";
 static const char m3u8_stream_inf_average_bandwidth[] = ",AVERAGE-BANDWIDTH=%uD";
 static const char m3u8_stream_inf_audio_group[] = ",AUDIO=\"audio%uD\"";
@@ -50,7 +51,8 @@ static const u_char m3u8_stream_inf_video_range_sdr[] = ",VIDEO-RANGE=SDR";
 static const u_char m3u8_stream_inf_video_range_hlg[] = ",VIDEO-RANGE=HLG";
 static const u_char m3u8_stream_inf_video_range_pq[] = ",VIDEO-RANGE=PQ";
 
-static const char m3u8_iframe_stream_inf[] = "#EXT-X-I-FRAME-STREAM-INF:BANDWIDTH=%uD,RESOLUTION=%uDx%uD,CODECS=\"%V\",URI=\"";
+static const char m3u8_iframe_stream_inf[] =
+	"#EXT-X-I-FRAME-STREAM-INF:BANDWIDTH=%uD,RESOLUTION=%uDx%uD,CODECS=\"%V\",URI=\"";
 
 #if (NGX_HAVE_OPENSSL_EVP)
 static const char m3u8_key[] = "#EXT-X-KEY:METHOD=%s";
@@ -87,30 +89,26 @@ typedef struct {
 	vod_str_t* segment_file_name_prefix;
 } write_segment_context_t;
 
-// Notes:
-//	1. not using vod_sprintf in order to avoid the use of floats
-//  2. scale must be a power of 10
+// NOTE:
+// 1. not using vod_sprintf in order to avoid the use of floats
+// 2. scale must be a power of 10
 
 static u_char*
-m3u8_builder_format_double(u_char* p, uint32_t n, uint32_t scale)
-{
+m3u8_builder_format_double(u_char* p, uint32_t n, uint32_t scale) {
 	int cur_digit;
 	int int_n = n / scale;
 	int fraction = n % scale;
 
 	p = vod_sprintf(p, "%d", int_n);
 
-	if (scale == 1)
-	{
+	if (scale == 1) {
 		return p;
 	}
 
 	*p++ = '.';
-	for (;;)
-	{
+	for (;;) {
 		scale /= 10;
-		if (scale == 0)
-		{
+		if (scale == 0) {
 			break;
 		}
 		cur_digit = fraction / scale;
@@ -122,12 +120,8 @@ m3u8_builder_format_double(u_char* p, uint32_t n, uint32_t scale)
 
 static u_char*
 m3u8_builder_append_segment_name(
-	u_char* p,
-	vod_str_t* base_url,
-	vod_str_t* segment_file_name_prefix,
-	uint32_t segment_index,
-	vod_str_t* suffix)
-{
+	u_char* p, vod_str_t* base_url, vod_str_t* segment_file_name_prefix, uint32_t segment_index, vod_str_t* suffix
+) {
 	p = vod_copy(p, base_url->data, base_url->len);
 	p = vod_copy(p, segment_file_name_prefix->data, segment_file_name_prefix->len);
 	*p++ = '-';
@@ -137,8 +131,7 @@ m3u8_builder_append_segment_name(
 }
 
 static u_char*
-m3u8_builder_append_extinf_tag(u_char* p, uint32_t duration, uint32_t scale)
-{
+m3u8_builder_append_extinf_tag(u_char* p, uint32_t duration, uint32_t scale) {
 	p = vod_copy(p, "#EXTINF:", sizeof("#EXTINF:") - 1);
 	p = m3u8_builder_format_double(p, duration, scale);
 	*p++ = ',';
@@ -148,59 +141,48 @@ m3u8_builder_append_extinf_tag(u_char* p, uint32_t duration, uint32_t scale)
 
 static void
 m3u8_builder_append_iframe_string(
-	void* context,
-	uint32_t segment_index,
-	uint32_t frame_duration,
-	uint32_t frame_start,
-	uint32_t frame_size)
-{
+	void* context, uint32_t segment_index, uint32_t frame_duration, uint32_t frame_start, uint32_t frame_size
+) {
 	write_segment_context_t* ctx = (write_segment_context_t*)context;
 
 	ctx->p = m3u8_builder_append_extinf_tag(ctx->p, frame_duration, 1000);
 	ctx->p = vod_sprintf(ctx->p, m3u8_byterange, frame_size, frame_start);
 	ctx->p = m3u8_builder_append_segment_name(
-		ctx->p,
-		ctx->base_url,
-		ctx->segment_file_name_prefix,
-		segment_index,
-		&ctx->name_suffix);
+		ctx->p, ctx->base_url, ctx->segment_file_name_prefix, segment_index, &ctx->name_suffix
+	);
 }
 
 static vod_status_t
 m3u8_builder_build_tracks_spec(
-	request_context_t* request_context,
-	media_set_t* media_set,
-	vod_str_t* suffix,
-	vod_str_t* result)
-{
+	request_context_t* request_context, media_set_t* media_set, vod_str_t* suffix, vod_str_t* result
+) {
 	media_track_t** cur_track_ptr;
 	media_track_t** tracks_end;
 	media_track_t** tracks;
 	media_track_t* cur_track;
 	u_char* p;
-	size_t result_size = suffix->len + sizeof("-x") - 1 + VOD_INT32_LEN +
-		(sizeof("-v") - 1 + VOD_INT32_LEN) * media_set->total_track_count;
+	size_t result_size = suffix->len
+	                   + ((sizeof("-x") - 1) + VOD_INT32_LEN)
+	                   + ((sizeof("-v") - 1) + VOD_INT32_LEN) * media_set->total_track_count;
 
-	if (media_set->has_multi_sequences)
-	{
+	if (media_set->has_multi_sequences) {
 		result_size += (sizeof("-f") - 1 + VOD_INT32_LEN) * media_set->total_track_count;
 	}
 
 	// allocate the result buffer and the track ptrs array
-	tracks = vod_alloc(request_context->pool, sizeof(tracks[0]) * media_set->total_track_count + result_size);
-	if (tracks == NULL)
-	{
-		vod_log_debug0(VOD_LOG_DEBUG_LEVEL, request_context->log, 0,
-			"m3u8_builder_build_tracks_spec: vod_alloc failed");
+	tracks =
+		vod_alloc(request_context->pool, sizeof(tracks[0]) * media_set->total_track_count + result_size);
+	if (tracks == NULL) {
+		vod_log_debug0(
+			VOD_LOG_DEBUG_LEVEL, request_context->log, 0, "m3u8_builder_build_tracks_spec: vod_alloc failed"
+		);
 		return VOD_ALLOC_FAILED;
 	}
 
 	// build the track ptrs array
 	tracks_end = tracks + media_set->total_track_count;
-	for (cur_track_ptr = tracks, cur_track = media_set->filtered_tracks;
-		cur_track_ptr < tracks_end;
-		cur_track_ptr++, cur_track++)
-	{
+	for (cur_track_ptr = tracks, cur_track = media_set->filtered_tracks; cur_track_ptr < tracks_end;
+	     cur_track_ptr++, cur_track++) {
 		*cur_track_ptr = cur_track;
 	}
 
@@ -208,20 +190,22 @@ m3u8_builder_build_tracks_spec(
 	result->data = p = (u_char*)tracks_end;
 
 	p = manifest_utils_append_tracks_spec(
-		p,
-		tracks,
-		media_set->total_track_count,
-		media_set->has_multi_sequences);
+		p, tracks, media_set->total_track_count, media_set->has_multi_sequences
+	);
 
 	p = vod_copy(p, suffix->data, suffix->len);
 
 	result->len = p - result->data;
 
-	if (result->len > result_size)
-	{
-		vod_log_error(VOD_LOG_ERR, request_context->log, 0,
+	if (result->len > result_size) {
+		vod_log_error(
+			VOD_LOG_ERR,
+			request_context->log,
+			0,
 			"m3u8_builder_build_tracks_spec: result length %uz exceeded allocated length %uz",
-			result->len, result_size);
+			result->len,
+			result_size
+		);
 		return VOD_UNEXPECTED;
 	}
 
@@ -235,8 +219,8 @@ m3u8_builder_build_iframe_playlist(
 	hls_mpegts_muxer_conf_t* muxer_conf,
 	vod_str_t* base_url,
 	media_set_t* media_set,
-	vod_str_t* result)
-{
+	vod_str_t* result
+) {
 	hls_encryption_params_t encryption_params;
 	write_segment_context_t ctx;
 	segment_durations_t segment_durations;
@@ -254,67 +238,56 @@ m3u8_builder_build_iframe_playlist(
 	encryption_params.iv = NULL;
 
 	// build the required tracks string
-	rc = m3u8_builder_build_tracks_spec(
-		request_context,
-		media_set,
-		&m3u8_ts_suffix,
-		&ctx.name_suffix);
-	if (rc != VOD_OK)
-	{
+	rc = m3u8_builder_build_tracks_spec(request_context, media_set, &m3u8_ts_suffix, &ctx.name_suffix);
+	if (rc != VOD_OK) {
 		return rc;
 	}
 
 	// get segment durations
-	if (segmenter_conf->align_to_key_frames)
-	{
+	if (segmenter_conf->align_to_key_frames) {
 		rc = segmenter_get_segment_durations_accurate(
-			request_context,
-			segmenter_conf,
-			media_set,
-			NULL,
-			MEDIA_TYPE_NONE,
-			&segment_durations);
-	}
-	else
-	{
+			request_context, segmenter_conf, media_set, NULL, MEDIA_TYPE_NONE, &segment_durations
+		);
+	} else {
 		rc = segmenter_get_segment_durations_estimate(
-			request_context,
-			segmenter_conf,
-			media_set,
-			NULL,
-			MEDIA_TYPE_NONE,
-			&segment_durations);
+			request_context, segmenter_conf, media_set, NULL, MEDIA_TYPE_NONE, &segment_durations
+		);
 	}
 
-	if (rc != VOD_OK)
-	{
+	if (rc != VOD_OK) {
 		return rc;
 	}
 
 	duration_millis = segment_durations.duration;
-	iframe_length = sizeof("#EXTINF:.000,\n") - 1 + vod_get_int_print_len(vod_div_ceil(duration_millis, 1000)) +
-		sizeof(m3u8_byterange) - 1 + VOD_INT32_LEN + vod_get_int_print_len(MAX_FRAME_SIZE) - (sizeof("%uD%uD") - 1) +
-		base_url->len + conf->segment_file_name_prefix.len + 1 + vod_get_int_print_len(segment_durations.segment_count) + ctx.name_suffix.len;
+	iframe_length =
+		((sizeof("#EXTINF:.000,\n") - 1) + vod_get_int_print_len(vod_div_ceil(duration_millis, 1000)))
+		+ ((sizeof(m3u8_byterange) - 1)
+	       + VOD_INT32_LEN
+	       + vod_get_int_print_len(MAX_FRAME_SIZE)
+	       - (sizeof("%uD%uD") - 1))
+		+ base_url->len
+		+ conf->segment_file_name_prefix.len
+		+ 1 // '-'
+		+ vod_get_int_print_len(segment_durations.segment_count)
+		+ ctx.name_suffix.len;
 
-	result_size =
-		conf->iframes_m3u8_header_len +
-		iframe_length * media_set->sequences[0].video_key_frame_count +
-		sizeof(m3u8_endlist) - 1;
+	result_size = conf->iframes_m3u8_header_len
+	            + iframe_length * media_set->sequences[0].video_key_frame_count
+	            + (sizeof(m3u8_endlist) - 1);
 
 	// allocate the buffer
 	result->data = vod_alloc(request_context->pool, result_size);
-	if (result->data == NULL)
-	{
-		vod_log_debug0(VOD_LOG_DEBUG_LEVEL, request_context->log, 0,
-			"m3u8_builder_build_iframe_playlist: vod_alloc failed");
+	if (result->data == NULL) {
+		vod_log_debug0(
+			VOD_LOG_DEBUG_LEVEL, request_context->log, 0, "m3u8_builder_build_iframe_playlist: vod_alloc failed"
+		);
 		return VOD_ALLOC_FAILED;
 	}
 
 	// fill out the buffer
 	ctx.p = vod_copy(result->data, conf->iframes_m3u8_header, conf->iframes_m3u8_header_len);
 
-	if (media_set->sequences[0].video_key_frame_count > 0)
-	{
+	if (media_set->sequences[0].video_key_frame_count > 0) {
 		ctx.base_url = base_url;
 		ctx.segment_file_name_prefix = &conf->segment_file_name_prefix;
 
@@ -325,9 +298,9 @@ m3u8_builder_build_iframe_playlist(
 			&encryption_params,
 			media_set,
 			m3u8_builder_append_iframe_string,
-			&ctx);
-		if (rc != VOD_OK)
-		{
+			&ctx
+		);
+		if (rc != VOD_OK) {
 			return rc;
 		}
 	}
@@ -335,11 +308,15 @@ m3u8_builder_build_iframe_playlist(
 	ctx.p = vod_copy(ctx.p, m3u8_endlist, sizeof(m3u8_endlist) - 1);
 	result->len = ctx.p - result->data;
 
-	if (result->len > result_size)
-	{
-		vod_log_error(VOD_LOG_ERR, request_context->log, 0,
+	if (result->len > result_size) {
+		vod_log_error(
+			VOD_LOG_ERR,
+			request_context->log,
+			0,
 			"m3u8_builder_build_iframe_playlist: result length %uz exceeded allocated length %uz",
-			result->len, result_size);
+			result->len,
+			result_size
+		);
 		return VOD_UNEXPECTED;
 	}
 
@@ -348,40 +325,33 @@ m3u8_builder_build_iframe_playlist(
 
 #if (NGX_HAVE_OPENSSL_EVP)
 static size_t
-m3u8_builder_get_keys_size(const char* key_tag, drm_info_t* drm_info, size_t* max_pssh_size)
-{
+m3u8_builder_get_keys_size(const char* key_tag, drm_info_t* drm_info, size_t* max_pssh_size) {
 	drm_system_info_t* cur_info;
 	size_t result = 0;
 	size_t cur_pssh_size = 0;
 
-	for (cur_info = drm_info->pssh_array.first; cur_info < drm_info->pssh_array.last; cur_info++)
-	{
-		result +=
-			sizeof(key_tag) - 1 +
-			sizeof(m3u8_key_sample_aes_ctr) - 1 +
-			sizeof(m3u8_key_uri) - 1 +
-			sizeof(m3u8_key_keyformat) - 1 +
-			sizeof(m3u8_key_keyformatversions) - 1 + keyformatversions_1.len +
-			3; // 2 '"' and '\n'
+	for (cur_info = drm_info->pssh_array.first; cur_info < drm_info->pssh_array.last; cur_info++) {
+		result += (sizeof(key_tag) - 1)
+		        + (sizeof(m3u8_key_sample_aes_ctr) - 1)
+		        + ((sizeof(m3u8_key_uri) - 1) + 1)       // '"'
+		        + ((sizeof(m3u8_key_keyformat) - 1) + 1) // '"'
+		        + (sizeof(m3u8_key_keyformatversions) - 1)
+		        + keyformatversions_1.len
+		        + 1; // '\n'
 
-		if (mp4_pssh_is_playready(cur_info))
-		{
-			result +=
-				sizeof(m3u8_keyformat_playready) - 1 +
-				sizeof(m3u8_key_uri_playready_prefix) - 1 + vod_base64_encoded_length(
-					cur_info->data.len);
-		}
-		else
-		{
+		if (mp4_pssh_is_playready(cur_info)) {
+			result += (sizeof(m3u8_keyformat_playready) - 1)
+			        + ((sizeof(m3u8_key_uri_playready_prefix) - 1)
+			           + vod_base64_encoded_length(cur_info->data.len));
+		} else {
 			cur_pssh_size = ATOM_HEADER_SIZE + sizeof(pssh_atom_t) + cur_info->data.len;
-			if (cur_pssh_size > *max_pssh_size)
-			{
+			if (cur_pssh_size > *max_pssh_size) {
 				*max_pssh_size = cur_pssh_size;
 			}
 
 			result +=
-				sizeof(m3u8_keyformat_uuid_prefix) - 1 + VOD_GUID_LENGTH +
-				sizeof(m3u8_key_uri_pssh_prefix) - 1 + vod_base64_encoded_length(cur_pssh_size);
+				((sizeof(m3u8_keyformat_uuid_prefix) - 1) + VOD_GUID_LENGTH)
+				+ ((sizeof(m3u8_key_uri_pssh_prefix) - 1) + vod_base64_encoded_length(cur_pssh_size));
 		}
 	}
 
@@ -389,34 +359,25 @@ m3u8_builder_get_keys_size(const char* key_tag, drm_info_t* drm_info, size_t* ma
 }
 
 static u_char*
-m3u8_builder_write_keys(u_char* p, const char* key_tag, drm_info_t* drm_info, u_char* temp_buffer)
-{
+m3u8_builder_write_keys(u_char* p, const char* key_tag, drm_info_t* drm_info, u_char* temp_buffer) {
 	drm_system_info_t* cur_info;
 	vod_str_t pssh;
 	vod_str_t base64;
 	bool_t is_playready;
 
-	for (cur_info = drm_info->pssh_array.first; cur_info < drm_info->pssh_array.last; cur_info++)
-	{
+	for (cur_info = drm_info->pssh_array.first; cur_info < drm_info->pssh_array.last; cur_info++) {
 		is_playready = mp4_pssh_is_playready(cur_info);
 
 		p = vod_sprintf(p, key_tag, m3u8_key_sample_aes_ctr);
 
 		p = vod_copy(p, m3u8_key_uri, sizeof(m3u8_key_uri) - 1);
-		if (is_playready)
-		{
-			p = vod_copy(p,
-				m3u8_key_uri_playready_prefix,
-				sizeof(m3u8_key_uri_playready_prefix) - 1);
+		if (is_playready) {
+			p = vod_copy(p, m3u8_key_uri_playready_prefix, sizeof(m3u8_key_uri_playready_prefix) - 1);
 
 			base64.data = p;
 			vod_encode_base64(&base64, &cur_info->data);
-		}
-		else
-		{
-			p = vod_copy(p,
-				m3u8_key_uri_pssh_prefix,
-				sizeof(m3u8_key_uri_pssh_prefix) - 1);
+		} else {
+			p = vod_copy(p, m3u8_key_uri_pssh_prefix, sizeof(m3u8_key_uri_pssh_prefix) - 1);
 
 			pssh.data = temp_buffer;
 			pssh.len = mp4_pssh_write_box(pssh.data, cur_info) - temp_buffer;
@@ -428,12 +389,9 @@ m3u8_builder_write_keys(u_char* p, const char* key_tag, drm_info_t* drm_info, u_
 		*p++ = '"';
 
 		p = vod_copy(p, m3u8_key_keyformat, sizeof(m3u8_key_keyformat) - 1);
-		if (is_playready)
-		{
+		if (is_playready) {
 			p = vod_copy(p, m3u8_keyformat_playready, sizeof(m3u8_keyformat_playready) - 1);
-		}
-		else
-		{
+		} else {
 			p = vod_copy(p, m3u8_keyformat_uuid_prefix, sizeof(m3u8_keyformat_uuid_prefix) - 1);
 			p = mp4_cenc_encrypt_write_guid(p, cur_info->system_id);
 		}
@@ -453,40 +411,31 @@ m3u8_builder_get_encryption_size(
 	m3u8_config_t* conf,
 	drm_info_t* drm_info,
 	hls_encryption_params_t* encryption_params,
-	size_t* max_pssh_size)
-{
+	size_t* max_pssh_size
+) {
 	size_t result = 0;
 
-	if (encryption_params->type == HLS_ENC_SAMPLE_AES_CTR)
-	{
+	if (encryption_params->type == HLS_ENC_SAMPLE_AES_CTR) {
 		return m3u8_builder_get_keys_size(key_tag, drm_info, max_pssh_size);
 	}
 
 	result +=
-		sizeof(key_tag) - 1 +
-		sizeof(m3u8_key_sample_aes) - 1 +
-		sizeof(m3u8_key_uri) - 1 +
-		2; // '"', '\n'
+		(sizeof(key_tag) - 1) + (sizeof(m3u8_key_sample_aes) - 1) + (sizeof(m3u8_key_uri) - 1) + 2; // '"', '\n'
 
-	if (encryption_params->key_uri.len != 0)
-	{
+	if (encryption_params->key_uri.len != 0) {
 		result += encryption_params->key_uri.len;
 	}
 
-	if (encryption_params->return_iv)
-	{
-		result += sizeof(m3u8_key_iv) - 1 + sizeof(encryption_params->iv_buf) * 2;
+	if (encryption_params->return_iv) {
+		result += (sizeof(m3u8_key_iv) - 1) + sizeof(encryption_params->iv_buf) * 2;
 	}
 
-	if (conf->encryption_key_format.len != 0)
-	{
-		result += sizeof(m3u8_key_keyformat) - 1 + conf->encryption_key_format.len + 1; // '"'
+	if (conf->encryption_key_format.len != 0) {
+		result += (sizeof(m3u8_key_keyformat) - 1) + conf->encryption_key_format.len + 1; // '"'
 	}
 
-	if (conf->encryption_key_format_versions.len != 0)
-	{
-		result +=
-			sizeof(m3u8_key_keyformatversions) - 1 + conf->encryption_key_format_versions.len;
+	if (conf->encryption_key_format_versions.len != 0) {
+		result += (sizeof(m3u8_key_keyformatversions) - 1) + conf->encryption_key_format_versions.len;
 	}
 
 	return result;
@@ -499,37 +448,32 @@ m3u8_builder_write_encryption(
 	m3u8_config_t* conf,
 	media_set_t* media_set,
 	hls_encryption_params_t* encryption_params,
-	u_char* temp_buffer)
-{
-	if (encryption_params->type == HLS_ENC_SAMPLE_AES_CTR)
-	{
+	u_char* temp_buffer
+) {
+	if (encryption_params->type == HLS_ENC_SAMPLE_AES_CTR) {
 		return m3u8_builder_write_keys(p, key_tag, media_set->sequences[0].drm_info, temp_buffer);
 	}
 
 	p = vod_sprintf(p, key_tag, m3u8_key_sample_aes);
 
 	p = vod_copy(p, m3u8_key_uri, sizeof(m3u8_key_uri) - 1);
-	if (encryption_params->key_uri.len != 0)
-	{
+	if (encryption_params->key_uri.len != 0) {
 		p = vod_copy(p, encryption_params->key_uri.data, encryption_params->key_uri.len);
 	}
 	*p++ = '"';
 
-	if (encryption_params->return_iv)
-	{
+	if (encryption_params->return_iv) {
 		p = vod_copy(p, m3u8_key_iv, sizeof(m3u8_key_iv) - 1);
 		p = vod_append_hex_string(p, encryption_params->iv, sizeof(encryption_params->iv_buf));
 	}
 
-	if (conf->encryption_key_format.len != 0)
-	{
+	if (conf->encryption_key_format.len != 0) {
 		p = vod_copy(p, m3u8_key_keyformat, sizeof(m3u8_key_keyformat) - 1);
 		p = vod_copy(p, conf->encryption_key_format.data, conf->encryption_key_format.len);
 		*p++ = '"';
 	}
 
-	if (conf->encryption_key_format_versions.len != 0)
-	{
+	if (conf->encryption_key_format_versions.len != 0) {
 		p = vod_sprintf(p, m3u8_key_keyformatversions, &conf->encryption_key_format_versions);
 	}
 
@@ -548,8 +492,8 @@ m3u8_builder_build_index_playlist(
 	hls_encryption_params_t* encryption_params,
 	vod_uint_t container_format,
 	media_set_t* media_set,
-	vod_str_t* result)
-{
+	vod_str_t* result
+) {
 	segment_durations_t segment_durations;
 	segment_duration_item_t* cur_item;
 	segment_duration_item_t* last_item;
@@ -575,39 +519,25 @@ m3u8_builder_build_index_playlist(
 #endif // NGX_HAVE_OPENSSL_EVP
 
 	// build the required tracks string
-	if (media_set->track_count[MEDIA_TYPE_VIDEO] != 0 || media_set->track_count[MEDIA_TYPE_AUDIO] != 0)
-	{
-		if (container_format == HLS_CONTAINER_FMP4)
-		{
+	if (media_set->track_count[MEDIA_TYPE_VIDEO] != 0 || media_set->track_count[MEDIA_TYPE_AUDIO] != 0) {
+		if (container_format == HLS_CONTAINER_FMP4) {
 			suffix = &m3u8_m4s_suffix;
 		}
-	}
-	else
-	{
-		container_format = HLS_CONTAINER_MPEGTS;		// do not output any fmp4-specific tags
+	} else {
+		container_format = HLS_CONTAINER_MPEGTS; // do not output any fmp4-specific tags
 		suffix = &m3u8_vtt_suffix;
 	}
 
-	rc = m3u8_builder_build_tracks_spec(
-		request_context,
-		media_set,
-		suffix,
-		&name_suffix);
-	if (rc != VOD_OK)
-	{
+	rc = m3u8_builder_build_tracks_spec(request_context, media_set, suffix, &name_suffix);
+	if (rc != VOD_OK) {
 		return rc;
 	}
 
 	// get the segment durations
 	rc = segmenter_conf->get_segment_durations(
-		request_context,
-		segmenter_conf,
-		media_set,
-		NULL,
-		MEDIA_TYPE_NONE,
-		&segment_durations);
-	if (rc != VOD_OK)
-	{
+		request_context, segmenter_conf, media_set, NULL, MEDIA_TYPE_NONE, &segment_durations
+	);
+	if (rc != VOD_OK) {
 		return rc;
 	}
 	last_item = segment_durations.items + segment_durations.item_count;
@@ -615,118 +545,108 @@ m3u8_builder_build_index_playlist(
 	// get the required buffer length
 	duration_millis = segment_durations.duration;
 	last_segment_index = last_item[-1].segment_index + last_item[-1].repeat_count;
-	segment_length = sizeof("#EXTINF:.000,\n") - 1 + vod_get_int_print_len(vod_div_ceil(duration_millis, 1000)) +
-		segments_base_url->len + conf->segment_file_name_prefix.len + 1 + vod_get_int_print_len(last_segment_index) + name_suffix.len;
+	segment_length =
+		(sizeof("#EXTINF:.000,\n") - 1 + vod_get_int_print_len(vod_div_ceil(duration_millis, 1000)))
+		+ (segments_base_url->len
+	       + conf->segment_file_name_prefix.len
+	       + 1 // '-'
+	       + vod_get_int_print_len(last_segment_index)
+	       + name_suffix.len);
 
-	result_size =
-		sizeof(m3u8_header_base) - 1 + VOD_INT32_LEN +
-		sizeof(m3u8_header_index) - 1 + VOD_INT64_LEN + VOD_INT64_LEN +
-		sizeof(m3u8_playlist_event) - 1 +
-		segment_length * segment_durations.segment_count +
-		segment_durations.discontinuities * (sizeof(m3u8_discontinuity) - 1) +
-		(sizeof(m3u8_map_prefix) - 1 +
-		 base_url->len +
-		 conf->init_file_name_prefix.len +
-		 sizeof(m3u8_clip_index) - 1 + VOD_INT32_LEN +
-		 name_suffix.len +
-		 sizeof(m3u8_map_suffix) - 1) *
-		(segment_durations.discontinuities + 1) +
-		sizeof(m3u8_endlist) - 1;
+	result_size = ((sizeof(m3u8_header_base) - 1) + VOD_INT32_LEN)
+	            + ((sizeof(m3u8_header_index) - 1) + 2 * VOD_INT64_LEN)
+	            + (sizeof(m3u8_playlist_event) - 1)
+	            + segment_length * segment_durations.segment_count
+	            + segment_durations.discontinuities * (sizeof(m3u8_discontinuity) - 1)
+	            + ((sizeof(m3u8_map_prefix) - 1)
+	               + base_url->len
+	               + conf->init_file_name_prefix.len
+	               + ((sizeof(m3u8_clip_index) - 1) + VOD_INT32_LEN)
+	               + name_suffix.len
+	               + (sizeof(m3u8_map_suffix) - 1))
+	                  * (segment_durations.discontinuities + 1)
+	            + (sizeof(m3u8_endlist) - 1);
 
-	if (media_set->segmenter_conf->align_to_key_frames &&
-		(media_set->track_count[MEDIA_TYPE_VIDEO] != 0 || media_set->track_count[MEDIA_TYPE_AUDIO] != 0))
-	{
+	if (media_set->segmenter_conf->align_to_key_frames
+	    && (media_set->track_count[MEDIA_TYPE_VIDEO] != 0
+	        || media_set->track_count[MEDIA_TYPE_AUDIO] != 0)) {
 		result_size += sizeof(m3u8_independent_segments) - 1;
 	}
 
 #if (NGX_HAVE_OPENSSL_EVP)
-	if (encryption_params->type != HLS_ENC_NONE && suffix != &m3u8_vtt_suffix)
-	{
+	if (encryption_params->type != HLS_ENC_NONE && suffix != &m3u8_vtt_suffix) {
 		result_size += m3u8_builder_get_encryption_size(
-			m3u8_key, conf, media_set->sequences[0].drm_info, encryption_params, &max_pssh_size);
+			m3u8_key, conf, media_set->sequences[0].drm_info, encryption_params, &max_pssh_size
+		);
 	}
 #endif // NGX_HAVE_OPENSSL_EVP
 
 	// allocate the buffer
 	result->data = vod_alloc(request_context->pool, result_size);
-	if (result->data == NULL)
-	{
-		vod_log_debug0(VOD_LOG_DEBUG_LEVEL, request_context->log, 0,
-			"m3u8_builder_build_index_playlist: vod_alloc failed");
+	if (result->data == NULL) {
+		vod_log_debug0(
+			VOD_LOG_DEBUG_LEVEL, request_context->log, 0, "m3u8_builder_build_index_playlist: vod_alloc failed"
+		);
 		return VOD_ALLOC_FAILED;
 	}
 
 	// find the max segment duration
 	max_segment_duration = 0;
-	for (cur_item = segment_durations.items; cur_item < last_item; cur_item++)
-	{
-		if (cur_item->duration > max_segment_duration)
-		{
+	for (cur_item = segment_durations.items; cur_item < last_item; cur_item++) {
+		if (cur_item->duration > max_segment_duration) {
 			max_segment_duration = cur_item->duration;
 		}
 	}
 
-	// Note: scaling first to 'scale' so that target duration will always be round(max(manifest durations))
+	// NOTE: scaling first to 'scale' so that target duration will always be round(max(manifest durations))
 	max_segment_duration = rescale_time(max_segment_duration, segment_durations.timescale, scale);
 	max_segment_duration = rescale_time(max_segment_duration, scale, 1);
 
 	// make sure segment duration is not lower than the value set in the conf
 	conf_max_segment_duration = (segmenter_conf->max_segment_duration + 500) / 1000;
-	if (conf_max_segment_duration > max_segment_duration)
-	{
+	if (conf_max_segment_duration > max_segment_duration) {
 		max_segment_duration = conf_max_segment_duration;
 	}
 
 	// write the header
 	p = vod_sprintf(result->data, m3u8_header_base, conf->m3u8_version);
 	p = vod_sprintf(
-		p,
-		m3u8_header_index,
-		max_segment_duration,
-		segment_durations.items[0].segment_index + 1);
+		p, m3u8_header_index, max_segment_duration, segment_durations.items[0].segment_index + 1
+	);
 
-	if (media_set->type == MEDIA_SET_VOD)
-	{
+	if (media_set->type == MEDIA_SET_VOD) {
 		p = vod_copy(p, m3u8_playlist_vod, sizeof(m3u8_playlist_vod) - 1);
-	}
-	else if (media_set->is_live_event)
-	{
+	} else if (media_set->is_live_event) {
 		p = vod_copy(p, m3u8_playlist_event, sizeof(m3u8_playlist_event) - 1);
 	}
 
-	if (media_set->segmenter_conf->align_to_key_frames &&
-		(media_set->track_count[MEDIA_TYPE_VIDEO] != 0 || media_set->track_count[MEDIA_TYPE_AUDIO] != 0))
-	{
+	if (media_set->segmenter_conf->align_to_key_frames
+	    && (media_set->track_count[MEDIA_TYPE_VIDEO] != 0
+	        || media_set->track_count[MEDIA_TYPE_AUDIO] != 0)) {
 		p = vod_copy(p, m3u8_independent_segments, sizeof(m3u8_independent_segments) - 1);
 	}
 
 #if (NGX_HAVE_OPENSSL_EVP)
-	if (max_pssh_size > 0)
-	{
+	if (max_pssh_size > 0) {
 		temp_buffer = vod_alloc(request_context->pool, max_pssh_size);
-		if (temp_buffer == NULL)
-		{
-			vod_log_debug0(VOD_LOG_DEBUG_LEVEL, request_context->log, 0,
-				"m3u8_builder_build_index_playlist: vod_alloc failed");
+		if (temp_buffer == NULL) {
+			vod_log_debug0(
+				VOD_LOG_DEBUG_LEVEL, request_context->log, 0, "m3u8_builder_build_index_playlist: vod_alloc failed"
+			);
 			return VOD_ALLOC_FAILED;
 		}
 	}
 
-	if (encryption_params->type != HLS_ENC_NONE && suffix != &m3u8_vtt_suffix)
-	{
-		p = m3u8_builder_write_encryption(p,
-			m3u8_key, conf, media_set, encryption_params, temp_buffer);
+	if (encryption_params->type != HLS_ENC_NONE && suffix != &m3u8_vtt_suffix) {
+		p = m3u8_builder_write_encryption(p, m3u8_key, conf, media_set, encryption_params, temp_buffer);
 	}
 #endif // NGX_HAVE_OPENSSL_EVP
 
-	if (container_format == HLS_CONTAINER_FMP4)
-	{
+	if (container_format == HLS_CONTAINER_FMP4) {
 		p = vod_copy(p, m3u8_map_prefix, sizeof(m3u8_map_prefix) - 1);
 		p = vod_copy(p, base_url->data, base_url->len);
 		p = vod_copy(p, conf->init_file_name_prefix.data, conf->init_file_name_prefix.len);
-		if (media_set->use_discontinuity &&
-			media_set->initial_clip_index != INVALID_CLIP_INDEX)
-		{
+		if (media_set->use_discontinuity && media_set->initial_clip_index != INVALID_CLIP_INDEX) {
 			clip_index = media_set->initial_clip_index + 1;
 			p = vod_sprintf(p, m3u8_clip_index, clip_index++);
 		}
@@ -735,18 +655,15 @@ m3u8_builder_build_index_playlist(
 	}
 
 	// write the segments
-	for (cur_item = segment_durations.items; cur_item < last_item; cur_item++)
-	{
+	for (cur_item = segment_durations.items; cur_item < last_item; cur_item++) {
 		segment_index = cur_item->segment_index;
 		last_segment_index = segment_index + cur_item->repeat_count;
 
-		if (cur_item->discontinuity)
-		{
+		if (cur_item->discontinuity) {
 			p = vod_copy(p, m3u8_discontinuity, sizeof(m3u8_discontinuity) - 1);
-			if (container_format == HLS_CONTAINER_FMP4 &&
-				cur_item > segment_durations.items &&
-				media_set->initial_clip_index != INVALID_CLIP_INDEX)
-			{
+			if (container_format == HLS_CONTAINER_FMP4
+			    && cur_item > segment_durations.items
+			    && media_set->initial_clip_index != INVALID_CLIP_INDEX) {
 				p = vod_copy(p, m3u8_map_prefix, sizeof(m3u8_map_prefix) - 1);
 				p = vod_copy(p, base_url->data, base_url->len);
 				p = vod_copy(p, conf->init_file_name_prefix.data, conf->init_file_name_prefix.len);
@@ -757,39 +674,46 @@ m3u8_builder_build_index_playlist(
 		}
 
 		// ignore zero duration segments (caused by alignment to keyframes)
-		if (cur_item->duration == 0)
-		{
+		if (cur_item->duration == 0) {
 			continue;
 		}
 
 		// write the first segment
 		extinf.data = p;
-		p = m3u8_builder_append_extinf_tag(p, rescale_time(cur_item->duration, segment_durations.timescale, scale), scale);
+		p = m3u8_builder_append_extinf_tag(
+			p, rescale_time(cur_item->duration, segment_durations.timescale, scale), scale
+		);
 		extinf.len = p - extinf.data;
-		p = m3u8_builder_append_segment_name(p, segments_base_url, &conf->segment_file_name_prefix, segment_index, &name_suffix);
+		p = m3u8_builder_append_segment_name(
+			p, segments_base_url, &conf->segment_file_name_prefix, segment_index, &name_suffix
+		);
 		segment_index++;
 
 		// write any additional segments
-		for (; segment_index < last_segment_index; segment_index++)
-		{
+		for (; segment_index < last_segment_index; segment_index++) {
 			p = vod_copy(p, extinf.data, extinf.len);
-			p = m3u8_builder_append_segment_name(p, segments_base_url, &conf->segment_file_name_prefix, segment_index, &name_suffix);
+			p = m3u8_builder_append_segment_name(
+				p, segments_base_url, &conf->segment_file_name_prefix, segment_index, &name_suffix
+			);
 		}
 	}
 
 	// write the footer
-	if (media_set->presentation_end)
-	{
+	if (media_set->presentation_end) {
 		p = vod_copy(p, m3u8_endlist, sizeof(m3u8_endlist) - 1);
 	}
 
 	result->len = p - result->data;
 
-	if (result->len > result_size)
-	{
-		vod_log_error(VOD_LOG_ERR, request_context->log, 0,
+	if (result->len > result_size) {
+		vod_log_error(
+			VOD_LOG_ERR,
+			request_context->log,
+			0,
 			"m3u8_builder_build_index_playlist: result length %uz exceeded allocated length %uz",
-			result->len, result_size);
+			result->len,
+			result_size
+		);
 		return VOD_UNEXPECTED;
 	}
 
@@ -797,10 +721,7 @@ m3u8_builder_build_index_playlist(
 }
 
 static uint32_t
-m3u8_builder_get_audio_codec_count(
-	adaptation_sets_t* adaptation_sets,
-	media_track_t** audio_codec_tracks)
-{
+m3u8_builder_get_audio_codec_count(adaptation_sets_t* adaptation_sets, media_track_t** audio_codec_tracks) {
 	adaptation_set_t* last_adaptation_set;
 	adaptation_set_t* cur_adaptation_set;
 	media_track_t* cur_track;
@@ -810,12 +731,10 @@ m3u8_builder_get_audio_codec_count(
 
 	cur_adaptation_set = adaptation_sets->first_by_type[MEDIA_TYPE_AUDIO];
 	last_adaptation_set = cur_adaptation_set + adaptation_sets->count[MEDIA_TYPE_AUDIO];
-	for (; cur_adaptation_set < last_adaptation_set; cur_adaptation_set++)
-	{
+	for (; cur_adaptation_set < last_adaptation_set; cur_adaptation_set++) {
 		cur_track = cur_adaptation_set->first[0];
 		codec_flag = 1 << (cur_track->media_info.codec_id - VOD_CODEC_ID_AUDIO);
-		if ((seen_codecs & codec_flag) != 0)
-		{
+		if ((seen_codecs & codec_flag) != 0) {
 			continue;
 		}
 
@@ -829,40 +748,31 @@ m3u8_builder_get_audio_codec_count(
 
 static u_char*
 m3u8_builder_append_index_url(
-	u_char* p,
-	vod_str_t* prefix,
-	media_set_t* media_set,
-	media_track_t** tracks,
-	vod_str_t* base_url)
-{
+	u_char* p, vod_str_t* prefix, media_set_t* media_set, media_track_t** tracks, vod_str_t* base_url
+) {
 	media_track_t* track = NULL;
 	uint32_t media_type;
 	bool_t write_sequence_index;
 
 	// get the main track and sub track
-	for (media_type = 0; media_type < MEDIA_TYPE_COUNT; media_type++)
-	{
-		if (tracks[media_type] != NULL)
-		{
+	for (media_type = 0; media_type < MEDIA_TYPE_COUNT; media_type++) {
+		if (tracks[media_type] != NULL) {
 			track = tracks[media_type];
 			break;
 		}
 	}
 
 	write_sequence_index = media_set->has_multi_sequences;
-	if (base_url->len != 0)
-	{
+	if (base_url->len != 0) {
 		// absolute url only
 		p = vod_copy(p, base_url->data, base_url->len);
-		if (p[-1] != '/')
-		{
-			if (track->file_info.uri.len != 0)
-			{
+		if (p[-1] != '/') {
+			if (track->file_info.uri.len != 0) {
 				p = vod_copy(p, track->file_info.uri.data, track->file_info.uri.len);
-				write_sequence_index = FALSE;	// no need to pass the sequence index since we have a direct uri
-			}
-			else
-			{
+
+				// no need to pass the sequence index since we have a direct uri
+				write_sequence_index = FALSE;
+			} else {
 				p = vod_copy(p, media_set->uri.data, media_set->uri.len);
 			}
 			*p++ = '/';
@@ -877,66 +787,61 @@ m3u8_builder_append_index_url(
 }
 
 static size_t
-m3u8_builder_get_closed_captions_size(
-	media_set_t* media_set,
-	request_context_t* request_context)
-{
+m3u8_builder_get_closed_captions_size(media_set_t* media_set, request_context_t* request_context) {
 	media_closed_captions_t* closed_captions;
 	size_t result = 0;
-	size_t base =
-		sizeof(m3u8_media_base) - 1 +
-		sizeof(m3u8_media_type_closed_captions) - 1 +
-		sizeof(m3u8_group_id_closed_captions) - 1 + VOD_INT32_LEN +
-		sizeof(m3u8_media_language) - 1 +
-		sizeof(m3u8_media_instream_id) - 1 +
-		sizeof(m3u8_media_default) - 1;
+	size_t base = (sizeof(m3u8_media_base) - 1)
+	            + (sizeof(m3u8_media_type_closed_captions) - 1)
+	            + ((sizeof(m3u8_group_id_closed_captions) - 1) + VOD_INT32_LEN)
+	            + (sizeof(m3u8_media_language) - 1)
+	            + (sizeof(m3u8_media_instream_id) - 1)
+	            + (sizeof(m3u8_media_default) - 1);
 
-	for (closed_captions = media_set->closed_captions; closed_captions < media_set->closed_captions_end; closed_captions++)
-	{
-		result += base + closed_captions->id.len + closed_captions->label.len + closed_captions->language.len + sizeof("\n") - 1;
+	for (closed_captions = media_set->closed_captions; closed_captions < media_set->closed_captions_end;
+	     closed_captions++) {
+		result += base
+		        + closed_captions->id.len
+		        + closed_captions->label.len
+		        + closed_captions->language.len
+		        + (sizeof("\n") - 1);
 	}
 
 	return result + sizeof("\n") - 1;
 }
 
 static u_char*
-m3u8_builder_write_closed_captions(
-	u_char* p,
-	media_set_t* media_set)
-{
+m3u8_builder_write_closed_captions(u_char* p, media_set_t* media_set) {
 	media_closed_captions_t* closed_captions;
 	uint32_t index = 0;
 	bool_t is_default;
 
-	for (closed_captions = media_set->closed_captions; closed_captions < media_set->closed_captions_end; closed_captions++)
-	{
-		p = vod_sprintf(p, m3u8_media_base,
+	for (closed_captions = media_set->closed_captions; closed_captions < media_set->closed_captions_end;
+	     closed_captions++) {
+		p = vod_sprintf(
+			p,
+			m3u8_media_base,
 			m3u8_media_type_closed_captions,
 			m3u8_group_id_closed_captions,
 			index,
-			&closed_captions->label);
+			&closed_captions->label
+		);
 
-		if (closed_captions->language.len != 0)
-		{
+		if (closed_captions->language.len != 0) {
 			p = vod_sprintf(p, m3u8_media_language, &closed_captions->language);
 		}
 
 		is_default = closed_captions->is_default;
-		if (is_default < 0)
-		{
+		if (is_default < 0) {
 			is_default = closed_captions == media_set->closed_captions;
 		}
 
-		if (is_default)
-		{
+		if (is_default) {
 			p = vod_copy(p, m3u8_media_default, sizeof(m3u8_media_default) - 1);
-		}
-		else
-		{
+		} else {
 			p = vod_copy(p, m3u8_media_non_default, sizeof(m3u8_media_non_default) - 1);
 		}
 
-		p = vod_sprintf(p, m3u8_media_instream_id, (vod_str_t*) &closed_captions->id);
+		p = vod_sprintf(p, m3u8_media_instream_id, (vod_str_t*)&closed_captions->id);
 
 		*p++ = '\n';
 	}
@@ -952,55 +857,48 @@ m3u8_builder_get_media_size(
 	vod_str_t* base_url,
 	size_t base_url_len,
 	media_set_t* media_set,
-	uint32_t media_type)
-{
+	uint32_t media_type
+) {
 	adaptation_set_t* first_adaptation_set;
 	adaptation_set_t* last_adaptation_set;
 	adaptation_set_t* adaptation_set;
 	media_track_t* cur_track;
-	size_t result =
-		sizeof("\n\n") - 1 +
-		(sizeof(m3u8_media_base) - 1 + VOD_INT32_LEN +
-		sizeof(m3u8_media_type_subtitles) - 1 +
-		sizeof(m3u8_group_id_audio) - 1 +
-		sizeof(m3u8_media_language) - 1 +
-		sizeof(m3u8_media_default) - 1 +
-		sizeof(m3u8_media_uri) - 1 +
-		base_url_len +
-		sizeof("\"\n") - 1) * (adaptation_sets->count[media_type]);
+	size_t result = (sizeof("\n\n") - 1)
+	              + (((sizeof(m3u8_media_base) - 1) + VOD_INT32_LEN)
+	                 + (sizeof(m3u8_media_type_subtitles) - 1)
+	                 + (sizeof(m3u8_group_id_audio) - 1)
+	                 + (sizeof(m3u8_media_language) - 1)
+	                 + (sizeof(m3u8_media_default) - 1)
+	                 + ((sizeof(m3u8_media_uri) - 1) + base_url_len)
+	                 + (sizeof("\"\n") - 1))
+	                    * adaptation_sets->count[media_type];
 
 	first_adaptation_set = adaptation_sets->first_by_type[media_type];
 	last_adaptation_set = first_adaptation_set + adaptation_sets->count[media_type];
-	for (adaptation_set = first_adaptation_set; adaptation_set < last_adaptation_set; adaptation_set++)
-	{
+	for (adaptation_set = first_adaptation_set; adaptation_set < last_adaptation_set; adaptation_set++) {
 		cur_track = adaptation_set->first[0];
 
-		result += vod_max(cur_track->media_info.tags.label.len, default_label.len) +
-			cur_track->media_info.tags.lang_str.len;
+		result += vod_max(cur_track->media_info.tags.label.len, default_label.len)
+		        + cur_track->media_info.tags.lang_str.len;
 
-		if (cur_track->media_info.tags.characteristics.len != 0)
-		{
-			result += sizeof(m3u8_media_characteristics) - 1 +
-				cur_track->media_info.tags.characteristics.len;
+		if (cur_track->media_info.tags.characteristics.len != 0) {
+			result += (sizeof(m3u8_media_characteristics) - 1)
+			        + cur_track->media_info.tags.characteristics.len;
 		}
 
-		if (cur_track->media_info.tags.is_autoselect > 0)
-		{
+		if (cur_track->media_info.tags.is_autoselect > 0) {
 			result += sizeof(m3u8_media_autoselect) - 1;
 		}
 
-		if (cur_track->media_info.tags.is_forced > 0 && media_type == MEDIA_TYPE_SUBTITLE)
-		{
+		if (cur_track->media_info.tags.is_forced > 0 && media_type == MEDIA_TYPE_SUBTITLE) {
 			result += sizeof(m3u8_media_forced) - 1;
 		}
 
-		if (media_type == MEDIA_TYPE_AUDIO)
-		{
-			result += sizeof(m3u8_media_channels) - 1 + VOD_INT32_LEN;
+		if (media_type == MEDIA_TYPE_AUDIO) {
+			result += (sizeof(m3u8_media_channels) - 1) + VOD_INT32_LEN;
 		}
 
-		if (base_url->len != 0)
-		{
+		if (base_url->len != 0) {
 			result += vod_max(cur_track->file_info.uri.len, media_set->uri.len);
 		}
 	}
@@ -1015,8 +913,8 @@ m3u8_builder_write_media(
 	m3u8_config_t* conf,
 	vod_str_t* base_url,
 	media_set_t* media_set,
-	uint32_t media_type)
-{
+	uint32_t media_type
+) {
 	adaptation_set_t* first_adaptation_set;
 	adaptation_set_t* last_adaptation_set;
 	adaptation_set_t* adaptation_set;
@@ -1028,8 +926,7 @@ m3u8_builder_write_media(
 	const u_char* group_id;
 	const u_char* type;
 
-	switch (media_type)
-	{
+	switch (media_type) {
 	case MEDIA_TYPE_AUDIO:
 		type = m3u8_media_type_audio;
 		group_id = m3u8_group_id_audio;
@@ -1048,72 +945,58 @@ m3u8_builder_write_media(
 	tracks[MEDIA_TYPE_VIDEO] = NULL;
 	first_adaptation_set = adaptation_sets->first_by_type[media_type];
 	last_adaptation_set = first_adaptation_set + adaptation_sets->count[media_type];
-	for (adaptation_set = first_adaptation_set; adaptation_set < last_adaptation_set; adaptation_set++)
-	{
+	for (adaptation_set = first_adaptation_set; adaptation_set < last_adaptation_set; adaptation_set++) {
 		// take the last track assuming higher bitrate
 		tracks[media_type] = adaptation_set->last[-1];
 
 		// output EXT-X-MEDIA
-		if (media_type == MEDIA_TYPE_AUDIO)
-		{
+		if (media_type == MEDIA_TYPE_AUDIO) {
 			group_index = tracks[media_type]->media_info.codec_id - VOD_CODEC_ID_AUDIO;
 		}
 
 		label = &tracks[media_type]->media_info.tags.label;
-		if (label->len == 0)
-		{
+		if (label->len == 0) {
 			label = &default_label;
 		}
 
 		p = vod_sprintf(p, m3u8_media_base, type, group_id, group_index, label);
 
-		if (tracks[media_type]->media_info.tags.lang_str.len > 0)
-		{
-			p = vod_sprintf(p, m3u8_media_language,
-				&tracks[media_type]->media_info.tags.lang_str);
+		if (tracks[media_type]->media_info.tags.lang_str.len > 0) {
+			p = vod_sprintf(p, m3u8_media_language, &tracks[media_type]->media_info.tags.lang_str);
 		}
 
 		is_default = tracks[media_type]->media_info.tags.is_default;
-		if (is_default < 0)
-		{
+		if (is_default < 0) {
 			is_default = adaptation_set == first_adaptation_set || group_index != last_group_index;
 			last_group_index = group_index;
 		}
 
-		if (is_default)
-		{
+		if (is_default) {
 			p = vod_copy(p, m3u8_media_default, sizeof(m3u8_media_default) - 1);
 		}
 
-		if (tracks[media_type]->media_info.tags.is_autoselect > 0)
-		{
+		if (tracks[media_type]->media_info.tags.is_autoselect > 0) {
 			p = vod_copy(p, m3u8_media_autoselect, sizeof(m3u8_media_autoselect) - 1);
 		}
 
-		if (tracks[media_type]->media_info.tags.characteristics.len != 0)
-		{
-			p = vod_sprintf(p, m3u8_media_characteristics,
-				&tracks[media_type]->media_info.tags.characteristics);
+		if (tracks[media_type]->media_info.tags.characteristics.len != 0) {
+			p = vod_sprintf(
+				p, m3u8_media_characteristics, &tracks[media_type]->media_info.tags.characteristics
+			);
 		}
 
-		if (tracks[media_type]->media_info.tags.is_forced > 0 && media_type == MEDIA_TYPE_SUBTITLE)
-		{
+		if (tracks[media_type]->media_info.tags.is_forced > 0 && media_type == MEDIA_TYPE_SUBTITLE) {
 			p = vod_copy(p, m3u8_media_forced, sizeof(m3u8_media_forced) - 1);
 		}
 
-		if (media_type == MEDIA_TYPE_AUDIO)
-		{
-			p = vod_sprintf(p, m3u8_media_channels,
-				(uint32_t)tracks[media_type]->media_info.u.audio.channels);
+		if (media_type == MEDIA_TYPE_AUDIO) {
+			p = vod_sprintf(
+				p, m3u8_media_channels, (uint32_t)tracks[media_type]->media_info.u.audio.channels
+			);
 		}
 
 		p = vod_copy(p, m3u8_media_uri, sizeof(m3u8_media_uri) - 1);
-		p = m3u8_builder_append_index_url(
-			p,
-			&conf->index_file_name_prefix,
-			media_set,
-			tracks,
-			base_url);
+		p = m3u8_builder_append_index_url(p, &conf->index_file_name_prefix, media_set, tracks, base_url);
 		*p++ = '"';
 		*p++ = '\n';
 	}
@@ -1124,24 +1007,19 @@ m3u8_builder_write_media(
 }
 
 static u_char*
-m3u8_builder_write_video_range(u_char* p, media_info_t* media_info)
-{
-	if (media_info->format == FORMAT_DVH1)
-	{
+m3u8_builder_write_video_range(u_char* p, media_info_t* media_info) {
+	if (media_info->format == FORMAT_DVH1) {
 		p = vod_copy(p, m3u8_stream_inf_video_range_pq, sizeof(m3u8_stream_inf_video_range_pq) - 1);
 		return p;
 	}
 
-	switch (media_info->u.video.transfer_characteristics)
-	{
+	switch (media_info->u.video.transfer_characteristics) {
 	case 1:
 	case 6:
 	case 13:
 	case 14:
 	case 15:
-		p = vod_copy(p,
-			m3u8_stream_inf_video_range_sdr,
-			sizeof(m3u8_stream_inf_video_range_sdr) - 1);
+		p = vod_copy(p, m3u8_stream_inf_video_range_sdr, sizeof(m3u8_stream_inf_video_range_sdr) - 1);
 		break;
 
 	case 16:
@@ -1149,9 +1027,7 @@ m3u8_builder_write_video_range(u_char* p, media_info_t* media_info)
 		break;
 
 	case 18:
-		p = vod_copy(p,
-			m3u8_stream_inf_video_range_hlg,
-			sizeof(m3u8_stream_inf_video_range_hlg) - 1);
+		p = vod_copy(p, m3u8_stream_inf_video_range_hlg, sizeof(m3u8_stream_inf_video_range_hlg) - 1);
 		break;
 	}
 
@@ -1165,8 +1041,8 @@ m3u8_builder_write_variants(
 	m3u8_config_t* conf,
 	vod_str_t* base_url,
 	media_set_t* media_set,
-	media_track_t* group_audio_track)
-{
+	media_track_t* group_audio_track
+) {
 	adaptation_set_t* adaptation_set = adaptation_sets->first;
 	media_track_t** cur_track_ptr;
 	media_track_t* tracks[MEDIA_TYPE_COUNT];
@@ -1177,59 +1053,47 @@ m3u8_builder_write_variants(
 
 	vod_memzero(tracks, sizeof(tracks));
 
-	for (cur_track_ptr = adaptation_set->first;
-		cur_track_ptr < adaptation_set->last;
-		cur_track_ptr++)
-	{
+	for (cur_track_ptr = adaptation_set->first; cur_track_ptr < adaptation_set->last; cur_track_ptr++) {
 		// get the audio / video tracks
-		// Note: this is ok because the adaptation types enum is aligned with media types
+		// NOTE: this is ok because the adaptation types enum is aligned with media types
 		tracks[adaptation_set->type] = cur_track_ptr[0];
 
 		// output EXT-X-STREAM-INF
-		if (tracks[MEDIA_TYPE_VIDEO] != NULL)
-		{
+		if (tracks[MEDIA_TYPE_VIDEO] != NULL) {
 			video = &tracks[MEDIA_TYPE_VIDEO]->media_info;
 			bitrate = video->bitrate;
 			avg_bitrate = video->avg_bitrate;
-			if (group_audio_track != NULL)
-			{
+			if (group_audio_track != NULL) {
 				audio = &group_audio_track->media_info;
-			}
-			else
-			{
+			} else {
 				audio = NULL;
 			}
 
-			if (audio != NULL)
-			{
+			if (audio != NULL) {
 				bitrate += audio->bitrate;
-				if (avg_bitrate != 0)
-				{
+				if (avg_bitrate != 0) {
 					avg_bitrate += audio->avg_bitrate;
 				}
 			}
 
-			p = vod_sprintf(p, m3u8_stream_inf_video,
+			p = vod_sprintf(
+				p,
+				m3u8_stream_inf_video,
 				bitrate,
 				(uint32_t)video->u.video.width,
 				(uint32_t)video->u.video.height,
 				(uint32_t)(video->timescale / video->min_frame_duration),
 				(uint32_t)((((uint64_t)video->timescale * 1000) / video->min_frame_duration) % 1000),
-				&video->codec_name);
-			if (audio != NULL)
-			{
+				&video->codec_name
+			);
+			if (audio != NULL) {
 				*p++ = ',';
 				p = vod_copy(p, audio->codec_name.data, audio->codec_name.len);
 			}
-		}
-		else
-		{
-			if (group_audio_track != NULL)
-			{
+		} else {
+			if (group_audio_track != NULL) {
 				audio = &group_audio_track->media_info;
-			}
-			else
-			{
+			} else {
 				audio = &tracks[MEDIA_TYPE_AUDIO]->media_info;
 			}
 
@@ -1239,42 +1103,33 @@ m3u8_builder_write_variants(
 
 		*p++ = '\"';
 
-		if (avg_bitrate != 0)
-		{
+		if (avg_bitrate != 0) {
 			p = vod_sprintf(p, m3u8_stream_inf_average_bandwidth, avg_bitrate);
 		}
 
-		if (tracks[MEDIA_TYPE_VIDEO] != NULL)
-		{
+		if (tracks[MEDIA_TYPE_VIDEO] != NULL) {
 			p = m3u8_builder_write_video_range(p, video);
 		}
 
-		if (adaptation_sets->count[ADAPTATION_TYPE_AUDIO] > 0 && adaptation_sets->total_count > 1)
-		{
-			p = vod_sprintf(p, m3u8_stream_inf_audio_group,
-				group_audio_track->media_info.codec_id - VOD_CODEC_ID_AUDIO);
+		if (adaptation_sets->count[ADAPTATION_TYPE_AUDIO] > 0 && adaptation_sets->total_count > 1) {
+			p = vod_sprintf(
+				p, m3u8_stream_inf_audio_group, group_audio_track->media_info.codec_id - VOD_CODEC_ID_AUDIO
+			);
 		}
-		if (adaptation_sets->count[ADAPTATION_TYPE_SUBTITLE] > 0)
-		{
+		if (adaptation_sets->count[ADAPTATION_TYPE_SUBTITLE] > 0) {
 			p = vod_sprintf(p, m3u8_stream_inf_subtitles_group, 0);
 		}
-		if (media_set->closed_captions < media_set->closed_captions_end)
-		{
+		if (media_set->closed_captions < media_set->closed_captions_end) {
 			p = vod_sprintf(p, m3u8_stream_inf_closed_captions_group, 0);
-		}
-		else if (media_set->closed_captions != NULL)
-		{
-			p = vod_copy(p, m3u8_stream_inf_no_closed_captions, sizeof(m3u8_stream_inf_no_closed_captions) - 1);
+		} else if (media_set->closed_captions != NULL) {
+			p = vod_copy(
+				p, m3u8_stream_inf_no_closed_captions, sizeof(m3u8_stream_inf_no_closed_captions) - 1
+			);
 		}
 		*p++ = '\n';
 
 		// output the url
-		p = m3u8_builder_append_index_url(
-			p,
-			&conf->index_file_name_prefix,
-			media_set,
-			tracks,
-			base_url);
+		p = m3u8_builder_append_index_url(p, &conf->index_file_name_prefix, media_set, tracks, base_url);
 		*p++ = '\n';
 	}
 
@@ -1285,58 +1140,44 @@ m3u8_builder_write_variants(
 
 static u_char*
 m3u8_builder_write_iframe_variants(
-	u_char* p,
-	adaptation_set_t* adaptation_set,
-	m3u8_config_t* conf,
-	vod_str_t* base_url,
-	media_set_t* media_set)
-{
+	u_char* p, adaptation_set_t* adaptation_set, m3u8_config_t* conf, vod_str_t* base_url, media_set_t* media_set
+) {
 	media_track_t** cur_track_ptr;
 	media_track_t* tracks[MEDIA_TYPE_COUNT];
 	media_info_t* video;
 
 	vod_memzero(tracks, sizeof(tracks));
 
-	for (cur_track_ptr = adaptation_set->first;
-		cur_track_ptr < adaptation_set->last;
-		cur_track_ptr++)
-	{
+	for (cur_track_ptr = adaptation_set->first; cur_track_ptr < adaptation_set->last; cur_track_ptr++) {
 		// get the audio / video tracks
-		// Note: this is ok because the adaptation types enum is aligned with media types
+		// NOTE: this is ok because the adaptation types enum is aligned with media types
 		tracks[adaptation_set->type] = cur_track_ptr[0];
 
-		if (tracks[MEDIA_TYPE_VIDEO] == NULL)
-		{
+		if (tracks[MEDIA_TYPE_VIDEO] == NULL) {
 			continue;
 		}
 
 		video = &tracks[MEDIA_TYPE_VIDEO]->media_info;
-		if (conf->container_format == HLS_CONTAINER_AUTO &&
-			video->codec_id != VOD_CODEC_ID_AVC)
-		{
+		if (conf->container_format == HLS_CONTAINER_AUTO && video->codec_id != VOD_CODEC_ID_AVC) {
 			continue;
 		}
 
-		if (video->u.video.key_frame_bitrate == 0 ||
-			!mp4_to_annexb_simulation_supported(video))
-		{
+		if (video->u.video.key_frame_bitrate == 0 || !mp4_to_annexb_simulation_supported(video)) {
 			continue;
 		}
 
-		p = vod_sprintf(p, m3u8_iframe_stream_inf,
+		p = vod_sprintf(
+			p,
+			m3u8_iframe_stream_inf,
 			video->u.video.key_frame_bitrate,
 			(uint32_t)video->u.video.width,
 			(uint32_t)video->u.video.height,
-			&video->codec_name);
+			&video->codec_name
+		);
 
-		// Note: while it is possible to use only the video track here, sending the audio
-		//		makes the iframe list reference the same segments as the media playlist
-		p = m3u8_builder_append_index_url(
-			p,
-			&conf->iframes_file_name_prefix,
-			media_set,
-			tracks,
-			base_url);
+		// NOTE: while it is possible to use only the video track here, sending the audio makes the
+		// iframe list reference the same segments as the media playlist
+		p = m3u8_builder_append_index_url(p, &conf->iframes_file_name_prefix, media_set, tracks, base_url);
 		*p++ = '\"';
 
 		p = m3u8_builder_write_video_range(p, video);
@@ -1354,8 +1195,8 @@ m3u8_builder_build_master_playlist(
 	hls_encryption_params_t* encryption_params,
 	vod_str_t* base_url,
 	media_set_t* media_set,
-	vod_str_t* result)
-{
+	vod_str_t* result
+) {
 	adaptation_sets_t adaptation_sets;
 	media_track_t** last_audio_codec_track;
 	media_track_t** cur_track_ptr;
@@ -1380,102 +1221,83 @@ m3u8_builder_build_master_playlist(
 	// get the adaptations sets
 	flags = ADAPTATION_SETS_FLAG_SINGLE_LANG_TRACK | ADAPTATION_SETS_FLAG_MULTI_AUDIO_CODEC;
 
-	rc = manifest_utils_get_adaptation_sets(
-		request_context,
-		media_set,
-		flags,
-		&adaptation_sets);
-	if (rc != VOD_OK)
-	{
+	rc = manifest_utils_get_adaptation_sets(request_context, media_set, flags, &adaptation_sets);
+	if (rc != VOD_OK) {
 		return rc;
 	}
 
-	iframe_playlist = conf->output_iframes_playlist &&
-		(media_set->type == MEDIA_SET_VOD || media_set->is_live_event) &&
-		media_set->timing.total_count <= 1 &&
-		encryption_params->type == HLS_ENC_NONE &&
-		conf->container_format != HLS_CONTAINER_FMP4 &&
-		!media_set->audio_filtering_needed &&
-		adaptation_sets.first->type == ADAPTATION_TYPE_VIDEO;
+	iframe_playlist = conf->output_iframes_playlist
+	               && (media_set->type == MEDIA_SET_VOD || media_set->is_live_event)
+	               && media_set->timing.total_count <= 1
+	               && encryption_params->type == HLS_ENC_NONE
+	               && conf->container_format != HLS_CONTAINER_FMP4
+	               && !media_set->audio_filtering_needed
+	               && adaptation_sets.first->type == ADAPTATION_TYPE_VIDEO;
 
 	// get the response size
-	base_url_len = base_url->len + 1 + conf->index_file_name_prefix.len +			// 1 = /
-		MANIFEST_UTILS_TRACKS_SPEC_MAX_SIZE + sizeof(m3u8_url_suffix) - 1;
+	base_url_len = base_url->len
+	             + 1 // '/'
+	             + conf->index_file_name_prefix.len
+	             + MANIFEST_UTILS_TRACKS_SPEC_MAX_SIZE
+	             + (sizeof(m3u8_url_suffix) - 1);
 
-	result_size = sizeof(m3u8_header_base) - 1 + VOD_INT32_LEN;
+	result_size = (sizeof(m3u8_header_base) - 1) + VOD_INT32_LEN;
 
-	if (media_set->segmenter_conf->align_to_key_frames)
-	{
+	if (media_set->segmenter_conf->align_to_key_frames) {
 		result_size += sizeof(m3u8_independent_segments) - 1;
 	}
 
 	max_video_stream_inf =
-		sizeof(m3u8_stream_inf_video) - 1 + 5 * VOD_INT32_LEN + MAX_CODEC_NAME_SIZE +
-		MAX_CODEC_NAME_SIZE + 1 +		// 1 = ,
-		sizeof(m3u8_stream_inf_average_bandwidth) - 1 + VOD_INT32_LEN +
-		sizeof(m3u8_stream_inf_video_range_sdr) - 1 +
-		sizeof("\"\n\n") - 1;
+		((sizeof(m3u8_stream_inf_video) - 1) + 5 * VOD_INT32_LEN + 2 * MAX_CODEC_NAME_SIZE + 1) // ','
+		+ ((sizeof(m3u8_stream_inf_average_bandwidth) - 1) + VOD_INT32_LEN)
+		+ (sizeof(m3u8_stream_inf_video_range_sdr) - 1)
+		+ (sizeof("\"\n\n") - 1);
 
-	alternative_audio = adaptation_sets.count[ADAPTATION_TYPE_AUDIO] > 0 && adaptation_sets.total_count > 1;
+	alternative_audio =
+		adaptation_sets.count[ADAPTATION_TYPE_AUDIO] > 0 && adaptation_sets.total_count > 1;
 
-	if (alternative_audio)
-	{
+	if (alternative_audio) {
 		// alternative audio
-		// Note: in case of audio only, the first track is printed twice - once as #EXT-X-STREAM-INF
-		//		and once as #EXT-X-MEDIA
+		// NOTE: in case of audio only, the first track is printed twice - once as #EXT-X-STREAM-INF
+		// and once as #EXT-X-MEDIA
 		result_size += m3u8_builder_get_media_size(
-			&adaptation_sets,
-			base_url,
-			base_url_len,
-			media_set,
-			MEDIA_TYPE_AUDIO);
+			&adaptation_sets, base_url, base_url_len, media_set, MEDIA_TYPE_AUDIO
+		);
 
-		max_video_stream_inf += sizeof(m3u8_stream_inf_audio_group) - 1 + VOD_INT32_LEN;
+		max_video_stream_inf += (sizeof(m3u8_stream_inf_audio_group) - 1) + VOD_INT32_LEN;
 
 		// count the number of audio codecs
 		vod_memzero(audio_codec_tracks, sizeof(audio_codec_tracks));
-		variant_set_count = m3u8_builder_get_audio_codec_count(
-			&adaptation_sets,
-			audio_codec_tracks);
+		variant_set_count = m3u8_builder_get_audio_codec_count(&adaptation_sets, audio_codec_tracks);
 	}
 
-	if (adaptation_sets.count[ADAPTATION_TYPE_SUBTITLE] > 0)
-	{
+	if (adaptation_sets.count[ADAPTATION_TYPE_SUBTITLE] > 0) {
 		// subtitles
 		result_size += m3u8_builder_get_media_size(
-			&adaptation_sets,
-			base_url,
-			base_url_len,
-			media_set,
-			MEDIA_TYPE_SUBTITLE);
+			&adaptation_sets, base_url, base_url_len, media_set, MEDIA_TYPE_SUBTITLE
+		);
 
-		max_video_stream_inf += sizeof(m3u8_stream_inf_subtitles_group) - 1 + VOD_INT32_LEN;
+		max_video_stream_inf += (sizeof(m3u8_stream_inf_subtitles_group) - 1) + VOD_INT32_LEN;
 	}
 
-	if (media_set->closed_captions < media_set->closed_captions_end)
-	{
+	if (media_set->closed_captions < media_set->closed_captions_end) {
 		result_size += m3u8_builder_get_closed_captions_size(media_set, request_context);
 
 		max_video_stream_inf += sizeof(m3u8_stream_inf_closed_captions_group) - 1;
-	}
-	else if (media_set->closed_captions != NULL)
-	{
+	} else if (media_set->closed_captions != NULL) {
 		max_video_stream_inf += sizeof(m3u8_stream_inf_no_closed_captions) - 1;
 	}
 
 	// variants
-	variant_set_size = (max_video_stream_inf +		 // using only video since it's larger than audio
-		base_url_len) * adaptation_sets.first->count;
+	variant_set_size =
+		(max_video_stream_inf + base_url_len) // using only video since it's larger than audio
+		* adaptation_sets.first->count;
 
-	if (base_url->len != 0)
-	{
-		for (cur_track_ptr = adaptation_sets.first->first;
-			cur_track_ptr < adaptation_sets.first->last;
-			cur_track_ptr++)
-		{
+	if (base_url->len != 0) {
+		for (cur_track_ptr = adaptation_sets.first->first; cur_track_ptr < adaptation_sets.first->last;
+		     cur_track_ptr++) {
 			cur_track = cur_track_ptr[0];
-			if (cur_track == NULL)
-			{
+			if (cur_track == NULL) {
 				cur_track = cur_track_ptr[1];
 			}
 
@@ -1486,139 +1308,109 @@ m3u8_builder_build_master_playlist(
 	result_size += variant_set_size * variant_set_count;
 
 	// iframe playlist
-	if (iframe_playlist)
-	{
+	if (iframe_playlist) {
 		result_size +=
-			(sizeof(m3u8_iframe_stream_inf) - 1 + 3 * VOD_INT32_LEN + MAX_CODEC_NAME_SIZE + sizeof("\"\n\n") - 1 +
-				base_url_len - conf->index_file_name_prefix.len + conf->iframes_file_name_prefix.len +
-				sizeof(m3u8_stream_inf_video_range_sdr) - 1) * adaptation_sets.first->count;
+			(((sizeof(m3u8_iframe_stream_inf) - 1)
+		      + 3 * VOD_INT32_LEN
+		      + MAX_CODEC_NAME_SIZE
+		      + (sizeof("\"\n\n") - 1))
+		     + (base_url_len - conf->index_file_name_prefix.len + conf->iframes_file_name_prefix.len)
+		     + (sizeof(m3u8_stream_inf_video_range_sdr) - 1))
+			* adaptation_sets.first->count;
 	}
 
 #if (NGX_HAVE_OPENSSL_EVP)
-	if (encryption_params->type != HLS_ENC_NONE)
-	{
+	if (encryption_params->type != HLS_ENC_NONE) {
 		result_size += m3u8_builder_get_encryption_size(
-			m3u8_session_key,
-			conf,
-			media_set->sequences[0].drm_info,
-			encryption_params,
-			&max_pssh_size);
+			m3u8_session_key, conf, media_set->sequences[0].drm_info, encryption_params, &max_pssh_size
+		);
 	}
 #endif // NGX_HAVE_OPENSSL_EVP
 
 	// allocate the buffer
 	result->data = vod_alloc(request_context->pool, result_size);
-	if (result->data == NULL)
-	{
-		vod_log_debug0(VOD_LOG_DEBUG_LEVEL, request_context->log, 0,
-			"m3u8_builder_build_master_playlist: vod_alloc failed (2)");
+	if (result->data == NULL) {
+		vod_log_debug0(
+			VOD_LOG_DEBUG_LEVEL, request_context->log, 0, "m3u8_builder_build_master_playlist: vod_alloc failed (2)"
+		);
 		return VOD_ALLOC_FAILED;
 	}
 
 	// write the header
 	p = vod_sprintf(result->data, m3u8_header_base, conf->m3u8_version);
 
-	if (media_set->segmenter_conf->align_to_key_frames)
-	{
+	if (media_set->segmenter_conf->align_to_key_frames) {
 		p = vod_copy(p, m3u8_independent_segments, sizeof(m3u8_independent_segments) - 1);
 	}
 
 #if (NGX_HAVE_OPENSSL_EVP)
-	if (max_pssh_size > 0)
-	{
+	if (max_pssh_size > 0) {
 		temp_buffer = vod_alloc(request_context->pool, max_pssh_size);
-		if (temp_buffer == NULL)
-		{
-			vod_log_debug0(VOD_LOG_DEBUG_LEVEL, request_context->log, 0,
-				"m3u8_builder_build_index_playlist: vod_alloc failed");
+		if (temp_buffer == NULL) {
+			vod_log_debug0(
+				VOD_LOG_DEBUG_LEVEL, request_context->log, 0, "m3u8_builder_build_index_playlist: vod_alloc failed"
+			);
 			return VOD_ALLOC_FAILED;
 		}
 	}
 
-	if (encryption_params->type != HLS_ENC_NONE)
-	{
-		p = m3u8_builder_write_encryption(p,
-			m3u8_session_key, conf, media_set, encryption_params, temp_buffer);
+	if (encryption_params->type != HLS_ENC_NONE) {
+		p = m3u8_builder_write_encryption(
+			p, m3u8_session_key, conf, media_set, encryption_params, temp_buffer
+		);
 	}
 #endif // NGX_HAVE_OPENSSL_EVP
 
 	*p++ = '\n';
 
-	if (alternative_audio)
-	{
+	if (alternative_audio) {
 		// output alternative audio
-		p = m3u8_builder_write_media(
-			p,
-			&adaptation_sets,
-			conf,
-			base_url,
-			media_set,
-			MEDIA_TYPE_AUDIO);
+		p = m3u8_builder_write_media(p, &adaptation_sets, conf, base_url, media_set, MEDIA_TYPE_AUDIO);
 	}
 
-	if (adaptation_sets.count[ADAPTATION_TYPE_SUBTITLE] > 0)
-	{
+	if (adaptation_sets.count[ADAPTATION_TYPE_SUBTITLE] > 0) {
 		// output subtitles
-		p = m3u8_builder_write_media(
-			p,
-			&adaptation_sets,
-			conf,
-			base_url,
-			media_set,
-			MEDIA_TYPE_SUBTITLE);
+		p = m3u8_builder_write_media(p, &adaptation_sets, conf, base_url, media_set, MEDIA_TYPE_SUBTITLE);
 	}
 
-	if (media_set->closed_captions < media_set->closed_captions_end)
-	{
+	if (media_set->closed_captions < media_set->closed_captions_end) {
 		p = m3u8_builder_write_closed_captions(p, media_set);
 	}
 
 	// output variants
-	if (variant_set_count > 1)
-	{
+	if (variant_set_count > 1) {
 		last_audio_codec_track = audio_codec_tracks + variant_set_count;
-		for (cur_track_ptr = audio_codec_tracks;
-			cur_track_ptr < last_audio_codec_track;
-			cur_track_ptr++)
-		{
-			p = m3u8_builder_write_variants(
-				p,
-				&adaptation_sets,
-				conf,
-				base_url,
-				media_set,
-				*cur_track_ptr);
+		for (cur_track_ptr = audio_codec_tracks; cur_track_ptr < last_audio_codec_track;
+		     cur_track_ptr++) {
+			p = m3u8_builder_write_variants(p, &adaptation_sets, conf, base_url, media_set, *cur_track_ptr);
 		}
-	}
-	else
-	{
+	} else {
 		p = m3u8_builder_write_variants(
 			p,
 			&adaptation_sets,
 			conf,
 			base_url,
 			media_set,
-			alternative_audio ? adaptation_sets.first_by_type[ADAPTATION_TYPE_AUDIO]->first[0] : NULL);
+			alternative_audio ? adaptation_sets.first_by_type[ADAPTATION_TYPE_AUDIO]->first[0] : NULL
+		);
 	}
 
 	// iframes
-	if (iframe_playlist)
-	{
-		p = m3u8_builder_write_iframe_variants(
-			p,
-			adaptation_sets.first,
-			conf,
-			base_url,
-			media_set);
+	if (iframe_playlist) {
+		p = m3u8_builder_write_iframe_variants(p, adaptation_sets.first, conf, base_url, media_set);
 	}
 
 	result->len = p - result->data;
 
-	if (result->len > result_size)
-	{
-		vod_log_error(VOD_LOG_ERR, request_context->log, 0,
+	if (result->len > result_size) {
+		vod_log_error(
+			VOD_LOG_ERR,
+			request_context->log,
+			0,
 			"m3u8_builder_build_master_playlist: result length %uz exceeded allocated length %uz",
-			result->len, result_size);
+			result->len,
+			result_size
+		);
 		return VOD_UNEXPECTED;
 	}
 
@@ -1626,11 +1418,12 @@ m3u8_builder_build_master_playlist(
 }
 
 void
-m3u8_builder_init_config(m3u8_config_t* conf, uint32_t max_segment_duration)
-{
+m3u8_builder_init_config(m3u8_config_t* conf, uint32_t max_segment_duration) {
 	conf->iframes_m3u8_header_len = vod_snprintf(
-		conf->iframes_m3u8_header,
-		sizeof(conf->iframes_m3u8_header) - 1,
-		iframes_m3u8_header_format,
-		vod_div_ceil(max_segment_duration, 1000)) - conf->iframes_m3u8_header;
+										conf->iframes_m3u8_header,
+										sizeof(conf->iframes_m3u8_header) - 1,
+										iframes_m3u8_header_format,
+										vod_div_ceil(max_segment_duration, 1000)
+									)
+	                              - conf->iframes_m3u8_header;
 }

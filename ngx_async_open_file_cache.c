@@ -1,9 +1,7 @@
-
 /*
  * Copyright (C) Igor Sysoev
  * Copyright (C) Nginx, Inc.
  */
-
 
 #include <ngx_config.h>
 #include <ngx_core.h>
@@ -15,1259 +13,1180 @@
 
 /*
  * open file cache caches
- *    open file handles with stat() info;
- *    directories stat() info;
- *    files and directories errors: not found, access denied, etc.
+ *     open file handles with stat() info;
+ *     directories stat() info;
+ *     files and directories errors: not found, access denied, etc.
  */
 
-
-#define NGX_MIN_READ_AHEAD  (128 * 1024)
-
+#define NGX_MIN_READ_AHEAD (128 * 1024)
 
 #if (NGX_HAVE_OPENAT)
-static ngx_fd_t ngx_openat_file_owner(ngx_fd_t at_fd, const u_char *name,
-    ngx_int_t mode, ngx_int_t create, ngx_int_t access, ngx_log_t *log);
+static ngx_fd_t ngx_openat_file_owner(
+	ngx_fd_t at_fd, const u_char* name, ngx_int_t mode, ngx_int_t create, ngx_int_t access, ngx_log_t* log
+);
 #if (NGX_HAVE_O_PATH)
-static ngx_int_t ngx_file_o_path_info(ngx_fd_t fd, ngx_file_info_t *fi,
-    ngx_log_t *log);
+static ngx_int_t ngx_file_o_path_info(ngx_fd_t fd, ngx_file_info_t* fi, ngx_log_t* log);
 #endif
 #endif
-static ngx_fd_t ngx_open_file_wrapper(ngx_str_t *name,
-    ngx_open_file_info_t *of, ngx_int_t mode, ngx_int_t create,
-    ngx_int_t access, ngx_log_t *log);
-static ngx_int_t ngx_file_info_wrapper(ngx_str_t *name,
-    ngx_open_file_info_t *of, ngx_file_info_t *fi, ngx_log_t *log);
-static ngx_int_t ngx_open_and_stat_file(ngx_str_t *name,
-    ngx_open_file_info_t *of, ngx_log_t *log);
-static void ngx_open_file_add_event(ngx_open_file_cache_t *cache,
-    ngx_cached_open_file_t *file, ngx_open_file_info_t *of, ngx_log_t *log);
-static void ngx_open_file_cleanup(void *data);
-static void ngx_close_cached_file(ngx_open_file_cache_t *cache,
-    ngx_cached_open_file_t *file, ngx_uint_t min_uses, ngx_log_t *log);
-static void ngx_open_file_del_event(ngx_cached_open_file_t *file);
-static void ngx_expire_old_cached_files(ngx_open_file_cache_t *cache,
-    ngx_uint_t n, ngx_log_t *log);
-static ngx_cached_open_file_t *
-    ngx_open_file_lookup(ngx_open_file_cache_t *cache, ngx_str_t *name,
-    uint32_t hash);
-static void ngx_open_file_cache_remove(ngx_event_t *ev);
-
+static ngx_fd_t ngx_open_file_wrapper(
+	ngx_str_t* name, ngx_open_file_info_t* of, ngx_int_t mode, ngx_int_t create, ngx_int_t access, ngx_log_t* log
+);
+static ngx_int_t
+ngx_file_info_wrapper(ngx_str_t* name, ngx_open_file_info_t* of, ngx_file_info_t* fi, ngx_log_t* log);
+static ngx_int_t ngx_open_and_stat_file(ngx_str_t* name, ngx_open_file_info_t* of, ngx_log_t* log);
+static void ngx_open_file_add_event(
+	ngx_open_file_cache_t* cache, ngx_cached_open_file_t* file, ngx_open_file_info_t* of, ngx_log_t* log
+);
+static void ngx_open_file_cleanup(void* data);
+static void ngx_close_cached_file(
+	ngx_open_file_cache_t* cache, ngx_cached_open_file_t* file, ngx_uint_t min_uses, ngx_log_t* log
+);
+static void ngx_open_file_del_event(ngx_cached_open_file_t* file);
+static void ngx_expire_old_cached_files(ngx_open_file_cache_t* cache, ngx_uint_t n, ngx_log_t* log);
+static ngx_cached_open_file_t*
+ngx_open_file_lookup(ngx_open_file_cache_t* cache, ngx_str_t* name, uint32_t hash);
+static void ngx_open_file_cache_remove(ngx_event_t* ev);
 
 static ngx_int_t
-ngx_save_open_file_to_cache(ngx_open_file_cache_t *cache, ngx_cached_open_file_t *file, ngx_str_t *name, uint32_t hash,
-    ngx_open_file_info_t *of, ngx_log_t *log, ngx_pool_cleanup_t *cln, ngx_int_t open_rc)
-{
-    time_t                          now;
-    ngx_open_file_cache_cleanup_t  *ofcln;
+ngx_save_open_file_to_cache(
+	ngx_open_file_cache_t* cache,
+	ngx_cached_open_file_t* file,
+	ngx_str_t* name,
+	uint32_t hash,
+	ngx_open_file_info_t* of,
+	ngx_log_t* log,
+	ngx_pool_cleanup_t* cln,
+	ngx_int_t open_rc
+) {
+	time_t now;
+	ngx_open_file_cache_cleanup_t* ofcln;
 
-    now = ngx_time();
+	now = ngx_time();
 
-    if (file) {
+	if (file) {
+		file->count--;
 
-        file->count--;
+		if (open_rc != NGX_OK && (of->err == 0 || !of->errors)) {
+			ngx_open_file_del_event(file);
 
-        if (open_rc != NGX_OK && (of->err == 0 || !of->errors)) {
+			if (file->close) {
+				// file was already removed from rbtree and cache->current was decremented, cleaning
+				// it up here instead of going to failed since that will make it happen again
 
-            ngx_open_file_del_event(file);
+				if (file->count == 0) {
+					if (ngx_close_file(file->fd) == NGX_FILE_ERROR) {
+						ngx_log_error(
+							NGX_LOG_ALERT, log, ngx_errno, ngx_close_file_n " \"%s\" failed", file->name
+						);
+					}
 
-            if (file->close) {
+					ngx_free(file->name);
+					ngx_free(file);
+				}
 
-                /* file was already removed from rbtree and cache->current was decremented,
-                    cleaning it up here instead of going to failed since that will make it happen again */
+				file = NULL;
+			} else {
+				ngx_queue_remove(&file->queue);
+			}
 
-                if (file->count == 0) {
+			goto failed;
+		}
 
-                    if (ngx_close_file(file->fd) == NGX_FILE_ERROR) {
-                        ngx_log_error(NGX_LOG_ALERT, log, ngx_errno,
-                            ngx_close_file_n " \"%s\" failed",
-                            file->name);
-                    }
+		if (!of->is_dir && of->err == 0 && of->uniq == file->uniq) {
+			file->uses++;
 
-                    ngx_free(file->name);
-                    ngx_free(file);
-                }
+			if (!file->close) {
+				ngx_queue_remove(&file->queue);
+			}
 
-                file = NULL;
+			if (file->event) {
+				file->use_event = 1;
+			}
 
-            } else {
+			of->is_directio = file->is_directio;
 
-                ngx_queue_remove(&file->queue);
-            }
+			goto update;
+		}
 
-            goto failed;
-        }
+		if (file->close) {
+			ngx_close_cached_file(cache, file, 0, log);
 
-        if (!of->is_dir && of->err == 0 && of->uniq == file->uniq) {
+			file = ngx_open_file_lookup(cache, name, hash);
+		}
+	} else {
+		file = ngx_open_file_lookup(cache, name, hash);
+	}
 
-            file->uses++;
+	if (file) {
+		file->uses++;
 
-            if (!file->close) {
-                ngx_queue_remove(&file->queue);
-            }
+		ngx_queue_remove(&file->queue);
 
-            if (file->event) {
-                file->use_event = 1;
-            }
+		if (file->fd == NGX_INVALID_FILE && file->err == 0 && !file->is_dir) {
+			// file was not used often enough to keep open
+			if (open_rc != NGX_OK && (of->err == 0 || !of->errors)) {
+				goto failed;
+			}
 
-            of->is_directio = file->is_directio;
+			goto add_event;
+		}
 
-            goto update;
-        }
-
-        if (file->close) {
-
-            ngx_close_cached_file(cache, file, 0, log);
-
-            file = ngx_open_file_lookup(cache, name, hash);
-        }
-
-    } else {
-
-        file = ngx_open_file_lookup(cache, name, hash);
-    }
-
-    if (file) {
-
-        file->uses++;
-
-        ngx_queue_remove(&file->queue);
-
-        if (file->fd == NGX_INVALID_FILE && file->err == 0 && !file->is_dir) {
-
-            /* file was not used often enough to keep open */
-            if (open_rc != NGX_OK && (of->err == 0 || !of->errors)) {
-                goto failed;
-            }
-
-            goto add_event;
-        }
-
-        if (file->use_event
-            || (file->event == NULL
-                && (of->uniq == 0 || of->uniq == file->uniq)
-                && now - file->created < of->valid
+		if (file->use_event
+		    || (file->event == NULL
+		        && (of->uniq == 0 || of->uniq == file->uniq)
+		        && now - file->created < of->valid
 #if (NGX_HAVE_OPENAT)
-                && of->disable_symlinks == file->disable_symlinks
-                && of->disable_symlinks_from == file->disable_symlinks_from
+		        && of->disable_symlinks == file->disable_symlinks
+		        && of->disable_symlinks_from == file->disable_symlinks_from
 #endif
-            ))
-        {
-            /* initially had a cache miss, but now that the open completed, there's a cache hit
-                closing the file handle and using the cached handle instead */
-            if (of->fd != NGX_INVALID_FILE) {
+		)) {
+			// initially had a cache miss, but now that the open completed, there's a cache hit
+			// closing the file handle and using the cached handle instead
+			if (of->fd != NGX_INVALID_FILE) {
+				ngx_log_debug1(NGX_LOG_DEBUG_ALLOC, log, 0, "file cleanup: fd:%d", of->fd);
 
-                ngx_log_debug1(NGX_LOG_DEBUG_ALLOC, log, 0, "file cleanup: fd:%d",
-                               of->fd);
+				if (ngx_close_file(of->fd) == NGX_FILE_ERROR) {
+					ngx_log_error(
+						NGX_LOG_ALERT, log, ngx_errno, ngx_close_file_n " \"%s\" failed", name->data
+					);
+				}
+				of->fd = NGX_INVALID_FILE;
+			}
 
-                if (ngx_close_file(of->fd) == NGX_FILE_ERROR) {
-                    ngx_log_error(NGX_LOG_ALERT, log, ngx_errno,
-                                  ngx_close_file_n " \"%s\" failed", name->data);
-                }
-                of->fd = NGX_INVALID_FILE;
-            }
+			if (file->err == 0) {
+				of->err = 0;
+				of->failed = NULL;
 
-            if (file->err == 0) {
-                of->err = 0;
-                of->failed = NULL;
+				of->fd = file->fd;
+				of->uniq = file->uniq;
+				of->mtime = file->mtime;
+				of->size = file->size;
 
-                of->fd = file->fd;
-                of->uniq = file->uniq;
-                of->mtime = file->mtime;
-                of->size = file->size;
+				of->is_dir = file->is_dir;
+				of->is_file = file->is_file;
+				of->is_link = file->is_link;
+				of->is_exec = file->is_exec;
+				of->is_directio = file->is_directio;
 
-                of->is_dir = file->is_dir;
-                of->is_file = file->is_file;
-                of->is_link = file->is_link;
-                of->is_exec = file->is_exec;
-                of->is_directio = file->is_directio;
-
-                if (!file->is_dir) {
-                    file->count++;
-                    ngx_open_file_add_event(cache, file, of, log);
-                }
-
-            } else {
-                of->err = file->err;
+				if (!file->is_dir) {
+					file->count++;
+					ngx_open_file_add_event(cache, file, of, log);
+				}
+			} else {
+				of->err = file->err;
 #if (NGX_HAVE_OPENAT)
-                of->failed = file->disable_symlinks ? ngx_openat_file_n
-                                                    : ngx_open_file_n;
+				of->failed = file->disable_symlinks ? ngx_openat_file_n : ngx_open_file_n;
 #else
-                of->failed = ngx_open_file_n;
+				of->failed = ngx_open_file_n;
 #endif
-            }
+			}
 
-            goto found;
-        }
+			goto found;
+		}
 
-        if (open_rc != NGX_OK && (of->err == 0 || !of->errors)) {
-            goto failed;
-        }
+		if (open_rc != NGX_OK && (of->err == 0 || !of->errors)) {
+			goto failed;
+		}
 
-        if (of->is_dir) {
+		if (of->is_dir) {
+			if (file->is_dir || file->err) {
+				goto update;
+			}
 
-            if (file->is_dir || file->err) {
-                goto update;
-            }
+			// file became directory
+		} else if (of->err == 0) { // file
+			if (file->is_dir || file->err) {
+				goto add_event;
+			}
 
-            /* file became directory */
+			// file was changed
+		} else { // error to caches
+			if (file->err || file->is_dir) {
+				goto update;
+			}
 
-        } else if (of->err == 0) {  /* file */
+			// file was removed, etc.
+		}
 
-            if (file->is_dir || file->err) {
-                goto add_event;
-            }
+		if (file->count == 0) {
+			ngx_open_file_del_event(file);
 
-            /* file was changed */
+			if (ngx_close_file(file->fd) == NGX_FILE_ERROR) {
+				ngx_log_error(NGX_LOG_ALERT, log, ngx_errno, ngx_close_file_n " \"%V\" failed", name);
+			}
 
-        } else { /* error to cache */
+			goto add_event;
+		}
 
-            if (file->err || file->is_dir) {
-                goto update;
-            }
+		ngx_rbtree_delete(&cache->rbtree, &file->node);
 
-            /* file was removed, etc. */
-        }
+		cache->current--;
 
-        if (file->count == 0) {
+		file->close = 1;
 
-            ngx_open_file_del_event(file);
+		goto create;
+	}
 
-            if (ngx_close_file(file->fd) == NGX_FILE_ERROR) {
-                ngx_log_error(NGX_LOG_ALERT, log, ngx_errno,
-                              ngx_close_file_n " \"%V\" failed", name);
-            }
+	// not found
 
-            goto add_event;
-        }
-
-        ngx_rbtree_delete(&cache->rbtree, &file->node);
-
-        cache->current--;
-
-        file->close = 1;
-
-        goto create;
-    }
-
-    /* not found */
-
-    if (open_rc != NGX_OK && (of->err == 0 || !of->errors)) {
-        goto failed;
-    }
+	if (open_rc != NGX_OK && (of->err == 0 || !of->errors)) {
+		goto failed;
+	}
 
 create:
 
-    if (cache->current >= cache->max) {
-        ngx_expire_old_cached_files(cache, 0, log);
-    }
+	if (cache->current >= cache->max) {
+		ngx_expire_old_cached_files(cache, 0, log);
+	}
 
-    file = ngx_alloc(sizeof(ngx_cached_open_file_t), log);
+	file = ngx_alloc(sizeof(ngx_cached_open_file_t), log);
 
-    if (file == NULL) {
-        goto failed;
-    }
+	if (file == NULL) {
+		goto failed;
+	}
 
-    file->name = ngx_alloc(name->len + 1, log);
+	file->name = ngx_alloc(name->len + 1, log);
 
-    if (file->name == NULL) {
-        ngx_free(file);
-        file = NULL;
-        goto failed;
-    }
+	if (file->name == NULL) {
+		ngx_free(file);
+		file = NULL;
+		goto failed;
+	}
 
-    ngx_cpystrn(file->name, name->data, name->len + 1);
+	ngx_cpystrn(file->name, name->data, name->len + 1);
 
-    file->node.key = hash;
+	file->node.key = hash;
 
-    ngx_rbtree_insert(&cache->rbtree, &file->node);
+	ngx_rbtree_insert(&cache->rbtree, &file->node);
 
-    cache->current++;
+	cache->current++;
 
-    file->uses = 1;
-    file->count = 0;
-    file->use_event = 0;
-    file->event = NULL;
-    file->close = 0;
+	file->uses = 1;
+	file->count = 0;
+	file->use_event = 0;
+	file->event = NULL;
+	file->close = 0;
 
 add_event:
 
-    ngx_open_file_add_event(cache, file, of, log);
+	ngx_open_file_add_event(cache, file, of, log);
 
 update:
 
-    file->fd = of->fd;
-    file->err = of->err;
+	file->fd = of->fd;
+	file->err = of->err;
 #if (NGX_HAVE_OPENAT)
-    file->disable_symlinks = of->disable_symlinks;
-    file->disable_symlinks_from = of->disable_symlinks_from;
+	file->disable_symlinks = of->disable_symlinks;
+	file->disable_symlinks_from = of->disable_symlinks_from;
 #endif
 
-    if (of->err == 0) {
-        file->uniq = of->uniq;
-        file->mtime = of->mtime;
-        file->size = of->size;
+	if (of->err == 0) {
+		file->uniq = of->uniq;
+		file->mtime = of->mtime;
+		file->size = of->size;
 
-        file->is_dir = of->is_dir;
-        file->is_file = of->is_file;
-        file->is_link = of->is_link;
-        file->is_exec = of->is_exec;
-        file->is_directio = of->is_directio;
+		file->is_dir = of->is_dir;
+		file->is_file = of->is_file;
+		file->is_link = of->is_link;
+		file->is_exec = of->is_exec;
+		file->is_directio = of->is_directio;
 
-        if (!of->is_dir) {
-            file->count++;
-        }
-    }
+		if (!of->is_dir) {
+			file->count++;
+		}
+	}
 
-    file->created = now;
+	file->created = now;
 
 found:
 
-    file->accessed = now;
+	file->accessed = now;
 
-    if (!file->close)
-    {
-        ngx_queue_insert_head(&cache->expire_queue, &file->queue);
-    }
+	if (!file->close) {
+		ngx_queue_insert_head(&cache->expire_queue, &file->queue);
+	}
 
-    ngx_log_debug5(NGX_LOG_DEBUG_CORE, log, 0,
-                   "cached open file: %s, fd:%d, c:%d, e:%d, u:%d",
-                   file->name, file->fd, file->count, file->err, file->uses);
+	ngx_log_debug5(
+		NGX_LOG_DEBUG_CORE,
+		log,
+		0,
+		"cached open file: %s, fd:%d, c:%d, e:%d, u:%d",
+		file->name,
+		file->fd,
+		file->count,
+		file->err,
+		file->uses
+	);
 
-    if (of->err == 0) {
+	if (of->err == 0) {
+		if (!of->is_dir) {
+			cln->handler = ngx_open_file_cleanup;
+			ofcln = cln->data;
 
-        if (!of->is_dir) {
-            cln->handler = ngx_open_file_cleanup;
-            ofcln = cln->data;
+			ofcln->cache = cache;
+			ofcln->file = file;
+			ofcln->min_uses = of->min_uses;
+			ofcln->log = log;
+		}
 
-            ofcln->cache = cache;
-            ofcln->file = file;
-            ofcln->min_uses = of->min_uses;
-            ofcln->log = log;
-        }
+		return NGX_OK;
+	}
 
-        return NGX_OK;
-    }
-
-    return NGX_ERROR;
+	return NGX_ERROR;
 
 failed:
 
-    if (file) {
-        ngx_rbtree_delete(&cache->rbtree, &file->node);
+	if (file) {
+		ngx_rbtree_delete(&cache->rbtree, &file->node);
 
-        cache->current--;
+		cache->current--;
 
-        if (file->count == 0) {
+		if (file->count == 0) {
+			if (file->fd != NGX_INVALID_FILE) {
+				if (ngx_close_file(file->fd) == NGX_FILE_ERROR) {
+					ngx_log_error(
+						NGX_LOG_ALERT, log, ngx_errno, ngx_close_file_n " \"%s\" failed", file->name
+					);
+				}
+			}
 
-            if (file->fd != NGX_INVALID_FILE) {
-                if (ngx_close_file(file->fd) == NGX_FILE_ERROR) {
-                    ngx_log_error(NGX_LOG_ALERT, log, ngx_errno,
-                                  ngx_close_file_n " \"%s\" failed",
-                                  file->name);
-                }
-            }
+			ngx_free(file->name);
+			ngx_free(file);
+		} else {
+			file->close = 1;
+		}
+	}
 
-            ngx_free(file->name);
-            ngx_free(file);
+	if (of->fd != NGX_INVALID_FILE) {
+		if (ngx_close_file(of->fd) == NGX_FILE_ERROR) {
+			ngx_log_error(NGX_LOG_ALERT, log, ngx_errno, ngx_close_file_n " \"%V\" failed", name);
+		}
+	}
 
-        } else {
-            file->close = 1;
-        }
-    }
-
-    if (of->fd != NGX_INVALID_FILE) {
-        if (ngx_close_file(of->fd) == NGX_FILE_ERROR) {
-            ngx_log_error(NGX_LOG_ALERT, log, ngx_errno,
-                          ngx_close_file_n " \"%V\" failed", name);
-        }
-    }
-
-    return NGX_ERROR;
+	return NGX_ERROR;
 }
-
 
 #if (NGX_HAVE_OPENAT)
 
 static ngx_fd_t
-ngx_openat_file_owner(ngx_fd_t at_fd, const u_char *name,
-    ngx_int_t mode, ngx_int_t create, ngx_int_t access, ngx_log_t *log)
-{
-    ngx_fd_t         fd;
-    ngx_err_t        err;
-    ngx_file_info_t  fi, atfi;
+ngx_openat_file_owner(
+	ngx_fd_t at_fd, const u_char* name, ngx_int_t mode, ngx_int_t create, ngx_int_t access, ngx_log_t* log
+) {
+	ngx_fd_t fd;
+	ngx_err_t err;
+	ngx_file_info_t fi, atfi;
 
-    /*
-     * To allow symlinks with the same owner, use openat() (followed
-     * by fstat()) and fstatat(AT_SYMLINK_NOFOLLOW), and then compare
-     * uids between fstat() and fstatat().
-     *
-     * As there is a race between openat() and fstatat() we don't
-     * know if openat() in fact opened symlink or not.  Therefore,
-     * we have to compare uids even if fstatat() reports the opened
-     * component isn't a symlink (as we don't know whether it was
-     * symlink during openat() or not).
-     */
+	/*
+	 * To allow symlinks with the same owner, use openat() (followed by fstat()) and
+	 * fstatat(AT_SYMLINK_NOFOLLOW), and then compare uids between fstat() and fstatat().
+	 *
+	 * As there is a race between openat() and fstatat() we don't know if openat() in fact opened
+	 * symlink or not.  Therefore, we have to compare uids even if fstatat() reports the opened
+	 * component isn't a symlink (as we don't know whether it was symlink during openat() or not).
+	 */
 
-    fd = ngx_openat_file(at_fd, name, mode, create, access);
+	fd = ngx_openat_file(at_fd, name, mode, create, access);
 
-    if (fd == NGX_INVALID_FILE) {
-        return NGX_INVALID_FILE;
-    }
+	if (fd == NGX_INVALID_FILE) {
+		return NGX_INVALID_FILE;
+	}
 
-    if (ngx_file_at_info(at_fd, name, &atfi, AT_SYMLINK_NOFOLLOW)
-        == NGX_FILE_ERROR)
-    {
-        err = ngx_errno;
-        goto failed;
-    }
+	if (ngx_file_at_info(at_fd, name, &atfi, AT_SYMLINK_NOFOLLOW) == NGX_FILE_ERROR) {
+		err = ngx_errno;
+		goto failed;
+	}
 
 #if (NGX_HAVE_O_PATH)
-    if (ngx_file_o_path_info(fd, &fi, log) == NGX_ERROR) {
-        err = ngx_errno;
-        goto failed;
-    }
+	if (ngx_file_o_path_info(fd, &fi, log) == NGX_ERROR) {
+		err = ngx_errno;
+		goto failed;
+	}
 #else
-    if (ngx_fd_info(fd, &fi) == NGX_FILE_ERROR) {
-        err = ngx_errno;
-        goto failed;
-    }
+	if (ngx_fd_info(fd, &fi) == NGX_FILE_ERROR) {
+		err = ngx_errno;
+		goto failed;
+	}
 #endif
 
-    if (fi.st_uid != atfi.st_uid) {
-        err = NGX_ELOOP;
-        goto failed;
-    }
+	if (fi.st_uid != atfi.st_uid) {
+		err = NGX_ELOOP;
+		goto failed;
+	}
 
-    return fd;
+	return fd;
 
 failed:
 
-    if (ngx_close_file(fd) == NGX_FILE_ERROR) {
-        ngx_log_error(NGX_LOG_ALERT, log, ngx_errno,
-                      ngx_close_file_n " \"%V\" failed", name);
-    }
+	if (ngx_close_file(fd) == NGX_FILE_ERROR) {
+		ngx_log_error(NGX_LOG_ALERT, log, ngx_errno, ngx_close_file_n " \"%V\" failed", name);
+	}
 
-    ngx_set_errno(err);
+	ngx_set_errno(err);
 
-    return NGX_INVALID_FILE;
+	return NGX_INVALID_FILE;
 }
-
 
 #if (NGX_HAVE_O_PATH)
 
 static ngx_int_t
-ngx_file_o_path_info(ngx_fd_t fd, ngx_file_info_t *fi, ngx_log_t *log)
-{
-    static ngx_uint_t  use_fstat = 1;
+ngx_file_o_path_info(ngx_fd_t fd, ngx_file_info_t* fi, ngx_log_t* log) {
+	static ngx_uint_t use_fstat = 1;
 
-    /*
-     * In Linux 2.6.39 the O_PATH flag was introduced that allows to obtain
-     * a descriptor without actually opening file or directory.  It requires
-     * less permissions for path components, but till Linux 3.6 fstat() returns
-     * EBADF on such descriptors, and fstatat() with the AT_EMPTY_PATH flag
-     * should be used instead.
-     *
-     * Three scenarios are handled in this function:
-     *
-     * 1) The kernel is newer than 3.6 or fstat() with O_PATH support was
-     *    backported by vendor.  Then fstat() is used.
-     *
-     * 2) The kernel is newer than 2.6.39 but older than 3.6.  In this case
-     *    the first call of fstat() returns EBADF and we fallback to fstatat()
-     *    with AT_EMPTY_PATH which was introduced at the same time as O_PATH.
-     *
-     * 3) The kernel is older than 2.6.39 but nginx was build with O_PATH
-     *    support.  Since descriptors are opened with O_PATH|O_RDONLY flags
-     *    and O_PATH is ignored by the kernel then the O_RDONLY flag is
-     *    actually used.  In this case fstat() just works.
-     */
+	/*
+	 * In Linux 2.6.39 the O_PATH flag was introduced that allows to obtain a descriptor without
+	 * actually opening file or directory.  It requires less permissions for path components, but
+	 * till Linux 3.6 fstat() returns EBADF on such descriptors, and fstatat() with the
+	 * AT_EMPTY_PATH flag should be used instead.
+	 *
+	 * Three scenarios are handled in this function:
+	 *
+	 * 1. The kernel is newer than 3.6 or fstat() with O_PATH support was backported by vendor. Then
+	 *    fstat() is used.
+	 *
+	 * 2. The kernel is newer than 2.6.39 but older than 3.6.  In this case the first call of
+	 *    fstat() returns EBADF and we fallback to fstatat() with AT_EMPTY_PATH which was introduced
+	 *    at the same time as O_PATH.
+	 *
+	 * 3. The kernel is older than 2.6.39 but nginx was build with O_PATH support. Since descriptors
+	 *    are opened with O_PATH|O_RDONLY flags and O_PATH is ignored by the kernel then the
+	 *    O_RDONLY flag is actually used.  In this case fstat() just works.
+	 */
 
-    if (use_fstat) {
-        if (ngx_fd_info(fd, fi) != NGX_FILE_ERROR) {
-            return NGX_OK;
-        }
+	if (use_fstat) {
+		if (ngx_fd_info(fd, fi) != NGX_FILE_ERROR) {
+			return NGX_OK;
+		}
 
-        if (ngx_errno != NGX_EBADF) {
-            return NGX_ERROR;
-        }
+		if (ngx_errno != NGX_EBADF) {
+			return NGX_ERROR;
+		}
 
-        ngx_log_error(NGX_LOG_NOTICE, log, 0,
-                      "fstat(O_PATH) failed with EBADF, "
-                      "switching to fstatat(AT_EMPTY_PATH)");
+		ngx_log_error(
+			NGX_LOG_NOTICE,
+			log,
+			0,
+			"fstat(O_PATH) failed with EBADF, "
+			"switching to fstatat(AT_EMPTY_PATH)"
+		);
 
-        use_fstat = 0;
-    }
+		use_fstat = 0;
+	}
 
-    if (ngx_file_at_info(fd, "", fi, AT_EMPTY_PATH) != NGX_FILE_ERROR) {
-        return NGX_OK;
-    }
+	if (ngx_file_at_info(fd, "", fi, AT_EMPTY_PATH) != NGX_FILE_ERROR) {
+		return NGX_OK;
+	}
 
-    return NGX_ERROR;
+	return NGX_ERROR;
 }
 
 #endif
 
-#endif /* NGX_HAVE_OPENAT */
-
+#endif // NGX_HAVE_OPENAT
 
 static ngx_fd_t
-ngx_open_file_wrapper(ngx_str_t *name, ngx_open_file_info_t *of,
-    ngx_int_t mode, ngx_int_t create, ngx_int_t access, ngx_log_t *log)
-{
-    ngx_fd_t  fd;
+ngx_open_file_wrapper(
+	ngx_str_t* name, ngx_open_file_info_t* of, ngx_int_t mode, ngx_int_t create, ngx_int_t access, ngx_log_t* log
+) {
+	ngx_fd_t fd;
 
 #if !(NGX_HAVE_OPENAT)
 
-    fd = ngx_open_file(name->data, mode, create, access);
+	fd = ngx_open_file(name->data, mode, create, access);
 
-    if (fd == NGX_INVALID_FILE) {
-        of->err = ngx_errno;
-        of->failed = ngx_open_file_n;
-        return NGX_INVALID_FILE;
-    }
+	if (fd == NGX_INVALID_FILE) {
+		of->err = ngx_errno;
+		of->failed = ngx_open_file_n;
+		return NGX_INVALID_FILE;
+	}
 
-    return fd;
+	return fd;
 
 #else
 
-    u_char           *p, *cp, *end;
-    ngx_fd_t          at_fd;
-    ngx_str_t         at_name;
+	u_char *p, *cp, *end;
+	ngx_fd_t at_fd;
+	ngx_str_t at_name;
 
-    if (of->disable_symlinks == NGX_DISABLE_SYMLINKS_OFF) {
-        fd = ngx_open_file(name->data, mode, create, access);
+	if (of->disable_symlinks == NGX_DISABLE_SYMLINKS_OFF) {
+		fd = ngx_open_file(name->data, mode, create, access);
 
-        if (fd == NGX_INVALID_FILE) {
-            of->err = ngx_errno;
-            of->failed = ngx_open_file_n;
-            return NGX_INVALID_FILE;
-        }
+		if (fd == NGX_INVALID_FILE) {
+			of->err = ngx_errno;
+			of->failed = ngx_open_file_n;
+			return NGX_INVALID_FILE;
+		}
 
-        return fd;
-    }
+		return fd;
+	}
 
-    p = name->data;
-    end = p + name->len;
+	p = name->data;
+	end = p + name->len;
 
-    at_name = *name;
+	at_name = *name;
 
-    if (of->disable_symlinks_from) {
+	if (of->disable_symlinks_from) {
+		cp = p + of->disable_symlinks_from;
 
-        cp = p + of->disable_symlinks_from;
+		*cp = '\0';
 
-        *cp = '\0';
+		at_fd = ngx_open_file(p, NGX_FILE_SEARCH | NGX_FILE_NONBLOCK, NGX_FILE_OPEN, 0);
 
-        at_fd = ngx_open_file(p, NGX_FILE_SEARCH|NGX_FILE_NONBLOCK,
-                              NGX_FILE_OPEN, 0);
+		*cp = '/';
 
-        *cp = '/';
+		if (at_fd == NGX_INVALID_FILE) {
+			of->err = ngx_errno;
+			of->failed = ngx_open_file_n;
+			return NGX_INVALID_FILE;
+		}
 
-        if (at_fd == NGX_INVALID_FILE) {
-            of->err = ngx_errno;
-            of->failed = ngx_open_file_n;
-            return NGX_INVALID_FILE;
-        }
+		at_name.len = of->disable_symlinks_from;
+		p = cp + 1;
+	} else if (*p == '/') {
+		at_fd = ngx_open_file("/", NGX_FILE_SEARCH | NGX_FILE_NONBLOCK, NGX_FILE_OPEN, 0);
 
-        at_name.len = of->disable_symlinks_from;
-        p = cp + 1;
+		if (at_fd == NGX_INVALID_FILE) {
+			of->err = ngx_errno;
+			of->failed = ngx_openat_file_n;
+			return NGX_INVALID_FILE;
+		}
 
-    } else if (*p == '/') {
+		at_name.len = 1;
+		p++;
+	} else {
+		at_fd = NGX_AT_FDCWD;
+	}
 
-        at_fd = ngx_open_file("/",
-                              NGX_FILE_SEARCH|NGX_FILE_NONBLOCK,
-                              NGX_FILE_OPEN, 0);
+	for (;;) {
+		cp = ngx_strlchr(p, end, '/');
+		if (cp == NULL) {
+			break;
+		}
 
-        if (at_fd == NGX_INVALID_FILE) {
-            of->err = ngx_errno;
-            of->failed = ngx_openat_file_n;
-            return NGX_INVALID_FILE;
-        }
+		if (cp == p) {
+			p++;
+			continue;
+		}
 
-        at_name.len = 1;
-        p++;
+		*cp = '\0';
 
-    } else {
-        at_fd = NGX_AT_FDCWD;
-    }
+		if (of->disable_symlinks == NGX_DISABLE_SYMLINKS_NOTOWNER) {
+			fd = ngx_openat_file_owner(
+				at_fd, p, NGX_FILE_SEARCH | NGX_FILE_NONBLOCK, NGX_FILE_OPEN, 0, log
+			);
+		} else {
+			fd = ngx_openat_file(
+				at_fd, p, NGX_FILE_SEARCH | NGX_FILE_NONBLOCK | NGX_FILE_NOFOLLOW, NGX_FILE_OPEN, 0
+			);
+		}
 
-    for ( ;; ) {
-        cp = ngx_strlchr(p, end, '/');
-        if (cp == NULL) {
-            break;
-        }
+		*cp = '/';
 
-        if (cp == p) {
-            p++;
-            continue;
-        }
+		if (fd == NGX_INVALID_FILE) {
+			of->err = ngx_errno;
+			of->failed = ngx_openat_file_n;
+			goto failed;
+		}
 
-        *cp = '\0';
+		if (at_fd != NGX_AT_FDCWD && ngx_close_file(at_fd) == NGX_FILE_ERROR) {
+			ngx_log_error(NGX_LOG_ALERT, log, ngx_errno, ngx_close_file_n " \"%V\" failed", &at_name);
+		}
 
-        if (of->disable_symlinks == NGX_DISABLE_SYMLINKS_NOTOWNER) {
-            fd = ngx_openat_file_owner(at_fd, p,
-                                       NGX_FILE_SEARCH|NGX_FILE_NONBLOCK,
-                                       NGX_FILE_OPEN, 0, log);
+		p = cp + 1;
+		at_fd = fd;
+		at_name.len = cp - at_name.data;
+	}
 
-        } else {
-            fd = ngx_openat_file(at_fd, p,
-                           NGX_FILE_SEARCH|NGX_FILE_NONBLOCK|NGX_FILE_NOFOLLOW,
-                           NGX_FILE_OPEN, 0);
-        }
+	if (p == end) {
+		/*
+		 * If pathname ends with a trailing slash, assume the last path component is a directory and
+		 * reopen it with requested flags; if not, fail with ENOTDIR as per POSIX.
+		 *
+		 * We cannot rely on O_DIRECTORY in the loop above to check that the last path component is
+		 * a directory because O_DIRECTORY doesn't work on FreeBSD 8. Fortunately, by reopening a
+		 * directory, we don't depend on it at all.
+		 */
 
-        *cp = '/';
+		fd = ngx_openat_file(at_fd, ".", mode, create, access);
+		goto done;
+	}
 
-        if (fd == NGX_INVALID_FILE) {
-            of->err = ngx_errno;
-            of->failed = ngx_openat_file_n;
-            goto failed;
-        }
-
-        if (at_fd != NGX_AT_FDCWD && ngx_close_file(at_fd) == NGX_FILE_ERROR) {
-            ngx_log_error(NGX_LOG_ALERT, log, ngx_errno,
-                          ngx_close_file_n " \"%V\" failed", &at_name);
-        }
-
-        p = cp + 1;
-        at_fd = fd;
-        at_name.len = cp - at_name.data;
-    }
-
-    if (p == end) {
-
-        /*
-         * If pathname ends with a trailing slash, assume the last path
-         * component is a directory and reopen it with requested flags;
-         * if not, fail with ENOTDIR as per POSIX.
-         *
-         * We cannot rely on O_DIRECTORY in the loop above to check
-         * that the last path component is a directory because
-         * O_DIRECTORY doesn't work on FreeBSD 8.  Fortunately, by
-         * reopening a directory, we don't depend on it at all.
-         */
-
-        fd = ngx_openat_file(at_fd, ".", mode, create, access);
-        goto done;
-    }
-
-    if (of->disable_symlinks == NGX_DISABLE_SYMLINKS_NOTOWNER
-        && !(create & (NGX_FILE_CREATE_OR_OPEN|NGX_FILE_TRUNCATE)))
-    {
-        fd = ngx_openat_file_owner(at_fd, p, mode, create, access, log);
-
-    } else {
-        fd = ngx_openat_file(at_fd, p, mode|NGX_FILE_NOFOLLOW, create, access);
-    }
+	if (of->disable_symlinks == NGX_DISABLE_SYMLINKS_NOTOWNER
+	    && !(create & (NGX_FILE_CREATE_OR_OPEN | NGX_FILE_TRUNCATE))) {
+		fd = ngx_openat_file_owner(at_fd, p, mode, create, access, log);
+	} else {
+		fd = ngx_openat_file(at_fd, p, mode | NGX_FILE_NOFOLLOW, create, access);
+	}
 
 done:
 
-    if (fd == NGX_INVALID_FILE) {
-        of->err = ngx_errno;
-        of->failed = ngx_openat_file_n;
-    }
+	if (fd == NGX_INVALID_FILE) {
+		of->err = ngx_errno;
+		of->failed = ngx_openat_file_n;
+	}
 
 failed:
 
-    if (at_fd != NGX_AT_FDCWD && ngx_close_file(at_fd) == NGX_FILE_ERROR) {
-        ngx_log_error(NGX_LOG_ALERT, log, ngx_errno,
-                      ngx_close_file_n " \"%V\" failed", &at_name);
-    }
+	if (at_fd != NGX_AT_FDCWD && ngx_close_file(at_fd) == NGX_FILE_ERROR) {
+		ngx_log_error(NGX_LOG_ALERT, log, ngx_errno, ngx_close_file_n " \"%V\" failed", &at_name);
+	}
 
-    return fd;
+	return fd;
 #endif
 }
 
-
 static ngx_int_t
-ngx_file_info_wrapper(ngx_str_t *name, ngx_open_file_info_t *of,
-    ngx_file_info_t *fi, ngx_log_t *log)
-{
-    ngx_int_t  rc;
+ngx_file_info_wrapper(ngx_str_t* name, ngx_open_file_info_t* of, ngx_file_info_t* fi, ngx_log_t* log) {
+	ngx_int_t rc;
 
 #if !(NGX_HAVE_OPENAT)
 
-    rc = ngx_file_info(name->data, fi);
+	rc = ngx_file_info(name->data, fi);
 
-    if (rc == NGX_FILE_ERROR) {
-        of->err = ngx_errno;
-        of->failed = ngx_file_info_n;
-        return NGX_FILE_ERROR;
-    }
+	if (rc == NGX_FILE_ERROR) {
+		of->err = ngx_errno;
+		of->failed = ngx_file_info_n;
+		return NGX_FILE_ERROR;
+	}
 
-    return rc;
+	return rc;
 
 #else
 
-    ngx_fd_t  fd;
+	ngx_fd_t fd;
 
-    if (of->disable_symlinks == NGX_DISABLE_SYMLINKS_OFF) {
+	if (of->disable_symlinks == NGX_DISABLE_SYMLINKS_OFF) {
+		rc = ngx_file_info(name->data, fi);
 
-        rc = ngx_file_info(name->data, fi);
+		if (rc == NGX_FILE_ERROR) {
+			of->err = ngx_errno;
+			of->failed = ngx_file_info_n;
+			return NGX_FILE_ERROR;
+		}
 
-        if (rc == NGX_FILE_ERROR) {
-            of->err = ngx_errno;
-            of->failed = ngx_file_info_n;
-            return NGX_FILE_ERROR;
-        }
+		return rc;
+	}
 
-        return rc;
-    }
+	fd = ngx_open_file_wrapper(name, of, NGX_FILE_RDONLY | NGX_FILE_NONBLOCK, NGX_FILE_OPEN, 0, log);
 
-    fd = ngx_open_file_wrapper(name, of, NGX_FILE_RDONLY|NGX_FILE_NONBLOCK,
-                               NGX_FILE_OPEN, 0, log);
+	if (fd == NGX_INVALID_FILE) {
+		return NGX_FILE_ERROR;
+	}
 
-    if (fd == NGX_INVALID_FILE) {
-        return NGX_FILE_ERROR;
-    }
+	rc = ngx_fd_info(fd, fi);
 
-    rc = ngx_fd_info(fd, fi);
+	if (rc == NGX_FILE_ERROR) {
+		of->err = ngx_errno;
+		of->failed = ngx_fd_info_n;
+	}
 
-    if (rc == NGX_FILE_ERROR) {
-        of->err = ngx_errno;
-        of->failed = ngx_fd_info_n;
-    }
+	if (ngx_close_file(fd) == NGX_FILE_ERROR) {
+		ngx_log_error(NGX_LOG_ALERT, log, ngx_errno, ngx_close_file_n " \"%V\" failed", name);
+	}
 
-    if (ngx_close_file(fd) == NGX_FILE_ERROR) {
-        ngx_log_error(NGX_LOG_ALERT, log, ngx_errno,
-                      ngx_close_file_n " \"%V\" failed", name);
-    }
-
-    return rc;
+	return rc;
 #endif
 }
 
-
 static ngx_int_t
-ngx_open_and_stat_file(ngx_str_t *name, ngx_open_file_info_t *of,
-    ngx_log_t *log)
-{
-    ngx_fd_t         fd;
-    ngx_file_info_t  fi;
+ngx_open_and_stat_file(ngx_str_t* name, ngx_open_file_info_t* of, ngx_log_t* log) {
+	ngx_fd_t fd;
+	ngx_file_info_t fi;
 
-    if (of->fd != NGX_INVALID_FILE) {
+	if (of->fd != NGX_INVALID_FILE) {
+		if (ngx_file_info_wrapper(name, of, &fi, log) == NGX_FILE_ERROR) {
+			of->fd = NGX_INVALID_FILE;
+			return NGX_ERROR;
+		}
 
-        if (ngx_file_info_wrapper(name, of, &fi, log) == NGX_FILE_ERROR) {
-            of->fd = NGX_INVALID_FILE;
-            return NGX_ERROR;
-        }
+		if (of->uniq == ngx_file_uniq(&fi)) {
+			goto done;
+		}
+	} else if (of->test_dir) {
+		if (ngx_file_info_wrapper(name, of, &fi, log) == NGX_FILE_ERROR) {
+			of->fd = NGX_INVALID_FILE;
+			return NGX_ERROR;
+		}
 
-        if (of->uniq == ngx_file_uniq(&fi)) {
-            goto done;
-        }
+		if (ngx_is_dir(&fi)) {
+			goto done;
+		}
+	}
 
-    } else if (of->test_dir) {
+	if (!of->log) {
+		/*
+		 * Use non-blocking open() not to hang on FIFO files, etc. This flag has no effect on a
+		 * regular files.
+		 */
 
-        if (ngx_file_info_wrapper(name, of, &fi, log) == NGX_FILE_ERROR) {
-            of->fd = NGX_INVALID_FILE;
-            return NGX_ERROR;
-        }
+		fd = ngx_open_file_wrapper(name, of, NGX_FILE_RDONLY | NGX_FILE_NONBLOCK, NGX_FILE_OPEN, 0, log);
+	} else {
+		fd = ngx_open_file_wrapper(
+			name, of, NGX_FILE_APPEND, NGX_FILE_CREATE_OR_OPEN, NGX_FILE_DEFAULT_ACCESS, log
+		);
+	}
 
-        if (ngx_is_dir(&fi)) {
-            goto done;
-        }
-    }
+	if (fd == NGX_INVALID_FILE) {
+		of->fd = NGX_INVALID_FILE;
+		return NGX_ERROR;
+	}
 
-    if (!of->log) {
+	if (ngx_fd_info(fd, &fi) == NGX_FILE_ERROR) {
+		ngx_log_error(NGX_LOG_CRIT, log, ngx_errno, ngx_fd_info_n " \"%V\" failed", name);
 
-        /*
-         * Use non-blocking open() not to hang on FIFO files, etc.
-         * This flag has no effect on a regular files.
-         */
+		if (ngx_close_file(fd) == NGX_FILE_ERROR) {
+			ngx_log_error(NGX_LOG_ALERT, log, ngx_errno, ngx_close_file_n " \"%V\" failed", name);
+		}
 
-        fd = ngx_open_file_wrapper(name, of, NGX_FILE_RDONLY|NGX_FILE_NONBLOCK,
-                                   NGX_FILE_OPEN, 0, log);
+		of->fd = NGX_INVALID_FILE;
 
-    } else {
-        fd = ngx_open_file_wrapper(name, of, NGX_FILE_APPEND,
-                                   NGX_FILE_CREATE_OR_OPEN,
-                                   NGX_FILE_DEFAULT_ACCESS, log);
-    }
+		return NGX_ERROR;
+	}
 
-    if (fd == NGX_INVALID_FILE) {
-        of->fd = NGX_INVALID_FILE;
-        return NGX_ERROR;
-    }
+	if (ngx_is_dir(&fi)) {
+		if (ngx_close_file(fd) == NGX_FILE_ERROR) {
+			ngx_log_error(NGX_LOG_ALERT, log, ngx_errno, ngx_close_file_n " \"%V\" failed", name);
+		}
 
-    if (ngx_fd_info(fd, &fi) == NGX_FILE_ERROR) {
-        ngx_log_error(NGX_LOG_CRIT, log, ngx_errno,
-                      ngx_fd_info_n " \"%V\" failed", name);
+		of->fd = NGX_INVALID_FILE;
+	} else {
+		of->fd = fd;
 
-        if (ngx_close_file(fd) == NGX_FILE_ERROR) {
-            ngx_log_error(NGX_LOG_ALERT, log, ngx_errno,
-                          ngx_close_file_n " \"%V\" failed", name);
-        }
+		if (of->read_ahead && ngx_file_size(&fi) > NGX_MIN_READ_AHEAD) {
+			if (ngx_read_ahead(fd, of->read_ahead) == NGX_ERROR) {
+				ngx_log_error(NGX_LOG_ALERT, log, ngx_errno, ngx_read_ahead_n " \"%V\" failed", name);
+			}
+		}
 
-        of->fd = NGX_INVALID_FILE;
-
-        return NGX_ERROR;
-    }
-
-    if (ngx_is_dir(&fi)) {
-        if (ngx_close_file(fd) == NGX_FILE_ERROR) {
-            ngx_log_error(NGX_LOG_ALERT, log, ngx_errno,
-                          ngx_close_file_n " \"%V\" failed", name);
-        }
-
-        of->fd = NGX_INVALID_FILE;
-
-    } else {
-        of->fd = fd;
-
-        if (of->read_ahead && ngx_file_size(&fi) > NGX_MIN_READ_AHEAD) {
-            if (ngx_read_ahead(fd, of->read_ahead) == NGX_ERROR) {
-                ngx_log_error(NGX_LOG_ALERT, log, ngx_errno,
-                              ngx_read_ahead_n " \"%V\" failed", name);
-            }
-        }
-
-        if (of->directio <= ngx_file_size(&fi)) {
-            if (ngx_directio_on(fd) == NGX_FILE_ERROR) {
-                ngx_log_error(NGX_LOG_ALERT, log, ngx_errno,
-                              ngx_directio_on_n " \"%V\" failed", name);
-
-            } else {
-                of->is_directio = 1;
-            }
-        }
-    }
+		if (of->directio <= ngx_file_size(&fi)) {
+			if (ngx_directio_on(fd) == NGX_FILE_ERROR) {
+				ngx_log_error(NGX_LOG_ALERT, log, ngx_errno, ngx_directio_on_n " \"%V\" failed", name);
+			} else {
+				of->is_directio = 1;
+			}
+		}
+	}
 
 done:
 
-    of->uniq = ngx_file_uniq(&fi);
-    of->mtime = ngx_file_mtime(&fi);
-    of->size = ngx_file_size(&fi);
-    of->fs_size = ngx_file_fs_size(&fi);
-    of->is_dir = ngx_is_dir(&fi);
-    of->is_file = ngx_is_file(&fi);
-    of->is_link = ngx_is_link(&fi);
-    of->is_exec = ngx_is_exec(&fi);
+	of->uniq = ngx_file_uniq(&fi);
+	of->mtime = ngx_file_mtime(&fi);
+	of->size = ngx_file_size(&fi);
+	of->fs_size = ngx_file_fs_size(&fi);
+	of->is_dir = ngx_is_dir(&fi);
+	of->is_file = ngx_is_file(&fi);
+	of->is_link = ngx_is_link(&fi);
+	of->is_exec = ngx_is_exec(&fi);
 
-    return NGX_OK;
+	return NGX_OK;
 }
 
-
-/*
- * we ignore any possible event setting error and
- * fallback to usual periodic file retests
- */
+// we ignore any possible event setting error and fallback to usual periodic file retests
 
 static void
-ngx_open_file_add_event(ngx_open_file_cache_t *cache,
-    ngx_cached_open_file_t *file, ngx_open_file_info_t *of, ngx_log_t *log)
-{
-    ngx_open_file_cache_event_t  *fev;
+ngx_open_file_add_event(
+	ngx_open_file_cache_t* cache, ngx_cached_open_file_t* file, ngx_open_file_info_t* of, ngx_log_t* log
+) {
+	ngx_open_file_cache_event_t* fev;
 
-    if (!(ngx_event_flags & NGX_USE_VNODE_EVENT)
-        || !of->events
-        || file->event
-        || of->fd == NGX_INVALID_FILE
-        || file->uses < of->min_uses)
-    {
-        return;
-    }
+	if (!(ngx_event_flags & NGX_USE_VNODE_EVENT)
+	    || !of->events
+	    || file->event
+	    || of->fd == NGX_INVALID_FILE
+	    || file->uses < of->min_uses) {
+		return;
+	}
 
-    file->use_event = 0;
+	file->use_event = 0;
 
-    file->event = ngx_calloc(sizeof(ngx_event_t), log);
-    if (file->event== NULL) {
-        return;
-    }
+	file->event = ngx_calloc(sizeof(ngx_event_t), log);
+	if (file->event == NULL) {
+		return;
+	}
 
-    fev = ngx_alloc(sizeof(ngx_open_file_cache_event_t), log);
-    if (fev == NULL) {
-        ngx_free(file->event);
-        file->event = NULL;
-        return;
-    }
+	fev = ngx_alloc(sizeof(ngx_open_file_cache_event_t), log);
+	if (fev == NULL) {
+		ngx_free(file->event);
+		file->event = NULL;
+		return;
+	}
 
-    fev->fd = of->fd;
-    fev->file = file;
-    fev->cache = cache;
+	fev->fd = of->fd;
+	fev->file = file;
+	fev->cache = cache;
 
-    file->event->handler = ngx_open_file_cache_remove;
-    file->event->data = fev;
+	file->event->handler = ngx_open_file_cache_remove;
+	file->event->data = fev;
 
-    /*
-     * although vnode event may be called while ngx_cycle->poll
-     * destruction, however, cleanup procedures are run before any
-     * memory freeing and events will be canceled.
-     */
+	/*
+	 * Although vnode event may be called while ngx_cycle->poll destruction, however, cleanup
+	 * procedures are run before any memory freeing and events will be canceled.
+	 */
 
-    file->event->log = ngx_cycle->log;
+	file->event->log = ngx_cycle->log;
 
-    if (ngx_add_event(file->event, NGX_VNODE_EVENT, NGX_ONESHOT_EVENT)
-        != NGX_OK)
-    {
-        ngx_free(file->event->data);
-        ngx_free(file->event);
-        file->event = NULL;
-        return;
-    }
+	if (ngx_add_event(file->event, NGX_VNODE_EVENT, NGX_ONESHOT_EVENT) != NGX_OK) {
+		ngx_free(file->event->data);
+		ngx_free(file->event);
+		file->event = NULL;
+		return;
+	}
 
-    /*
-     * we do not set file->use_event here because there may be a race
-     * condition: a file may be deleted between opening the file and
-     * adding event, so we rely upon event notification only after
-     * one file revalidation on next file access
-     */
+	/*
+	 * We do not set file->use_event here because there may be a race condition: a file may be
+	 * deleted between opening the file and adding event, so we rely upon event notification only
+	 * after one file revalidation on next file access
+	 */
 
-    return;
+	return;
 }
-
 
 static void
-ngx_open_file_cleanup(void *data)
-{
-    ngx_open_file_cache_cleanup_t  *c = data;
+ngx_open_file_cleanup(void* data) {
+	ngx_open_file_cache_cleanup_t* c = data;
 
-    c->file->count--;
+	c->file->count--;
 
-    ngx_close_cached_file(c->cache, c->file, c->min_uses, c->log);
+	ngx_close_cached_file(c->cache, c->file, c->min_uses, c->log);
 
-    /* drop one or two expired open files */
-    ngx_expire_old_cached_files(c->cache, 1, c->log);
+	// drop one or two expired open files
+	ngx_expire_old_cached_files(c->cache, 1, c->log);
 }
-
 
 static void
-ngx_close_cached_file(ngx_open_file_cache_t *cache,
-    ngx_cached_open_file_t *file, ngx_uint_t min_uses, ngx_log_t *log)
-{
-    ngx_log_debug5(NGX_LOG_DEBUG_CORE, log, 0,
-                   "close cached open file: %s, fd:%d, c:%d, u:%d, %d",
-                   file->name, file->fd, file->count, file->uses, file->close);
+ngx_close_cached_file(
+	ngx_open_file_cache_t* cache, ngx_cached_open_file_t* file, ngx_uint_t min_uses, ngx_log_t* log
+) {
+	ngx_log_debug5(
+		NGX_LOG_DEBUG_CORE,
+		log,
+		0,
+		"close cached open file: %s, fd:%d, c:%d, u:%d, %d",
+		file->name,
+		file->fd,
+		file->count,
+		file->uses,
+		file->close
+	);
 
-    if (!file->close) {
+	if (!file->close) {
+		file->accessed = ngx_time();
 
-        file->accessed = ngx_time();
+		ngx_queue_remove(&file->queue);
 
-        ngx_queue_remove(&file->queue);
+		ngx_queue_insert_head(&cache->expire_queue, &file->queue);
 
-        ngx_queue_insert_head(&cache->expire_queue, &file->queue);
+		if (file->uses >= min_uses || file->count) {
+			return;
+		}
+	}
 
-        if (file->uses >= min_uses || file->count) {
-            return;
-        }
-    }
+	ngx_open_file_del_event(file);
 
-    ngx_open_file_del_event(file);
+	if (file->count) {
+		return;
+	}
 
-    if (file->count) {
-        return;
-    }
+	if (file->fd != NGX_INVALID_FILE) {
+		if (ngx_close_file(file->fd) == NGX_FILE_ERROR) {
+			ngx_log_error(NGX_LOG_ALERT, log, ngx_errno, ngx_close_file_n " \"%s\" failed", file->name);
+		}
 
-    if (file->fd != NGX_INVALID_FILE) {
+		file->fd = NGX_INVALID_FILE;
+	}
 
-        if (ngx_close_file(file->fd) == NGX_FILE_ERROR) {
-            ngx_log_error(NGX_LOG_ALERT, log, ngx_errno,
-                          ngx_close_file_n " \"%s\" failed", file->name);
-        }
+	if (!file->close) {
+		return;
+	}
 
-        file->fd = NGX_INVALID_FILE;
-    }
-
-    if (!file->close) {
-        return;
-    }
-
-    ngx_free(file->name);
-    ngx_free(file);
+	ngx_free(file->name);
+	ngx_free(file);
 }
-
 
 static void
-ngx_open_file_del_event(ngx_cached_open_file_t *file)
-{
-    if (file->event == NULL) {
-        return;
-    }
+ngx_open_file_del_event(ngx_cached_open_file_t* file) {
+	if (file->event == NULL) {
+		return;
+	}
 
-    (void) ngx_del_event(file->event, NGX_VNODE_EVENT,
-                         file->count ? NGX_FLUSH_EVENT : NGX_CLOSE_EVENT);
+	(void)ngx_del_event(file->event, NGX_VNODE_EVENT, file->count ? NGX_FLUSH_EVENT : NGX_CLOSE_EVENT);
 
-    ngx_free(file->event->data);
-    ngx_free(file->event);
-    file->event = NULL;
-    file->use_event = 0;
+	ngx_free(file->event->data);
+	ngx_free(file->event);
+	file->event = NULL;
+	file->use_event = 0;
 }
-
 
 static void
-ngx_expire_old_cached_files(ngx_open_file_cache_t *cache, ngx_uint_t n,
-    ngx_log_t *log)
-{
-    time_t                   now;
-    ngx_queue_t             *q;
-    ngx_cached_open_file_t  *file;
+ngx_expire_old_cached_files(ngx_open_file_cache_t* cache, ngx_uint_t n, ngx_log_t* log) {
+	time_t now;
+	ngx_queue_t* q;
+	ngx_cached_open_file_t* file;
 
-    now = ngx_time();
+	now = ngx_time();
 
-    /*
-     * n == 1 deletes one or two inactive files
-     * n == 0 deletes least recently used file by force
-     *        and one or two inactive files
-     */
+	/*
+	 * n == 1 deletes one or two inactive files
+	 * n == 0 deletes least recently used file by force
+	 *        and one or two inactive files
+	 */
 
-    while (n < 3) {
+	while (n < 3) {
+		if (ngx_queue_empty(&cache->expire_queue)) {
+			return;
+		}
 
-        if (ngx_queue_empty(&cache->expire_queue)) {
-            return;
-        }
+		q = ngx_queue_last(&cache->expire_queue);
 
-        q = ngx_queue_last(&cache->expire_queue);
+		file = ngx_queue_data(q, ngx_cached_open_file_t, queue);
 
-        file = ngx_queue_data(q, ngx_cached_open_file_t, queue);
+		if (n++ != 0 && now - file->accessed <= cache->inactive) {
+			return;
+		}
 
-        if (n++ != 0 && now - file->accessed <= cache->inactive) {
-            return;
-        }
+		ngx_queue_remove(q);
 
-        ngx_queue_remove(q);
+		ngx_rbtree_delete(&cache->rbtree, &file->node);
 
-        ngx_rbtree_delete(&cache->rbtree, &file->node);
+		cache->current--;
 
-        cache->current--;
+		ngx_log_debug1(NGX_LOG_DEBUG_CORE, log, 0, "expire cached open file: %s", file->name);
 
-        ngx_log_debug1(NGX_LOG_DEBUG_CORE, log, 0,
-                       "expire cached open file: %s", file->name);
-
-        if (!file->err && !file->is_dir) {
-            file->close = 1;
-            ngx_close_cached_file(cache, file, 0, log);
-
-        } else {
-            ngx_free(file->name);
-            ngx_free(file);
-        }
-    }
+		if (!file->err && !file->is_dir) {
+			file->close = 1;
+			ngx_close_cached_file(cache, file, 0, log);
+		} else {
+			ngx_free(file->name);
+			ngx_free(file);
+		}
+	}
 }
 
+static ngx_cached_open_file_t*
+ngx_open_file_lookup(ngx_open_file_cache_t* cache, ngx_str_t* name, uint32_t hash) {
+	ngx_int_t rc;
+	ngx_rbtree_node_t *node, *sentinel;
+	ngx_cached_open_file_t* file;
 
-static ngx_cached_open_file_t *
-ngx_open_file_lookup(ngx_open_file_cache_t *cache, ngx_str_t *name,
-    uint32_t hash)
-{
-    ngx_int_t                rc;
-    ngx_rbtree_node_t       *node, *sentinel;
-    ngx_cached_open_file_t  *file;
+	node = cache->rbtree.root;
+	sentinel = cache->rbtree.sentinel;
 
-    node = cache->rbtree.root;
-    sentinel = cache->rbtree.sentinel;
+	while (node != sentinel) {
+		if (hash < node->key) {
+			node = node->left;
+			continue;
+		}
 
-    while (node != sentinel) {
+		if (hash > node->key) {
+			node = node->right;
+			continue;
+		}
 
-        if (hash < node->key) {
-            node = node->left;
-            continue;
-        }
+		// hash == node->key
 
-        if (hash > node->key) {
-            node = node->right;
-            continue;
-        }
+		file = (ngx_cached_open_file_t*)node;
 
-        /* hash == node->key */
+		rc = ngx_strcmp(name->data, file->name);
 
-        file = (ngx_cached_open_file_t *) node;
+		if (rc == 0) {
+			return file;
+		}
 
-        rc = ngx_strcmp(name->data, file->name);
+		node = (rc < 0) ? node->left : node->right;
+	}
 
-        if (rc == 0) {
-            return file;
-        }
-
-        node = (rc < 0) ? node->left : node->right;
-    }
-
-    return NULL;
+	return NULL;
 }
-
 
 static void
-ngx_open_file_cache_remove(ngx_event_t *ev)
-{
-    ngx_cached_open_file_t       *file;
-    ngx_open_file_cache_event_t  *fev;
+ngx_open_file_cache_remove(ngx_event_t* ev) {
+	ngx_cached_open_file_t* file;
+	ngx_open_file_cache_event_t* fev;
 
-    fev = ev->data;
-    file = fev->file;
+	fev = ev->data;
+	file = fev->file;
 
-    ngx_queue_remove(&file->queue);
+	ngx_queue_remove(&file->queue);
 
-    ngx_rbtree_delete(&fev->cache->rbtree, &file->node);
+	ngx_rbtree_delete(&fev->cache->rbtree, &file->node);
 
-    fev->cache->current--;
+	fev->cache->current--;
 
-    /* NGX_ONESHOT_EVENT was already deleted */
-    file->event = NULL;
-    file->use_event = 0;
+	// NGX_ONESHOT_EVENT was already deleted
+	file->event = NULL;
+	file->use_event = 0;
 
-    file->close = 1;
+	file->close = 1;
 
-    ngx_close_cached_file(fev->cache, file, 0, ev->log);
+	ngx_close_cached_file(fev->cache, file, 0, ev->log);
 
-    /* free memory only when fev->cache and fev->file are already not needed */
+	// free memory only when fev->cache and fev->file are already not needed
 
-    ngx_free(ev->data);
-    ngx_free(ev);
+	ngx_free(ev->data);
+	ngx_free(ev);
 }
 
-
-/* Note: returns NGX_DONE on cache miss */
+// NOTE: returns NGX_DONE on cache miss
 static ngx_int_t
-ngx_get_open_file_from_cache(ngx_open_file_cache_t *cache, ngx_str_t *name,
-uint32_t hash, ngx_open_file_info_t *of, ngx_log_t *log, ngx_pool_cleanup_t *cln, ngx_cached_open_file_t **out_file)
-{
-    time_t                          now;
-    ngx_cached_open_file_t         *file;
-    ngx_open_file_cache_cleanup_t  *ofcln;
+ngx_get_open_file_from_cache(
+	ngx_open_file_cache_t* cache,
+	ngx_str_t* name,
+	uint32_t hash,
+	ngx_open_file_info_t* of,
+	ngx_log_t* log,
+	ngx_pool_cleanup_t* cln,
+	ngx_cached_open_file_t** out_file
+) {
+	time_t now;
+	ngx_cached_open_file_t* file;
+	ngx_open_file_cache_cleanup_t* ofcln;
 
-    now = ngx_time();
+	now = ngx_time();
 
-    file = ngx_open_file_lookup(cache, name, hash);
+	file = ngx_open_file_lookup(cache, name, hash);
 
-    if (!file) {
-        return NGX_DONE;
-    }
+	if (!file) {
+		return NGX_DONE;
+	}
 
-    if (file->fd == NGX_INVALID_FILE && file->err == 0 && !file->is_dir) {
+	if (file->fd == NGX_INVALID_FILE && file->err == 0 && !file->is_dir) {
+		// file was not used often enough to keep open
 
-        /* file was not used often enough to keep open */
+		return NGX_DONE;
+	}
 
-        return NGX_DONE;
-    }
-
-    if (!file->use_event
-        && (file->event != NULL
-            || (of->uniq != 0 && of->uniq != file->uniq)
-            || now - file->created >= of->valid
+	if (!file->use_event
+	    && (file->event != NULL
+	        || (of->uniq != 0 && of->uniq != file->uniq)
+	        || now - file->created >= of->valid
 #if (NGX_HAVE_OPENAT)
-            || of->disable_symlinks != file->disable_symlinks
-            || of->disable_symlinks_from != file->disable_symlinks_from
+	        || of->disable_symlinks != file->disable_symlinks
+	        || of->disable_symlinks_from != file->disable_symlinks_from
 #endif
-        ))
-    {
-        ngx_log_debug4(NGX_LOG_DEBUG_CORE, log, 0,
-                       "retest open file: %s, fd:%d, c:%d, e:%d",
-                       file->name, file->fd, file->count, file->err);
+	)) {
+		ngx_log_debug4(
+			NGX_LOG_DEBUG_CORE,
+			log,
+			0,
+			"retest open file: %s, fd:%d, c:%d, e:%d",
+			file->name,
+			file->fd,
+			file->count,
+			file->err
+		);
 
-        if (file->is_dir) {
+		if (file->is_dir) {
+			// chances that directory became file are very small so test_dir flag allows to use a
+			// single syscall in ngx_file_info() instead of three syscalls
 
-            /*
-             * chances that directory became file are very small
-             * so test_dir flag allows to use a single syscall
-             * in ngx_file_info() instead of three syscalls
-             */
+			of->test_dir = 1;
+		} else if (!file->err) {
+			// increment the count to prevent the handle from getting closed by some other request
+			file->count++;
 
-            of->test_dir = 1;
-        }
-        else if (!file->err)
-        {
-            /* increment the count to prevent the handle from getting closed by some other request */
-            file->count++;
+			*out_file = file;
+		}
 
-            *out_file = file;
-        }
+		of->fd = file->fd;
+		of->uniq = file->uniq;
 
-        of->fd = file->fd;
-        of->uniq = file->uniq;
+		return NGX_DONE;
+	}
 
-        return NGX_DONE;
-    }
+	if (file->err == 0) {
+		of->fd = file->fd;
+		of->uniq = file->uniq;
+		of->mtime = file->mtime;
+		of->size = file->size;
 
-    if (file->err == 0) {
+		of->is_dir = file->is_dir;
+		of->is_file = file->is_file;
+		of->is_link = file->is_link;
+		of->is_exec = file->is_exec;
+		of->is_directio = file->is_directio;
 
-        of->fd = file->fd;
-        of->uniq = file->uniq;
-        of->mtime = file->mtime;
-        of->size = file->size;
-
-        of->is_dir = file->is_dir;
-        of->is_file = file->is_file;
-        of->is_link = file->is_link;
-        of->is_exec = file->is_exec;
-        of->is_directio = file->is_directio;
-
-        if (!file->is_dir) {
-            file->count++;
-            ngx_open_file_add_event(cache, file, of, log);
-        }
-
-    } else {
-        of->err = file->err;
+		if (!file->is_dir) {
+			file->count++;
+			ngx_open_file_add_event(cache, file, of, log);
+		}
+	} else {
+		of->err = file->err;
 #if (NGX_HAVE_OPENAT)
-        of->failed = file->disable_symlinks ? ngx_openat_file_n
-                                            : ngx_open_file_n;
+		of->failed = file->disable_symlinks ? ngx_openat_file_n : ngx_open_file_n;
 #else
-        of->failed = ngx_open_file_n;
+		of->failed = ngx_open_file_n;
 #endif
-    }
+	}
 
-    file->uses++;
+	file->uses++;
 
-    file->accessed = now;
+	file->accessed = now;
 
-    ngx_queue_remove(&file->queue);
+	ngx_queue_remove(&file->queue);
 
-    ngx_queue_insert_head(&cache->expire_queue, &file->queue);
+	ngx_queue_insert_head(&cache->expire_queue, &file->queue);
 
-    ngx_log_debug5(NGX_LOG_DEBUG_CORE, log, 0,
-                   "cached open file: %s, fd:%d, c:%d, e:%d, u:%d",
-                   file->name, file->fd, file->count, file->err, file->uses);
+	ngx_log_debug5(
+		NGX_LOG_DEBUG_CORE,
+		log,
+		0,
+		"cached open file: %s, fd:%d, c:%d, e:%d, u:%d",
+		file->name,
+		file->fd,
+		file->count,
+		file->err,
+		file->uses
+	);
 
-    if (of->err == 0) {
+	if (of->err == 0) {
+		if (!of->is_dir) {
+			cln->handler = ngx_open_file_cleanup;
+			ofcln = cln->data;
 
-        if (!of->is_dir) {
-            cln->handler = ngx_open_file_cleanup;
-            ofcln = cln->data;
+			ofcln->cache = cache;
+			ofcln->file = file;
+			ofcln->min_uses = of->min_uses;
+			ofcln->log = log;
+		}
 
-            ofcln->cache = cache;
-            ofcln->file = file;
-            ofcln->min_uses = of->min_uses;
-            ofcln->log = log;
-        }
+		return NGX_OK;
+	}
 
-        return NGX_OK;
-    }
-
-    return NGX_ERROR;
+	return NGX_ERROR;
 }
 
 typedef struct {
-	ngx_open_file_cache_t *cache;
+	ngx_open_file_cache_t* cache;
 	ngx_str_t name;
 	uint32_t hash;
-	ngx_open_file_info_t *of;
-	ngx_cached_open_file_t *file;
+	ngx_open_file_info_t* of;
+	ngx_cached_open_file_t* file;
 	ngx_async_open_file_callback_t callback;
 	void* context;
 	ngx_log_t* log;
-	ngx_pool_cleanup_t *cln;
+	ngx_pool_cleanup_t* cln;
 	ngx_int_t err;
 } ngx_async_open_file_ctx_t;
 
 static void
-ngx_thread_open_handler(void *data, ngx_log_t *log)
-{
+ngx_thread_open_handler(void* data, ngx_log_t* log) {
 	ngx_async_open_file_ctx_t* ctx = data;
 
 	ctx->err = ngx_open_and_stat_file(&ctx->name, ctx->of, log);
 }
 
 static void
-ngx_async_open_thread_event_handler(ngx_event_t *ev)
-{
-	ngx_pool_cleanup_file_t *clnf;
+ngx_async_open_thread_event_handler(ngx_event_t* ev) {
+	ngx_pool_cleanup_file_t* clnf;
 	ngx_async_open_file_ctx_t* ctx;
 	ngx_int_t rc;
 
 	ctx = ev->data;
 
-	if (ctx->cache != NULL)
-	{
-		rc = ngx_save_open_file_to_cache(ctx->cache, ctx->file, &ctx->name, ctx->hash, ctx->of, ctx->log, ctx->cln, ctx->err);
-	}
-	else
-	{
+	if (ctx->cache != NULL) {
+		rc = ngx_save_open_file_to_cache(
+			ctx->cache, ctx->file, &ctx->name, ctx->hash, ctx->of, ctx->log, ctx->cln, ctx->err
+		);
+	} else {
 		rc = ctx->err;
 
 		// set up the cleanup of the file
@@ -1287,30 +1206,28 @@ ngx_async_open_thread_event_handler(ngx_event_t *ev)
 
 ngx_int_t
 ngx_async_open_cached_file(
-	ngx_open_file_cache_t *cache,
-	ngx_str_t *name,
-	ngx_open_file_info_t *of,
-	ngx_pool_t *pool,
-	ngx_thread_pool_t *tp,
-	ngx_thread_task_t **taskp,
+	ngx_open_file_cache_t* cache,
+	ngx_str_t* name,
+	ngx_open_file_info_t* of,
+	ngx_pool_t* pool,
+	ngx_thread_pool_t* tp,
+	ngx_thread_task_t** taskp,
 	ngx_async_open_file_callback_t callback,
-	void* context)
-{
+	void* context
+) {
 	ngx_async_open_file_ctx_t* ctx;
-	ngx_cached_open_file_t *file = NULL;
-	ngx_pool_cleanup_t *cln;
-	ngx_thread_task_t *task;
+	ngx_cached_open_file_t* file = NULL;
+	ngx_pool_cleanup_t* cln;
+	ngx_thread_task_t* task;
 	ngx_int_t rc;
 	uint32_t hash = 0;
 
 	of->fd = NGX_INVALID_FILE;
 	of->err = 0;
 
-	if (cache != NULL)
-	{
+	if (cache != NULL) {
 		cln = ngx_pool_cleanup_add(pool, sizeof(ngx_open_file_cache_cleanup_t));
-		if (cln == NULL)
-		{
+		if (cln == NULL) {
 			return NGX_ERROR;
 		}
 
@@ -1318,18 +1235,15 @@ ngx_async_open_cached_file(
 
 		// try to fetch from cache
 		rc = ngx_get_open_file_from_cache(cache, name, hash, of, pool->log, cln, &file);
-		if (rc != NGX_DONE)
-		{
+		if (rc != NGX_DONE) {
 			return rc;
 		}
-	}
-	else
-	{
+	} else {
 		cln = ngx_pool_cleanup_add(pool, sizeof(ngx_pool_cleanup_file_t));
-		if (cln == NULL)
-		{
-			ngx_log_debug0(NGX_LOG_DEBUG_HTTP, pool->log, 0,
-				"ngx_async_open_cached_file: ngx_pool_cleanup_add failed");
+		if (cln == NULL) {
+			ngx_log_debug0(
+				NGX_LOG_DEBUG_HTTP, pool->log, 0, "ngx_async_open_cached_file: ngx_pool_cleanup_add failed"
+			);
 			return NGX_ERROR;
 		}
 	}
@@ -1339,10 +1253,10 @@ ngx_async_open_cached_file(
 
 	if (task == NULL) {
 		task = ngx_thread_task_alloc(pool, sizeof(ngx_async_open_file_ctx_t));
-		if (task == NULL)
-		{
-			ngx_log_debug0(NGX_LOG_DEBUG_HTTP, pool->log, 0,
-				"ngx_async_open_cached_file: ngx_thread_task_alloc failed");
+		if (task == NULL) {
+			ngx_log_debug0(
+				NGX_LOG_DEBUG_HTTP, pool->log, 0, "ngx_async_open_cached_file: ngx_thread_task_alloc failed"
+			);
 			goto failed;
 		}
 
@@ -1367,10 +1281,10 @@ ngx_async_open_cached_file(
 	task->event.data = ctx;
 	task->event.handler = ngx_async_open_thread_event_handler;
 
-	if (ngx_thread_task_post(tp, task) != NGX_OK)
-	{
-		ngx_log_debug0(NGX_LOG_DEBUG_HTTP, pool->log, 0,
-			"ngx_async_open_cached_file: ngx_thread_task_post failed");
+	if (ngx_thread_task_post(tp, task) != NGX_OK) {
+		ngx_log_debug0(
+			NGX_LOG_DEBUG_HTTP, pool->log, 0, "ngx_async_open_cached_file: ngx_thread_task_post failed"
+		);
 		goto failed;
 	}
 
@@ -1378,8 +1292,7 @@ ngx_async_open_cached_file(
 
 failed:
 
-	if (file != NULL)
-	{
+	if (file != NULL) {
 		file->count--;
 		ngx_close_cached_file(cache, file, of->min_uses, pool->log);
 	}

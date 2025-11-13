@@ -3,19 +3,19 @@
 
 // NAL unit types
 enum {
-	AVC_NAL_SLICE           = 1,
-	AVC_NAL_DPA             = 2,
-	AVC_NAL_DPB             = 3,
-	AVC_NAL_DPC             = 4,
-	AVC_NAL_IDR_SLICE       = 5,
-	AVC_NAL_SEI             = 6,
-	AVC_NAL_SPS             = 7,
-	AVC_NAL_PPS             = 8,
-	AVC_NAL_AUD             = 9,
-	AVC_NAL_END_SEQUENCE    = 10,
-	AVC_NAL_END_STREAM      = 11,
-	AVC_NAL_FILLER_DATA     = 12,
-	AVC_NAL_SPS_EXT         = 13,
+	AVC_NAL_SLICE = 1,
+	AVC_NAL_DPA = 2,
+	AVC_NAL_DPB = 3,
+	AVC_NAL_DPC = 4,
+	AVC_NAL_IDR_SLICE = 5,
+	AVC_NAL_SEI = 6,
+	AVC_NAL_SPS = 7,
+	AVC_NAL_PPS = 8,
+	AVC_NAL_AUD = 9,
+	AVC_NAL_END_SEQUENCE = 10,
+	AVC_NAL_END_STREAM = 11,
+	AVC_NAL_FILLER_DATA = 12,
+	AVC_NAL_SPS_EXT = 13,
 	AVC_NAL_AUXILIARY_SLICE = 19,
 };
 

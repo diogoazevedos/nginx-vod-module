@@ -31,26 +31,15 @@ typedef struct {
 	uint32_t header_size;
 } output_frame_t;
 
-typedef vod_status_t (*media_filter_start_frame_t)(
-	media_filter_context_t* context,
-	output_frame_t* frame);
+typedef vod_status_t (*media_filter_start_frame_t)(media_filter_context_t* context, output_frame_t* frame);
 typedef vod_status_t (*media_filter_write_t)(
-	media_filter_context_t* context,
-	const u_char* buffer,
-	uint32_t size);
-typedef vod_status_t (*media_filter_flush_frame_t)(
-	media_filter_context_t* context,
-	bool_t last_stream_frame);
+	media_filter_context_t* context, const u_char* buffer, uint32_t size
+);
+typedef vod_status_t (*media_filter_flush_frame_t)(media_filter_context_t* context, bool_t last_stream_frame);
 
-typedef void (*media_filter_simulated_start_frame_t)(
-	media_filter_context_t* context,
-	output_frame_t* frame);
-typedef void (*media_filter_simulated_write_t)(
-	media_filter_context_t* context,
-	uint32_t size);
-typedef void (*media_filter_simulated_flush_frame_t)(
-	media_filter_context_t* context,
-	bool_t last_stream_frame);
+typedef void (*media_filter_simulated_start_frame_t)(media_filter_context_t* context, output_frame_t* frame);
+typedef void (*media_filter_simulated_write_t)(media_filter_context_t* context, uint32_t size);
+typedef void (*media_filter_simulated_flush_frame_t)(media_filter_context_t* context, bool_t last_stream_frame);
 
 typedef struct {
 	media_filter_start_frame_t start_frame;

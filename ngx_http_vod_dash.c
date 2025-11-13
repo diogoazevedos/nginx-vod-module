@@ -16,21 +16,31 @@
 #endif // NGX_HAVE_OPENSSL_EVP
 
 // constants
-#define SUPPORTED_CODECS_MP4 (VOD_CODEC_FLAG(AVC) | VOD_CODEC_FLAG(HEVC) | VOD_CODEC_FLAG(AAC) | VOD_CODEC_FLAG(AC3) | VOD_CODEC_FLAG(EAC3))
-#define SUPPORTED_CODECS_WEBM (VOD_CODEC_FLAG(VP8) | VOD_CODEC_FLAG(VP9) | VOD_CODEC_FLAG(AV1) | VOD_CODEC_FLAG(VORBIS) | VOD_CODEC_FLAG(OPUS))
+#define SUPPORTED_CODECS_MP4 \
+	(VOD_CODEC_FLAG(AVC)     \
+	 | VOD_CODEC_FLAG(HEVC)  \
+	 | VOD_CODEC_FLAG(AAC)   \
+	 | VOD_CODEC_FLAG(AC3)   \
+	 | VOD_CODEC_FLAG(EAC3))
+#define SUPPORTED_CODECS_WEBM \
+	(VOD_CODEC_FLAG(VP8)      \
+	 | VOD_CODEC_FLAG(VP9)    \
+	 | VOD_CODEC_FLAG(AV1)    \
+	 | VOD_CODEC_FLAG(VORBIS) \
+	 | VOD_CODEC_FLAG(OPUS))
 #define SUPPORTED_CODECS (SUPPORTED_CODECS_MP4 | SUPPORTED_CODECS_WEBM)
 
-ngx_conf_enum_t  dash_manifest_formats[] = {
-	{ ngx_string("segmentlist"), FORMAT_SEGMENT_LIST },
-	{ ngx_string("segmenttemplate"), FORMAT_SEGMENT_TEMPLATE },
-	{ ngx_string("segmenttimeline"), FORMAT_SEGMENT_TIMELINE },
-	{ ngx_null_string, 0 }
+ngx_conf_enum_t dash_manifest_formats[] = {
+	{ngx_string("segmentlist"), FORMAT_SEGMENT_LIST},
+	{ngx_string("segmenttemplate"), FORMAT_SEGMENT_TEMPLATE},
+	{ngx_string("segmenttimeline"), FORMAT_SEGMENT_TIMELINE},
+	{ngx_null_string, 0}
 };
 
-ngx_conf_enum_t  dash_subtitle_formats[] = {
-	{ ngx_string("webvtt"), SUBTITLE_FORMAT_WEBVTT },
-	{ ngx_string("smpte-tt"), SUBTITLE_FORMAT_SMPTE_TT },
-	{ ngx_null_string, 0 }
+ngx_conf_enum_t dash_subtitle_formats[] = {
+	{ngx_string("webvtt"), SUBTITLE_FORMAT_WEBVTT},
+	{ngx_string("smpte-tt"), SUBTITLE_FORMAT_SMPTE_TT},
+	{ngx_null_string, 0}
 };
 
 // content types
@@ -49,47 +59,39 @@ static const u_char ttml_file_ext[] = ".ttml";
 
 static ngx_int_t
 ngx_http_vod_dash_handle_manifest(
-	ngx_http_vod_submodule_context_t* submodule_context,
-	ngx_str_t* response,
-	ngx_str_t* content_type)
-{
+	ngx_http_vod_submodule_context_t* submodule_context, ngx_str_t* response, ngx_str_t* content_type
+) {
 	dash_manifest_extensions_t extensions;
 	ngx_http_vod_loc_conf_t* conf = submodule_context->conf;
 	ngx_str_t base_url = ngx_null_string;
 	vod_status_t rc;
 	ngx_str_t file_uri;
 
-	if (conf->dash.absolute_manifest_urls)
-	{
-		if (conf->dash.mpd_config.manifest_format == FORMAT_SEGMENT_LIST)
-		{
+	if (conf->dash.absolute_manifest_urls) {
+		if (conf->dash.mpd_config.manifest_format == FORMAT_SEGMENT_LIST) {
 			file_uri.data = NULL;
 			file_uri.len = 0;
-		}
-		else
-		{
+		} else {
 			file_uri = submodule_context->r->uri;
 		}
 
 		rc = ngx_http_vod_get_base_url(submodule_context->r, conf->base_url, &file_uri, &base_url);
-		if (rc != NGX_OK)
-		{
+		if (rc != NGX_OK) {
 			return rc;
 		}
 	}
 
 #if (NGX_HAVE_OPENSSL_EVP)
-	if (conf->drm_enabled)
-	{
+	if (conf->drm_enabled) {
 		rc = edash_packager_build_mpd(
 			&submodule_context->request_context,
 			&conf->dash.mpd_config,
 			&base_url,
 			&submodule_context->media_set,
 			conf->drm_single_key,
-			response);
-	}
-	else
+			response
+		);
+	} else
 #endif // NGX_HAVE_OPENSSL_EVP
 	{
 		vod_memzero(&extensions, sizeof(extensions));
@@ -100,13 +102,18 @@ ngx_http_vod_dash_handle_manifest(
 			&base_url,
 			&submodule_context->media_set,
 			&extensions,
-			response);
+			response
+		);
 	}
 
-	if (rc != VOD_OK)
-	{
-		ngx_log_debug1(NGX_LOG_DEBUG_HTTP, submodule_context->request_context.log, 0,
-			"ngx_http_vod_dash_handle_manifest: (e)dash_packager_build_mpd failed %i", rc);
+	if (rc != VOD_OK) {
+		ngx_log_debug1(
+			NGX_LOG_DEBUG_HTTP,
+			submodule_context->request_context.log,
+			0,
+			"ngx_http_vod_dash_handle_manifest: (e)dash_packager_build_mpd failed %i",
+			rc
+		);
 		return ngx_http_vod_status_to_ngx_error(submodule_context->r, rc);
 	}
 
@@ -117,10 +124,8 @@ ngx_http_vod_dash_handle_manifest(
 
 static ngx_int_t
 ngx_http_vod_dash_mp4_handle_init_segment(
-	ngx_http_vod_submodule_context_t* submodule_context,
-	ngx_str_t* response,
-	ngx_str_t* content_type)
-{
+	ngx_http_vod_submodule_context_t* submodule_context, ngx_str_t* response, ngx_str_t* content_type
+) {
 	vod_status_t rc;
 	atom_writer_t* stsd_atom_writers = NULL;
 	atom_writer_t* pssh_atom_writer = NULL;
@@ -130,8 +135,7 @@ ngx_http_vod_dash_mp4_handle_init_segment(
 	atom_writer_t pssh_atom_writer_temp;
 	drm_info_t* drm_info;
 
-	if (conf->drm_enabled)
-	{
+	if (conf->drm_enabled) {
 		drm_info = (drm_info_t*)submodule_context->media_set.sequences[0].drm_info;
 
 		rc = mp4_init_segment_get_encrypted_stsd_writers(
@@ -141,16 +145,20 @@ ngx_http_vod_dash_mp4_handle_init_segment(
 			conf->drm_clear_lead_segment_count > 0,
 			drm_info->key_id,
 			NULL,
-			&stsd_atom_writers);
-		if (rc != VOD_OK)
-		{
-			ngx_log_debug1(NGX_LOG_DEBUG_HTTP, submodule_context->request_context.log, 0,
-				"ngx_http_vod_das_handle_mp4_init_segment: mp4_init_segment_get_encrypted_stsd_writers failed %i", rc);
+			&stsd_atom_writers
+		);
+		if (rc != VOD_OK) {
+			ngx_log_debug1(
+				NGX_LOG_DEBUG_HTTP,
+				submodule_context->request_context.log,
+				0,
+				"ngx_http_vod_das_handle_mp4_init_segment: mp4_init_segment_get_encrypted_stsd_writers failed %i",
+				rc
+			);
 			return ngx_http_vod_status_to_ngx_error(submodule_context->r, rc);
 		}
 
-		if (conf->dash.init_mp4_pssh)
-		{
+		if (conf->dash.init_mp4_pssh) {
 			pssh_atom_writer = &pssh_atom_writer_temp;
 			mp4_pssh_init_atom_writer(drm_info, pssh_atom_writer);
 		}
@@ -162,17 +170,20 @@ ngx_http_vod_dash_mp4_handle_init_segment(
 		ngx_http_vod_submodule_size_only(submodule_context),
 		pssh_atom_writer,
 		stsd_atom_writers,
-		response);
-	if (rc != VOD_OK)
-	{
-		ngx_log_debug1(NGX_LOG_DEBUG_HTTP, submodule_context->request_context.log, 0,
-			"ngx_http_vod_dash_mp4_handle_init_segment: mp4_init_segment_build failed %i", rc);
+		response
+	);
+	if (rc != VOD_OK) {
+		ngx_log_debug1(
+			NGX_LOG_DEBUG_HTTP,
+			submodule_context->request_context.log,
+			0,
+			"ngx_http_vod_dash_mp4_handle_init_segment: mp4_init_segment_build failed %i",
+			rc
+		);
 		return ngx_http_vod_status_to_ngx_error(submodule_context->r, rc);
 	}
 
-	mp4_fragment_get_content_type(
-		submodule_context->media_set.track_count[MEDIA_TYPE_VIDEO],
-		content_type);
+	mp4_fragment_get_content_type(submodule_context->media_set.track_count[MEDIA_TYPE_VIDEO], content_type);
 	return NGX_OK;
 }
 
@@ -184,8 +195,8 @@ ngx_http_vod_dash_mp4_init_frame_processor(
 	void** frame_processor_state,
 	ngx_str_t* output_buffer,
 	size_t* response_size,
-	ngx_str_t* content_type)
-{
+	ngx_str_t* content_type
+) {
 	dash_fragment_header_extensions_t header_extensions;
 	ngx_http_vod_loc_conf_t* conf = submodule_context->conf;
 	fragment_writer_state_t* state;
@@ -196,40 +207,45 @@ ngx_http_vod_dash_mp4_init_frame_processor(
 #if (NGX_HAVE_OPENSSL_EVP)
 	segment_writer_t drm_writer;
 
-	if (conf->drm_enabled &&
-		submodule_context->request_params.segment_index >= conf->drm_clear_lead_segment_count)
-	{
-		drm_writer = *segment_writer;		// must not change segment_writer, otherwise the header will be encrypted
+	if (conf->drm_enabled
+	    && submodule_context->request_params.segment_index >= conf->drm_clear_lead_segment_count) {
+		// must not change segment_writer, otherwise the header will be encrypted
+		drm_writer = *segment_writer;
 
-		// encyrpted fragment
+		// encrypted fragment
 		rc = edash_packager_get_fragment_writer(
 			&drm_writer,
 			&submodule_context->request_context,
 			&submodule_context->media_set,
 			submodule_context->request_params.segment_index,
-			conf->min_single_nalu_per_frame_segment > 0 &&
-				submodule_context->media_set.initial_segment_clip_relative_index >= conf->min_single_nalu_per_frame_segment - 1,
-			submodule_context->media_set.sequences[0].encryption_key,		// iv
+			conf->min_single_nalu_per_frame_segment > 0
+				&& submodule_context->media_set.initial_segment_clip_relative_index
+					   >= conf->min_single_nalu_per_frame_segment - 1,
+			submodule_context->media_set.sequences[0].encryption_key, // iv
 			size_only,
 			output_buffer,
-			response_size);
-		switch (rc)
-		{
-		case VOD_DONE:		// passthrough
+			response_size
+		);
+		switch (rc) {
+		case VOD_DONE: // passthrough
 			break;
 
 		case VOD_OK:
 			segment_writer = &drm_writer;
-			reuse_buffers = TRUE;		// mp4_cenc_encrypt allocates new buffers
+			reuse_buffers = TRUE; // mp4_cenc_encrypt allocates new buffers
 			break;
 
 		default:
-			ngx_log_debug1(NGX_LOG_DEBUG_HTTP, submodule_context->request_context.log, 0,
-				"ngx_http_vod_dash_mp4_init_frame_processor: edash_packager_get_fragment_writer failed %i", rc);
+			ngx_log_debug1(
+				NGX_LOG_DEBUG_HTTP,
+				submodule_context->request_context.log,
+				0,
+				"ngx_http_vod_dash_mp4_init_frame_processor: edash_packager_get_fragment_writer failed %i",
+				rc
+			);
 			return ngx_http_vod_status_to_ngx_error(submodule_context->r, rc);
 		}
-	}
-	else
+	} else
 #endif // NGX_HAVE_OPENSSL_EVP
 	{
 		// unencrypted
@@ -239,33 +255,42 @@ ngx_http_vod_dash_mp4_init_frame_processor(
 			&submodule_context->request_context,
 			&submodule_context->media_set,
 			submodule_context->request_params.segment_index,
-			conf->drm_enabled ? 2 : 0,	// sample description index
+			conf->drm_enabled ? 2 : 0, // sample description index
 			&header_extensions,
 			size_only,
 			output_buffer,
-			response_size);
-		if (rc != VOD_OK)
-		{
-			ngx_log_debug1(NGX_LOG_DEBUG_HTTP, submodule_context->request_context.log, 0,
-				"ngx_http_vod_dash_mp4_init_frame_processor: dash_packager_build_fragment_header failed %i", rc);
+			response_size
+		);
+		if (rc != VOD_OK) {
+			ngx_log_debug1(
+				NGX_LOG_DEBUG_HTTP,
+				submodule_context->request_context.log,
+				0,
+				"ngx_http_vod_dash_mp4_init_frame_processor: dash_packager_build_fragment_header failed %i",
+				rc
+			);
 			return ngx_http_vod_status_to_ngx_error(submodule_context->r, rc);
 		}
 	}
 
 	// initialize the frame processor
-	if (!size_only || *response_size == 0)
-	{
+	if (!size_only || *response_size == 0) {
 		rc = mp4_fragment_frame_writer_init(
 			&submodule_context->request_context,
 			submodule_context->media_set.sequences,
 			segment_writer->write_tail,
 			segment_writer->context,
 			reuse_buffers,
-			&state);
-		if (rc != VOD_OK)
-		{
-			ngx_log_debug1(NGX_LOG_DEBUG_HTTP, submodule_context->request_context.log, 0,
-				"ngx_http_vod_dash_mp4_init_frame_processor: mp4_fragment_frame_writer_init failed %i", rc);
+			&state
+		);
+		if (rc != VOD_OK) {
+			ngx_log_debug1(
+				NGX_LOG_DEBUG_HTTP,
+				submodule_context->request_context.log,
+				0,
+				"ngx_http_vod_dash_mp4_init_frame_processor: mp4_fragment_frame_writer_init failed %i",
+				rc
+			);
 			return ngx_http_vod_status_to_ngx_error(submodule_context->r, rc);
 		}
 
@@ -274,24 +299,16 @@ ngx_http_vod_dash_mp4_init_frame_processor(
 	}
 
 	// set the 'Content-type' header
-	mp4_fragment_get_content_type(
-		submodule_context->media_set.track_count[MEDIA_TYPE_VIDEO],
-		content_type);
+	mp4_fragment_get_content_type(submodule_context->media_set.track_count[MEDIA_TYPE_VIDEO], content_type);
 	return NGX_OK;
 }
 
 static void
-ngx_http_vod_dash_get_webm_content_type(
-	bool_t video,
-	ngx_str_t* content_type)
-{
-	if (video)
-	{
+ngx_http_vod_dash_get_webm_content_type(bool_t video, ngx_str_t* content_type) {
+	if (video) {
 		content_type->data = webm_video_content_type;
 		content_type->len = sizeof(webm_video_content_type) - 1;
-	}
-	else
-	{
+	} else {
 		content_type->data = webm_audio_content_type;
 		content_type->len = sizeof(webm_audio_content_type) - 1;
 	}
@@ -299,10 +316,8 @@ ngx_http_vod_dash_get_webm_content_type(
 
 static ngx_int_t
 ngx_http_vod_dash_webm_handle_init_segment(
-	ngx_http_vod_submodule_context_t* submodule_context,
-	ngx_str_t* response,
-	ngx_str_t* content_type)
-{
+	ngx_http_vod_submodule_context_t* submodule_context, ngx_str_t* response, ngx_str_t* content_type
+) {
 	vod_status_t rc;
 	ngx_md5_t md5;
 	ngx_str_t* uri;
@@ -320,17 +335,22 @@ ngx_http_vod_dash_webm_handle_init_segment(
 		&submodule_context->request_context,
 		submodule_context->media_set.sequences[0].filtered_clips[0].first_track,
 		track_uid,
-		response);
-	if (rc != VOD_OK)
-	{
-		ngx_log_debug1(NGX_LOG_DEBUG_HTTP, submodule_context->request_context.log, 0,
-			"ngx_http_vod_dash_webm_handle_init_segment: mkv_build_init_segment failed %i", rc);
+		response
+	);
+	if (rc != VOD_OK) {
+		ngx_log_debug1(
+			NGX_LOG_DEBUG_HTTP,
+			submodule_context->request_context.log,
+			0,
+			"ngx_http_vod_dash_webm_handle_init_segment: mkv_build_init_segment failed %i",
+			rc
+		);
 		return ngx_http_vod_status_to_ngx_error(submodule_context->r, rc);
 	}
 
 	ngx_http_vod_dash_get_webm_content_type(
-		submodule_context->media_set.track_count[MEDIA_TYPE_VIDEO],
-		content_type);
+		submodule_context->media_set.track_count[MEDIA_TYPE_VIDEO], content_type
+	);
 	return NGX_OK;
 }
 
@@ -342,25 +362,19 @@ ngx_http_vod_dash_webm_init_frame_processor(
 	void** frame_processor_state,
 	ngx_str_t* output_buffer,
 	size_t* response_size,
-	ngx_str_t* content_type)
-{
+	ngx_str_t* content_type
+) {
 	ngx_http_vod_loc_conf_t* conf = submodule_context->conf;
 	mkv_encryption_type_t encryption_type;
 	vod_status_t rc;
 
-	if (conf->drm_enabled)
-	{
-		if (submodule_context->request_params.segment_index >= conf->drm_clear_lead_segment_count)
-		{
+	if (conf->drm_enabled) {
+		if (submodule_context->request_params.segment_index >= conf->drm_clear_lead_segment_count) {
 			encryption_type = MKV_ENCRYPTED;
-		}
-		else
-		{
+		} else {
 			encryption_type = MKV_CLEAR_LEAD;
 		}
-	}
-	else
-	{
+	} else {
 		encryption_type = MKV_CLEAR;
 	}
 
@@ -374,11 +388,16 @@ ngx_http_vod_dash_webm_init_frame_processor(
 		submodule_context->media_set.sequences[0].encryption_key,
 		output_buffer,
 		response_size,
-		frame_processor_state);
-	if (rc != VOD_OK)
-	{
-		ngx_log_debug1(NGX_LOG_DEBUG_HTTP, submodule_context->request_context.log, 0,
-			"ngx_http_vod_dash_webm_init_frame_processor: mkv_builder_frame_writer_init failed %i", rc);
+		frame_processor_state
+	);
+	if (rc != VOD_OK) {
+		ngx_log_debug1(
+			NGX_LOG_DEBUG_HTTP,
+			submodule_context->request_context.log,
+			0,
+			"ngx_http_vod_dash_webm_init_frame_processor: mkv_builder_frame_writer_init failed %i",
+			rc
+		);
 		return ngx_http_vod_status_to_ngx_error(submodule_context->r, rc);
 	}
 
@@ -386,42 +405,43 @@ ngx_http_vod_dash_webm_init_frame_processor(
 
 	// set the 'Content-type' header
 	ngx_http_vod_dash_get_webm_content_type(
-		submodule_context->media_set.track_count[MEDIA_TYPE_VIDEO],
-		content_type);
+		submodule_context->media_set.track_count[MEDIA_TYPE_VIDEO], content_type
+	);
 	return NGX_OK;
 }
 
 static ngx_int_t
 ngx_http_vod_dash_handle_vtt_file(
-	ngx_http_vod_submodule_context_t* submodule_context,
-	ngx_str_t* response,
-	ngx_str_t* content_type)
-{
+	ngx_http_vod_submodule_context_t* submodule_context, ngx_str_t* response, ngx_str_t* content_type
+) {
 	vod_status_t rc;
 
 	rc = webvtt_builder_build(
 		&submodule_context->request_context,
 		&submodule_context->media_set,
 		submodule_context->media_set.use_discontinuity,
-		response);
-	if (rc != VOD_OK)
-	{
-		ngx_log_debug1(NGX_LOG_DEBUG_HTTP, submodule_context->request_context.log, 0,
-			"ngx_http_vod_dash_handle_vtt_file: webvtt_builder_build failed %i", rc);
+		response
+	);
+	if (rc != VOD_OK) {
+		ngx_log_debug1(
+			NGX_LOG_DEBUG_HTTP,
+			submodule_context->request_context.log,
+			0,
+			"ngx_http_vod_dash_handle_vtt_file: webvtt_builder_build failed %i",
+			rc
+		);
 		return ngx_http_vod_status_to_ngx_error(submodule_context->r, rc);
 	}
 
 	content_type->len = sizeof(vtt_content_type) - 1;
-	content_type->data = (u_char *)vtt_content_type;
+	content_type->data = (u_char*)vtt_content_type;
 	return NGX_OK;
 }
 
 static ngx_int_t
 ngx_http_vod_dash_handle_ttml_fragment(
-	ngx_http_vod_submodule_context_t* submodule_context,
-	ngx_str_t* response,
-	ngx_str_t* content_type)
-{
+	ngx_http_vod_submodule_context_t* submodule_context, ngx_str_t* response, ngx_str_t* content_type
+) {
 	dash_fragment_header_extensions_t header_extensions;
 	vod_status_t rc;
 	size_t ignore;
@@ -440,11 +460,16 @@ ngx_http_vod_dash_handle_ttml_fragment(
 		&header_extensions,
 		FALSE,
 		response,
-		&ignore);
-	if (rc != VOD_OK)
-	{
-		ngx_log_debug1(NGX_LOG_DEBUG_HTTP, submodule_context->request_context.log, 0,
-			"ngx_http_vod_dash_handle_ttml_fragment: dash_packager_build_fragment_header failed %i", rc);
+		&ignore
+	);
+	if (rc != VOD_OK) {
+		ngx_log_debug1(
+			NGX_LOG_DEBUG_HTTP,
+			submodule_context->request_context.log,
+			0,
+			"ngx_http_vod_dash_handle_ttml_fragment: dash_packager_build_fragment_header failed %i",
+			rc
+		);
 		return ngx_http_vod_status_to_ngx_error(submodule_context->r, rc);
 	}
 
@@ -533,10 +558,7 @@ static const ngx_http_vod_request_t dash_ttml_request = {
 };
 
 static void
-ngx_http_vod_dash_create_loc_conf(
-	ngx_conf_t *cf,
-	ngx_http_vod_dash_loc_conf_t *conf)
-{
+ngx_http_vod_dash_create_loc_conf(ngx_conf_t* cf, ngx_http_vod_dash_loc_conf_t* conf) {
 	conf->absolute_manifest_urls = NGX_CONF_UNSET;
 	conf->init_mp4_pssh = NGX_CONF_UNSET;
 	conf->mpd_config.manifest_format = NGX_CONF_UNSET_UINT;
@@ -544,115 +566,138 @@ ngx_http_vod_dash_create_loc_conf(
 	conf->mpd_config.duplicate_bitrate_threshold = NGX_CONF_UNSET_UINT;
 }
 
-static char *
+static char*
 ngx_http_vod_dash_merge_loc_conf(
-	ngx_conf_t *cf,
-	ngx_http_vod_loc_conf_t *base,
-	ngx_http_vod_dash_loc_conf_t *conf,
-	ngx_http_vod_dash_loc_conf_t *prev)
-{
+	ngx_conf_t* cf,
+	ngx_http_vod_loc_conf_t* base,
+	ngx_http_vod_dash_loc_conf_t* conf,
+	ngx_http_vod_dash_loc_conf_t* prev
+) {
 	ngx_conf_merge_value(conf->absolute_manifest_urls, prev->absolute_manifest_urls, 1);
 	ngx_conf_merge_value(conf->init_mp4_pssh, prev->init_mp4_pssh, 1);
 
 	ngx_conf_merge_str_value(conf->manifest_file_name_prefix, prev->manifest_file_name_prefix, "manifest");
-	ngx_conf_merge_str_value(conf->mpd_config.profiles, prev->mpd_config.profiles, "urn:mpeg:dash:profile:isoff-main:2011");
-	ngx_conf_merge_str_value(conf->mpd_config.init_file_name_prefix, prev->mpd_config.init_file_name_prefix, "init");
-	ngx_conf_merge_str_value(conf->mpd_config.fragment_file_name_prefix, prev->mpd_config.fragment_file_name_prefix, "fragment");
-	ngx_conf_merge_str_value(conf->mpd_config.subtitle_file_name_prefix, prev->mpd_config.subtitle_file_name_prefix, "sub");
-	ngx_conf_merge_uint_value(conf->mpd_config.manifest_format, prev->mpd_config.manifest_format, FORMAT_SEGMENT_TIMELINE);
-	ngx_conf_merge_uint_value(conf->mpd_config.subtitle_format, prev->mpd_config.subtitle_format, SUBTITLE_FORMAT_WEBVTT);
-	ngx_conf_merge_uint_value(conf->mpd_config.duplicate_bitrate_threshold, prev->mpd_config.duplicate_bitrate_threshold, 4096);
+	ngx_conf_merge_str_value(
+		conf->mpd_config.profiles, prev->mpd_config.profiles, "urn:mpeg:dash:profile:isoff-main:2011"
+	);
+	ngx_conf_merge_str_value(
+		conf->mpd_config.init_file_name_prefix, prev->mpd_config.init_file_name_prefix, "init"
+	);
+	ngx_conf_merge_str_value(
+		conf->mpd_config.fragment_file_name_prefix, prev->mpd_config.fragment_file_name_prefix, "fragment"
+	);
+	ngx_conf_merge_str_value(
+		conf->mpd_config.subtitle_file_name_prefix, prev->mpd_config.subtitle_file_name_prefix, "sub"
+	);
+	ngx_conf_merge_uint_value(
+		conf->mpd_config.manifest_format, prev->mpd_config.manifest_format, FORMAT_SEGMENT_TIMELINE
+	);
+	ngx_conf_merge_uint_value(
+		conf->mpd_config.subtitle_format, prev->mpd_config.subtitle_format, SUBTITLE_FORMAT_WEBVTT
+	);
+	ngx_conf_merge_uint_value(
+		conf->mpd_config.duplicate_bitrate_threshold, prev->mpd_config.duplicate_bitrate_threshold, 4096
+	);
 
 	return NGX_CONF_OK;
 }
 
 static int
-ngx_http_vod_dash_get_file_path_components(ngx_str_t* uri)
-{
+ngx_http_vod_dash_get_file_path_components(ngx_str_t* uri) {
 	return 1;
 }
 
 static ngx_int_t
 ngx_http_vod_dash_parse_uri_file_name(
-	ngx_http_request_t *r,
-	ngx_http_vod_loc_conf_t *conf,
+	ngx_http_request_t* r,
+	ngx_http_vod_loc_conf_t* conf,
 	u_char* start_pos,
 	u_char* end_pos,
 	request_params_t* request_params,
-	const ngx_http_vod_request_t** request)
-{
+	const ngx_http_vod_request_t** request
+) {
 	ngx_int_t rc;
 	uint32_t flags;
 
 	// fragment
-	if (ngx_http_vod_match_prefix_postfix(start_pos, end_pos, &conf->dash.mpd_config.fragment_file_name_prefix, fragment_file_ext))
-	{
+	if (ngx_http_vod_match_prefix_postfix(
+			start_pos, end_pos, &conf->dash.mpd_config.fragment_file_name_prefix, fragment_file_ext
+		)) {
 		start_pos += conf->dash.mpd_config.fragment_file_name_prefix.len;
-		end_pos -= (sizeof(fragment_file_ext) - 1);
+		end_pos -= sizeof(fragment_file_ext) - 1;
 		*request = conf->drm_enabled ? &edash_mp4_fragment_request : &dash_mp4_fragment_request;
 		flags = PARSE_FILE_NAME_EXPECT_SEGMENT_INDEX;
 	}
 	// init segment
-	else if (ngx_http_vod_match_prefix_postfix(start_pos, end_pos, &conf->dash.mpd_config.init_file_name_prefix, init_segment_file_ext))
-	{
+	else if (ngx_http_vod_match_prefix_postfix(
+				 start_pos, end_pos, &conf->dash.mpd_config.init_file_name_prefix, init_segment_file_ext
+			 )) {
 		start_pos += conf->dash.mpd_config.init_file_name_prefix.len;
-		end_pos -= (sizeof(init_segment_file_ext) - 1);
+		end_pos -= sizeof(init_segment_file_ext) - 1;
 		*request = &dash_mp4_init_request;
 		flags = PARSE_FILE_NAME_ALLOW_CLIP_INDEX;
 	}
 	// webm fragment
-	else if (ngx_http_vod_match_prefix_postfix(start_pos, end_pos, &conf->dash.mpd_config.fragment_file_name_prefix, webm_file_ext))
-	{
+	else if (ngx_http_vod_match_prefix_postfix(
+				 start_pos, end_pos, &conf->dash.mpd_config.fragment_file_name_prefix, webm_file_ext
+			 )) {
 		start_pos += conf->dash.mpd_config.fragment_file_name_prefix.len;
-		end_pos -= (sizeof(webm_file_ext) - 1);
+		end_pos -= sizeof(webm_file_ext) - 1;
 		*request = &dash_webm_fragment_request;
 		flags = PARSE_FILE_NAME_EXPECT_SEGMENT_INDEX;
 	}
 	// webm init segment
-	else if (ngx_http_vod_match_prefix_postfix(start_pos, end_pos, &conf->dash.mpd_config.init_file_name_prefix, webm_file_ext))
-	{
+	else if (ngx_http_vod_match_prefix_postfix(
+				 start_pos, end_pos, &conf->dash.mpd_config.init_file_name_prefix, webm_file_ext
+			 )) {
 		start_pos += conf->dash.mpd_config.init_file_name_prefix.len;
-		end_pos -= (sizeof(webm_file_ext) - 1);
+		end_pos -= sizeof(webm_file_ext) - 1;
 		*request = &dash_webm_init_request;
 		flags = PARSE_FILE_NAME_ALLOW_CLIP_INDEX;
 	}
 	// manifest
-	else if (ngx_http_vod_match_prefix_postfix(start_pos, end_pos, &conf->dash.manifest_file_name_prefix, manifest_file_ext))
-	{
+	else if (ngx_http_vod_match_prefix_postfix(
+				 start_pos, end_pos, &conf->dash.manifest_file_name_prefix, manifest_file_ext
+			 )) {
 		start_pos += conf->dash.manifest_file_name_prefix.len;
-		end_pos -= (sizeof(manifest_file_ext) - 1);
+		end_pos -= sizeof(manifest_file_ext) - 1;
 		*request = &dash_manifest_request;
 		flags = PARSE_FILE_NAME_MULTI_STREAMS_PER_TYPE;
 	}
 	// smpte fragment
-	else if (ngx_http_vod_match_prefix_postfix(start_pos, end_pos, &conf->dash.mpd_config.fragment_file_name_prefix, ttml_file_ext))
-	{
+	else if (ngx_http_vod_match_prefix_postfix(
+				 start_pos, end_pos, &conf->dash.mpd_config.fragment_file_name_prefix, ttml_file_ext
+			 )) {
 		start_pos += conf->dash.mpd_config.fragment_file_name_prefix.len;
-		end_pos -= (sizeof(ttml_file_ext) - 1);
+		end_pos -= sizeof(ttml_file_ext) - 1;
 		*request = &dash_ttml_request;
 		flags = PARSE_FILE_NAME_EXPECT_SEGMENT_INDEX;
 	}
 	// webvtt file
-	else if (ngx_http_vod_match_prefix_postfix(start_pos, end_pos, &conf->dash.mpd_config.subtitle_file_name_prefix, vtt_file_ext))
-	{
+	else if (ngx_http_vod_match_prefix_postfix(
+				 start_pos, end_pos, &conf->dash.mpd_config.subtitle_file_name_prefix, vtt_file_ext
+			 )) {
 		start_pos += conf->dash.mpd_config.subtitle_file_name_prefix.len;
-		end_pos -= (sizeof(vtt_file_ext) - 1);
+		end_pos -= sizeof(vtt_file_ext) - 1;
 		*request = &dash_webvtt_file_request;
 		flags = PARSE_FILE_NAME_ALLOW_CLIP_INDEX;
-	}
-	else
-	{
-		ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-			"ngx_http_vod_dash_parse_uri_file_name: unidentified request");
+	} else {
+		ngx_log_error(
+			NGX_LOG_ERR, r->connection->log, 0, "ngx_http_vod_dash_parse_uri_file_name: unidentified request"
+		);
 		return ngx_http_vod_status_to_ngx_error(r, VOD_BAD_REQUEST);
 	}
 
 	// parse the required tracks string
 	rc = ngx_http_vod_parse_uri_file_name(r, start_pos, end_pos, flags, request_params);
-	if (rc != NGX_OK)
-	{
-		ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0,
-			"ngx_http_vod_dash_parse_uri_file_name: ngx_http_vod_parse_uri_file_name failed %i", rc);
+	if (rc != NGX_OK) {
+		ngx_log_debug1(
+			NGX_LOG_DEBUG_HTTP,
+			r->connection->log,
+			0,
+			"ngx_http_vod_dash_parse_uri_file_name: ngx_http_vod_parse_uri_file_name failed %i",
+			rc
+		);
 		return rc;
 	}
 
@@ -661,19 +706,12 @@ ngx_http_vod_dash_parse_uri_file_name(
 
 static ngx_int_t
 ngx_http_vod_dash_parse_drm_info(
-	ngx_http_vod_submodule_context_t* submodule_context,
-	ngx_str_t* drm_info,
-	void** output)
-{
+	ngx_http_vod_submodule_context_t* submodule_context, ngx_str_t* drm_info, void** output
+) {
 	vod_status_t rc;
 
-	rc = udrm_parse_response(
-		&submodule_context->request_context,
-		drm_info,
-		TRUE,
-		output);
-	if (rc != VOD_OK)
-	{
+	rc = udrm_parse_response(&submodule_context->request_context, drm_info, TRUE, output);
+	if (rc != VOD_OK) {
 		return NGX_ERROR;
 	}
 

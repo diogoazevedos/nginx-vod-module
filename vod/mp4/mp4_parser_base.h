@@ -14,7 +14,7 @@ typedef struct {
 	uint8_t header_size;
 } atom_info_t;
 
-typedef vod_status_t(*parse_atoms_callback_t)(void* context, atom_info_t* atom_info);
+typedef vod_status_t (*parse_atoms_callback_t)(void* context, atom_info_t* atom_info);
 
 // relevant atoms finder
 typedef struct relevant_atom_s {
@@ -64,30 +64,23 @@ vod_status_t mp4_parser_parse_atoms(
 	uint64_t buffer_size,
 	bool_t validate_full_atom,
 	parse_atoms_callback_t callback,
-	void* context);
+	void* context
+);
 
 vod_status_t mp4_parser_save_relevant_atoms_callback(void* ctx, atom_info_t* atom_info);
 
 // validation functions
-vod_status_t mp4_parser_validate_stts_data(
-	request_context_t* request_context,
-	atom_info_t* atom_info,
-	uint32_t* entries);
+vod_status_t
+mp4_parser_validate_stts_data(request_context_t* request_context, atom_info_t* atom_info, uint32_t* entries);
 
-vod_status_t mp4_parser_validate_stss_atom(
-	request_context_t* request_context,
-	atom_info_t* atom_info,
-	uint32_t* entries);
+vod_status_t
+mp4_parser_validate_stss_atom(request_context_t* request_context, atom_info_t* atom_info, uint32_t* entries);
 
-vod_status_t mp4_parser_validate_ctts_atom(
-	request_context_t* request_context,
-	atom_info_t* atom_info,
-	uint32_t* entries);
+vod_status_t
+mp4_parser_validate_ctts_atom(request_context_t* request_context, atom_info_t* atom_info, uint32_t* entries);
 
-vod_status_t mp4_parser_validate_stsc_atom(
-	request_context_t* request_context,
-	atom_info_t* atom_info,
-	uint32_t* entries);
+vod_status_t
+mp4_parser_validate_stsc_atom(request_context_t* request_context, atom_info_t* atom_info, uint32_t* entries);
 
 vod_status_t mp4_parser_validate_stsz_atom(
 	request_context_t* request_context,
@@ -95,43 +88,35 @@ vod_status_t mp4_parser_validate_stsz_atom(
 	uint32_t last_frame,
 	uint32_t* uniform_size,
 	uint32_t* field_size,
-	uint32_t* entries);
+	uint32_t* entries
+);
 
 vod_status_t mp4_parser_validate_stco_data(
 	request_context_t* request_context,
 	atom_info_t* atom_info,
 	uint32_t last_chunk_index,
 	uint32_t* entries,
-	uint32_t* entry_size);
+	uint32_t* entry_size
+);
 
 // iterators
 
 // stts
 void mp4_parser_stts_iterator_init(
-	stts_iterator_state_t* iterator,
-	media_parse_params_t* parse_params,
-	stts_entry_t* first_entry,
-	uint32_t entries);
+	stts_iterator_state_t* iterator, media_parse_params_t* parse_params, stts_entry_t* first_entry, uint32_t entries
+);
 
-bool_t mp4_parser_stts_iterator(
-	stts_iterator_state_t* iterator,
-	uint64_t offset);
+bool_t mp4_parser_stts_iterator(stts_iterator_state_t* iterator, uint64_t offset);
 
 // stss
-uint32_t mp4_parser_find_stss_entry(
-	uint32_t frame_index,
-	const uint32_t* first_entry,
-	uint32_t entries);
+uint32_t
+mp4_parser_find_stss_entry(uint32_t frame_index, const uint32_t* first_entry, uint32_t entries);
 
 // ctts
-void mp4_parser_ctts_iterator_init(
-	ctts_iterator_state_t* iterator,
-	ctts_entry_t* first_entry,
-	uint32_t entries);
+void
+mp4_parser_ctts_iterator_init(ctts_iterator_state_t* iterator, ctts_entry_t* first_entry, uint32_t entries);
 
-bool_t mp4_parser_ctts_iterator(
-	ctts_iterator_state_t* iterator,
-	uint32_t required_index);
+bool_t mp4_parser_ctts_iterator(ctts_iterator_state_t* iterator, uint32_t required_index);
 
 // stsc
 vod_status_t mp4_parser_stsc_iterator_init(
@@ -139,7 +124,8 @@ vod_status_t mp4_parser_stsc_iterator_init(
 	request_context_t* request_context,
 	stsc_entry_t* first_entry,
 	uint32_t entries,
-	uint32_t chunks);
+	uint32_t chunks
+);
 
 vod_status_t mp4_parser_stsc_iterator(
 	stsc_iterator_state_t* iterator,
@@ -147,6 +133,7 @@ vod_status_t mp4_parser_stsc_iterator(
 	uint32_t* target_chunk,
 	uint32_t* sample_count,
 	uint32_t* next_chunk_out,
-	uint32_t* prev_samples);
+	uint32_t* prev_samples
+);
 
 #endif // __MP4_PARSER_BASE_H__

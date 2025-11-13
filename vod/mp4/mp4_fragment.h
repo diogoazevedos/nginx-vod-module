@@ -7,8 +7,8 @@
 #include "../media_set.h"
 
 // constants
-#define TRUN_VIDEO_FLAGS (0xF01)		// = data offset, duration, size, key, delay
-#define TRUN_AUDIO_FLAGS (0x301)		// = data offset, duration, size
+#define TRUN_VIDEO_FLAGS (0xF01) // = data offset, duration, size, key, delay
+#define TRUN_AUDIO_FLAGS (0x301) // = data offset, duration, size
 
 // typedefs
 typedef struct {
@@ -62,22 +62,15 @@ u_char* mp4_fragment_write_tfdt64_atom(u_char* p, uint64_t earliest_pres_time);
 
 size_t mp4_fragment_get_trun_atom_size(uint32_t media_type, uint32_t frame_count);
 
-u_char* mp4_fragment_write_video_trun_atom(
-	u_char* p,
-	media_sequence_t* sequence,
-	uint32_t first_frame_offset);
+u_char*
+mp4_fragment_write_video_trun_atom(u_char* p, media_sequence_t* sequence, uint32_t first_frame_offset);
 
-u_char* mp4_fragment_write_audio_trun_atom(
-	u_char* p,
-	media_sequence_t* sequence,
-	uint32_t first_frame_offset);
+u_char*
+mp4_fragment_write_audio_trun_atom(u_char* p, media_sequence_t* sequence, uint32_t first_frame_offset);
 
 u_char* mp4_fragment_write_subtitle_trun_atom(
-	u_char* p,
-	uint32_t first_frame_offset,
-	uint32_t duration,
-	u_char** sample_size);
-
+	u_char* p, uint32_t first_frame_offset, uint32_t duration, u_char** sample_size
+);
 
 vod_status_t mp4_fragment_frame_writer_init(
 	request_context_t* request_context,
@@ -85,12 +78,11 @@ vod_status_t mp4_fragment_frame_writer_init(
 	write_callback_t write_callback,
 	void* write_context,
 	bool_t reuse_buffers,
-	fragment_writer_state_t** result);
+	fragment_writer_state_t** result
+);
 
 vod_status_t mp4_fragment_frame_writer_process(fragment_writer_state_t* state);
 
-void mp4_fragment_get_content_type(
-	bool_t video,
-	vod_str_t* content_type);
+void mp4_fragment_get_content_type(bool_t video, vod_str_t* content_type);
 
 #endif // __MP4_FRAGMENT_H__
