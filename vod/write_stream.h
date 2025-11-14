@@ -16,19 +16,16 @@
 		*(p)++ = (w) & 0xFF;        \
 	}
 
-#define write_be24(p, dw)             \
-	{                                 \
-		*(p)++ = ((dw) >> 16) & 0xFF; \
-		*(p)++ = ((dw) >> 8) & 0xFF;  \
-		*(p)++ = (dw) & 0xFF;         \
+#define write_be24(p, dw)         \
+	{                             \
+		write_be16(p, (dw) >> 8); \
+		*(p)++ = (dw) & 0xFF;     \
 	}
 
-#define write_be32(p, dw)             \
-	{                                 \
-		*(p)++ = ((dw) >> 24) & 0xFF; \
-		*(p)++ = ((dw) >> 16) & 0xFF; \
-		*(p)++ = ((dw) >> 8) & 0xFF;  \
-		*(p)++ = (dw) & 0xFF;         \
+#define write_be32(p, dw)          \
+	{                              \
+		write_be16(p, (dw) >> 16); \
+		write_be16(p, (dw));       \
 	}
 
 #define write_be64(p, qw)          \
