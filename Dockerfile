@@ -64,7 +64,7 @@ COPY --from=build /opt/nginx /opt/nginx
 COPY sample/* /opt/nginx/conf/
 COPY static/* /opt/nginx/html/
 
-EXPOSE 80
+EXPOSE 8000
 
 ENTRYPOINT ["/opt/nginx/sbin/nginx"]
 

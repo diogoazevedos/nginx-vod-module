@@ -124,7 +124,7 @@ implementation of `nginx-vod-module` with all required dependencies.
 
 ```sh
 docker image build -t nginx-vod-module .
-docker container run --rm -it -p 8000:80 nginx-vod-module
+docker container run --rm -it -p 8000:8000 nginx-vod-module
 ```
 
 > [!TIP]
