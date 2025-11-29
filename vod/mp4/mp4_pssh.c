@@ -16,13 +16,13 @@ const u_char playready_system_id[] = {
 u_char*
 mp4_pssh_write_box(u_char* p, drm_system_info_t* info) {
 	bool_t is_pssh_v1 = mp4_pssh_is_common(info); // W3C common PSSH box follows `v1` format
-	size_t pssh_atom_size;
+	size_t atom_size = ATOM_HEADER_SIZE + sizeof(pssh_atom_t) + info->data.len;
 
-	pssh_atom_size = ATOM_HEADER_SIZE + sizeof(pssh_atom_t) + info->data.len;
 	if (is_pssh_v1) {
-		pssh_atom_size -= sizeof(uint32_t);
+		atom_size -= sizeof(uint32_t);
 	}
-	write_atom_header(p, pssh_atom_size, 'p', 's', 's', 'h');
+
+	write_atom_header(p, atom_size, 'p', 's', 's', 'h');
 
 	if (is_pssh_v1) {
 		write_be32(p, 0x01000000); // version + flags
