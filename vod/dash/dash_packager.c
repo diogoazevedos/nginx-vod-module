@@ -250,15 +250,15 @@ typedef struct {
 
 // clang-format off
 static const u_char styp_atom[] = {
-	0x00, 0x00, 0x00, 0x20, // atom size
+	0x00, 0x00, 0x00, 0x20, // size = 32
 	0x73, 0x74, 0x79, 0x70, // styp
-	0x69, 0x73, 0x6f, 0x36, // major brand = iso6
-	0x00, 0x00, 0x00, 0x00, // minor version
-	0x69, 0x73, 0x6f, 0x36, // compatible brand = iso6
-	0x63, 0x6d, 0x66, 0x73, // compatible brand = cmfs
+	0x69, 0x73, 0x6f, 0x36, // major_brand = iso6
+	0x00, 0x00, 0x00, 0x00, // minor_version
+	0x69, 0x73, 0x6f, 0x36, // compatible_brand = iso6
+	0x63, 0x6d, 0x66, 0x73, // compatible_brand = cmfs
 	// backward compatibility
-	0x64, 0x61, 0x73, 0x68, // compatible brand = dash
-	0x69, 0x73, 0x6f, 0x6d, // compatible brand = isom
+	0x64, 0x61, 0x73, 0x68, // compatible_brand = dash
+	0x69, 0x73, 0x6f, 0x6d, // compatible_brand = isom
 };
 // clang-format on
 
@@ -1593,15 +1593,16 @@ dash_packager_write_sidx_atom(u_char* p, sidx_params_t* sidx_params, uint32_t re
 	size_t atom_size = ATOM_HEADER_SIZE + sizeof(sidx_atom_t);
 
 	write_atom_header(p, atom_size, 's', 'i', 'd', 'x');
-	write_be32(p, 0);                                  // version + flags
-	write_be32(p, 1);                                  // reference id
+	write_fullbox_header(p, 0, 0);
+	write_be32(p, 1);                                  // reference_ID
 	write_be32(p, sidx_params->timescale);             // timescale
-	write_be32(p, sidx_params->earliest_pres_time);    // earliest presentation time
-	write_be32(p, 0);                                  // first offset
-	write_be32(p, 1);                                  // reserved + reference count
-	write_be32(p, reference_size);                     // referenced size
-	write_be32(p, sidx_params->total_frames_duration); // subsegment duration
-	write_be32(p, 0x90000000);                         // starts with SAP / SAP type
+	write_be32(p, sidx_params->earliest_pres_time);    // earliest_presentation_time
+	write_be32(p, 0);                                  // first_offset
+	write_be16(p, 0);                                  // reserved
+	write_be16(p, 1);                                  // reference_count
+	write_be32(p, reference_size);                     // reference_type(1), referenced_size(31)
+	write_be32(p, sidx_params->total_frames_duration); // subsegment_duration
+	write_be32(p, 0x90000000); // starts_with_SAP(1) = 1, SAP_type(3) = 1, SAP_delta_time(28) = 0
 	return p;
 }
 
@@ -1610,15 +1611,16 @@ dash_packager_write_sidx64_atom(u_char* p, sidx_params_t* sidx_params, uint32_t 
 	size_t atom_size = ATOM_HEADER_SIZE + sizeof(sidx64_atom_t);
 
 	write_atom_header(p, atom_size, 's', 'i', 'd', 'x');
-	write_be32(p, 0x01000000);                         // version + flags
-	write_be32(p, 1);                                  // reference id
+	write_fullbox_header(p, 1, 0);
+	write_be32(p, 1);                                  // reference_ID
 	write_be32(p, sidx_params->timescale);             // timescale
-	write_be64(p, sidx_params->earliest_pres_time);    // earliest presentation time
-	write_be64(p, 0LL);                                // first offset
-	write_be32(p, 1);                                  // reserved + reference count
-	write_be32(p, reference_size);                     // referenced size
-	write_be32(p, sidx_params->total_frames_duration); // subsegment duration
-	write_be32(p, 0x90000000);                         // starts with SAP / SAP type
+	write_be64(p, sidx_params->earliest_pres_time);    // earliest_presentation_time
+	write_be64(p, 0LL);                                // first_offset
+	write_be16(p, 0);                                  // reserved
+	write_be32(p, 1);                                  // reference_count
+	write_be32(p, reference_size);                     // reference_type(1), referenced_size(31)
+	write_be32(p, sidx_params->total_frames_duration); // subsegment_duration
+	write_be32(p, 0x90000000); // starts_with_SAP(1) = 1, SAP_type(3) = 1, SAP_delta_time(28) = 0
 	return p;
 }
 
