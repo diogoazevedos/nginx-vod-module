@@ -25,4 +25,10 @@
 		write_be64(p, size);                         \
 	}
 
+#define write_fullbox_header(p, version, flags) \
+	{                                           \
+		*(p)++ = (version);                     \
+		write_be24(p, flags);                   \
+	}
+
 #endif //__MP4_WRITE_STREAM_H__
