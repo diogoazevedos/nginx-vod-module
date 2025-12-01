@@ -23,20 +23,15 @@ mp4_pssh_write_box(u_char* p, drm_system_info_t* info) {
 	}
 
 	write_atom_header(p, atom_size, 'p', 's', 's', 'h');
+	write_fullbox_header(p, is_pssh_v1 ? 1 : 0, 0);
 
-	if (is_pssh_v1) {
-		write_be32(p, 0x01000000); // version + flags
-	} else {
-		write_be32(p, 0); // version + flags
-	}
-
-	p = vod_copy(p, info->system_id, DRM_SYSTEM_ID_SIZE); // system ID
+	p = vod_copy(p, info->system_id, DRM_SYSTEM_ID_SIZE); // system_ID
 
 	if (!is_pssh_v1) {
-		write_be32(p, info->data.len); // data size
+		write_be32(p, info->data.len); // data_size
 	}
 
-	p = vod_copy(p, info->data.data, info->data.len);
+	p = vod_copy(p, info->data.data, info->data.len); // data
 
 	return p;
 }
