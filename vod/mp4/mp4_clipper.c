@@ -613,8 +613,8 @@ mp4_clipper_stts_write_atom(u_char* p, void* write_context, stts_clip_result_t* 
 
 	write_be32(p, stts->atom_size);
 	write_atom_name(p, 's', 't', 't', 's');
-	write_be32(p, 0);
-	write_be32(p, stts->entries);
+	write_fullbox_header(p, 0, 0);
+	write_be32(p, stts->entries); // entry_count
 
 	if (copy_data) {
 		// copy
@@ -702,13 +702,13 @@ mp4_clipper_stss_write_atom(u_char* p, void* write_context, stss_clip_result_t* 
 
 	write_be32(p, stss->atom_size);
 	write_atom_name(p, 's', 't', 's', 's');
-	write_be32(p, 0);
-	write_be32(p, stss->entries);
+	write_fullbox_header(p, 0, 0);
+	write_be32(p, stss->entries); // entry_count
 
 	if (copy_data) {
 		for (cur_entry = stss->first_entry; cur_entry < stss->last_entry; cur_entry++) {
 			frame_index = parse_be32(cur_entry) - stss->first_frame;
-			write_be32(p, frame_index);
+			write_be32(p, frame_index); // sample_number
 		}
 	} else {
 		// update in place
@@ -797,8 +797,8 @@ mp4_clipper_ctts_write_atom(u_char* p, void* write_context, ctts_clip_result_t* 
 
 	write_be32(p, ctts->atom_size);
 	write_atom_name(p, 'c', 't', 't', 's');
-	write_be32(p, 0);
-	write_be32(p, ctts->entries);
+	write_fullbox_header(p, 0, 0);
+	write_be32(p, ctts->entries); // entry_count
 
 	if (copy_data) {
 		// copy
@@ -970,12 +970,12 @@ mp4_clipper_stsc_write_atom(u_char* p, void* write_context, stsc_clip_result_t* 
 
 	write_be32(p, stsc->atom_size);
 	write_atom_name(p, 's', 't', 's', 'c');
-	write_be32(p, 0);
-	write_be32(p, stsc->entries);
+	write_fullbox_header(p, 0, 0);
+	write_be32(p, stsc->entries); // entry_count
 
 	// add an preceding entry if needed
 	if (stsc->pre_entry) {
-		write_be32(p, 1);
+		write_be32(p, 1); // first_chunk
 		write_be32(p, stsc->first_entry_samples_per_chunk);
 		write_be32(p, stsc->first_entry_sample_desc);
 	}
@@ -1147,19 +1147,17 @@ static u_char*
 mp4_clipper_stsz_write_atom(u_char* p, void* write_context, stsz_clip_result_t* stsz, bool_t copy_data) {
 	u_char* start = p;
 
+	write_be32(p, stsz->atom_size);
 	if (stsz->field_size == 32 || stsz->uniform_size != 0) {
-		write_be32(p, stsz->atom_size);
 		write_atom_name(p, 's', 't', 's', 'z');
-		write_be32(p, 0);
-		write_be32(p, stsz->uniform_size);
-		write_be32(p, stsz->entries);
+		write_fullbox_header(p, 0, 0);
+		write_be32(p, stsz->uniform_size); // sample_size
 	} else {
-		write_be32(p, stsz->atom_size);
 		write_atom_name(p, 's', 't', 'z', '2');
-		write_be32(p, 0);
-		write_be32(p, stsz->field_size);
-		write_be32(p, stsz->entries);
+		write_fullbox_header(p, 0, 0);
+		write_be32(p, stsz->field_size); // reserved(24), field_size(8)
 	}
+	write_be32(p, stsz->entries); // sample_count
 
 	if (copy_data) {
 		p = vod_copy(p, stsz->first_entry, stsz->data_size);
@@ -1254,11 +1252,11 @@ mp4_clipper_stco_write_atom(
 	u_char* start = p;
 	u_char* cur_pos;
 
+	write_be32(p, stco->atom_size);
 	if (stco->entry_size == sizeof(uint32_t)) {
-		write_be32(p, stco->atom_size);
 		write_atom_name(p, 's', 't', 'c', 'o');
-		write_be32(p, 0);
-		write_be32(p, stco->entries);
+		write_fullbox_header(p, 0, 0);
+		write_be32(p, stco->entries); // entry_count
 
 		if (copy_data) {
 			chunk_offset =
@@ -1287,10 +1285,9 @@ mp4_clipper_stco_write_atom(
 			);
 		}
 	} else {
-		write_be32(p, stco->atom_size);
 		write_atom_name(p, 'c', 'o', '6', '4');
-		write_be32(p, 0);
-		write_be32(p, stco->entries);
+		write_fullbox_header(p, 0, 0);
+		write_be32(p, stco->entries); // entry_count
 
 		if (copy_data) {
 			chunk_offset =
