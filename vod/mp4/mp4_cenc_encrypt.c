@@ -510,17 +510,17 @@ mp4_cenc_encrypt_video_write_saiz_saio(
 ) {
 	// moof.traf.saiz
 	write_atom_header(p, state->base.saiz_atom_size, 's', 'a', 'i', 'z');
-	write_be32(p, 0); // version, flags
-	*p++ = state->default_auxiliary_sample_size;
-	write_be32(p, state->saiz_sample_count);
+	write_fullbox_header(p, 0, 0);
+	*p++ = state->default_auxiliary_sample_size; // default_sample_info_size
+	write_be32(p, state->saiz_sample_count);     // sample_count
 	if (state->default_auxiliary_sample_size == 0) {
 		p = vod_copy(p, state->auxiliary_sample_sizes, state->saiz_sample_count);
 	}
 
 	// moof.traf.saio
 	write_atom_header(p, state->base.saio_atom_size, 's', 'a', 'i', 'o');
-	write_be32(p, 0); // version, flags
-	write_be32(p, 1); // entry count
+	write_fullbox_header(p, 0, 0);
+	write_be32(p, 1); // entry_count
 	write_be32(p, auxiliary_data_offset);
 
 	return p;
@@ -923,14 +923,14 @@ mp4_cenc_encrypt_audio_write_saiz_saio(mp4_cenc_encrypt_state_t* state, u_char* 
 
 	// moof.traf.saiz
 	write_atom_header(p, saiz_atom_size, 's', 'a', 'i', 'z');
-	write_be32(p, 0);           // version, flags
-	*p++ = MP4_AES_CTR_IV_SIZE; // default auxiliary sample size
-	write_be32(p, state->sequence->total_frame_count);
+	write_fullbox_header(p, 0, 0);
+	*p++ = MP4_AES_CTR_IV_SIZE;                        // default_sample_info_size
+	write_be32(p, state->sequence->total_frame_count); // sample_count
 
 	// moof.traf.saio
 	write_atom_header(p, saio_atom_size, 's', 'a', 'i', 'o');
-	write_be32(p, 0); // version, flags
-	write_be32(p, 1); // entry count
+	write_fullbox_header(p, 0, 0);
+	write_be32(p, 1); // entry_count
 	write_be32(p, auxiliary_data_offset);
 
 	return p;
