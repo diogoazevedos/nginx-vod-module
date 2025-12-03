@@ -7,8 +7,10 @@
 #include "../media_set.h"
 
 // constants
-#define TRUN_VIDEO_FLAGS (0xF01) // = data offset, duration, size, key, delay
-#define TRUN_AUDIO_FLAGS (0x301) // = data offset, duration, size
+#define TRUN_VIDEO_FLAGS \
+	(0xF01) // data-offset-present, sample-duration-present, sample-size-present, sample-flags-present, sample-composition-time-offsets-present
+#define TRUN_AUDIO_FLAGS \
+	(0x301) // data-offset-present, sample-duration-present, sample-size-present
 
 // typedefs
 typedef struct {
@@ -52,13 +54,13 @@ typedef struct {
 } fragment_writer_state_t;
 
 // functions
-u_char* mp4_fragment_write_mfhd_atom(u_char* p, uint32_t segment_index);
+u_char* mp4_fragment_write_mfhd_atom(u_char* p, uint32_t sequence_number);
 
 u_char* mp4_fragment_write_tfhd_atom(u_char* p, uint32_t track_id, uint32_t sample_description_index);
 
-u_char* mp4_fragment_write_tfdt_atom(u_char* p, uint32_t earliest_pres_time);
+u_char* mp4_fragment_write_tfdt_atom(u_char* p, uint32_t base_media_decode_time);
 
-u_char* mp4_fragment_write_tfdt64_atom(u_char* p, uint64_t earliest_pres_time);
+u_char* mp4_fragment_write_tfdt64_atom(u_char* p, uint64_t base_media_decode_time);
 
 size_t mp4_fragment_get_trun_atom_size(uint32_t media_type, uint32_t frame_count);
 
