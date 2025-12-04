@@ -59,23 +59,24 @@ typedef struct {
 
 // clang-format off
 static const u_char ftyp_atom[] = {
-	0x00, 0x00, 0x00, 0x20, // size
+	0x00, 0x00, 0x00, 0x20, // size = 32
 	0x66, 0x74, 0x79, 0x70, // ftyp
-	0x69, 0x73, 0x6f, 0x36, // major brand = iso6
-	0x00, 0x00, 0x00, 0x00, // minor version
-	0x69, 0x73, 0x6f, 0x36, // compatible brand = iso6
-	0x63, 0x6d, 0x66, 0x63, // compatible brand = cmfc
+	0x69, 0x73, 0x6f, 0x36, // major_brand = iso6
+	0x00, 0x00, 0x00, 0x00, // minor_version
+	0x69, 0x73, 0x6f, 0x36, // compatible_brand = iso6
+	0x63, 0x6d, 0x66, 0x63, // compatible_brand = cmfc
 	// backward compatibility
-	0x64, 0x61, 0x73, 0x68, // compatible brand = dash
-	0x69, 0x73, 0x6f, 0x6d, // compatible brand = isom
+	0x64, 0x61, 0x73, 0x68, // compatible_brand = dash
+	0x69, 0x73, 0x6f, 0x6d, // compatible_brand = isom
 };
 
 static const u_char hdlr_video_atom[] = {
-	0x00, 0x00, 0x00, 0x2d, // size
+	0x00, 0x00, 0x00, 0x2d, // size = 45
 	0x68, 0x64, 0x6c, 0x72, // hdlr
-	0x00, 0x00, 0x00, 0x00, // version + flags
-	0x00, 0x00, 0x00, 0x00, // pre defined
-	0x76, 0x69, 0x64, 0x65, // handler type = vide
+	0x00,                   // version
+	0x00, 0x00, 0x00,       // flags
+	0x00, 0x00, 0x00, 0x00, // pre_defined
+	0x76, 0x69, 0x64, 0x65, // handler_type = vide
 	0x00, 0x00, 0x00, 0x00, // reserved[3]
 	0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,
@@ -86,11 +87,12 @@ static const u_char hdlr_video_atom[] = {
 };
 
 static const u_char hdlr_audio_atom[] = {
-	0x00, 0x00, 0x00, 0x2d, // size
+	0x00, 0x00, 0x00, 0x2d, // size = 45
 	0x68, 0x64, 0x6c, 0x72, // hdlr
-	0x00, 0x00, 0x00, 0x00, // version + flags
-	0x00, 0x00, 0x00, 0x00, // pre defined
-	0x73, 0x6f, 0x75, 0x6e, // handler type = soun
+	0x00,                   // version
+	0x00, 0x00, 0x00,       // flags
+	0x00, 0x00, 0x00, 0x00, // pre_defined
+	0x73, 0x6f, 0x75, 0x6e, // handler_type = soun
 	0x00, 0x00, 0x00, 0x00, // reserved[3]
 	0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,
@@ -101,11 +103,12 @@ static const u_char hdlr_audio_atom[] = {
 };
 
 static const u_char hdlr_subtitle_atom[] = {
-	0x00, 0x00, 0x00, 0x25, // size
+	0x00, 0x00, 0x00, 0x25, // size = 37
 	0x68, 0x64, 0x6c, 0x72, // hdlr
-	0x00, 0x00, 0x00, 0x00, // version + flags
-	0x00, 0x00, 0x00, 0x00, // pre defined
-	0x73, 0x75, 0x62, 0x74, // handler type = subt
+	0x00,                   // version
+	0x00, 0x00, 0x00,       // flags
+	0x00, 0x00, 0x00, 0x00, // pre_defined
+	0x73, 0x75, 0x62, 0x74, // handler_type = subt
 	0x00, 0x00, 0x00, 0x00, // reserved[3]
 	0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,
@@ -114,53 +117,59 @@ static const u_char hdlr_subtitle_atom[] = {
 };
 
 static const u_char dinf_atom[] = {
-	0x00, 0x00, 0x00, 0x24, // size
+	0x00, 0x00, 0x00, 0x24, // size = 36
 	0x64, 0x69, 0x6e, 0x66, // dinf
 
-	0x00, 0x00, 0x00, 0x1c, // size
+	0x00, 0x00, 0x00, 0x1c, // size = 28
 	0x64, 0x72, 0x65, 0x66, // dref
-	0x00, 0x00, 0x00, 0x00, // version + flags
-	0x00, 0x00, 0x00, 0x01, // entry count
+	0x00,                   // version
+	0x00, 0x00, 0x00,       // flags
+	0x00, 0x00, 0x00, 0x01, // entry_count = 1
 
-	0x00, 0x00, 0x00, 0x0c, // size
+	0x00, 0x00, 0x00, 0x0c, // size = 12
 	0x75, 0x72, 0x6c, 0x20, // 'url '
-	0x00, 0x00, 0x00, 0x01, // version + flags
+	0x00,                   // version
+	0x00, 0x00, 0x01,       // flags = 1 (self-contained)
 };
 
 static const u_char vmhd_atom[] = {
-	0x00, 0x00, 0x00, 0x14, // size
+	0x00, 0x00, 0x00, 0x14, // size = 20
 	0x76, 0x6d, 0x68, 0x64, // vmhd
-	0x00, 0x00, 0x00, 0x01, // version + flags
-	0x00, 0x00,             // graphicsmode
-	0x00, 0x00, 0x00, 0x00, // opcolor
+	0x00,                   // version
+	0x00, 0x00, 0x01,       // flags = 1 (required)
+	0x00, 0x00,             // graphicsmode = (copy)
+	0x00, 0x00, 0x00, 0x00, // opcolor = {0, 0, 0} (R,G,B)
 	0x00, 0x00,
 };
 
 static const u_char smhd_atom[] = {
-	0x00, 0x00, 0x00, 0x10, // size
+	0x00, 0x00, 0x00, 0x10, // size = 16
 	0x73, 0x6d, 0x68, 0x64, // smhd
-	0x00, 0x00, 0x00, 0x00, // version + flags
-	0x00, 0x00,             // balance = 0
-	0x00, 0x00,             // reserved = 0
+	0x00,                   // version
+	0x00, 0x00, 0x00,       // flags
+	0x00, 0x00,             // balance
+	0x00, 0x00,             // reserved
 };
 
 static const u_char sthd_atom[] = {
-	0x00, 0x00, 0x00, 0x0c, // size
+	0x00, 0x00, 0x00, 0x0c, // size = 12
 	0x73, 0x74, 0x68, 0x64, // sthd
-	0x00, 0x00, 0x00, 0x00, // version + flags
+	0x00,                   // version
+	0x00, 0x00, 0x00,       // flags
 };
 
 static const u_char smpte_tt_stsd_atom[] = {
-	0x00, 0x00, 0x00, 0xff, // size
+	0x00, 0x00, 0x00, 0xff, // size = 255
 	0x73, 0x74, 0x73, 0x64, // stsd
-	0x00, 0x00, 0x00, 0x00, // version + flags
-	0x00, 0x00, 0x00, 0x01, // entry count
+	0x00,                   // version
+	0x00, 0x00, 0x00,       // flags
+	0x00, 0x00, 0x00, 0x01, // entry_count = 1
 
-	0x00, 0x00, 0x00, 0xef, // size
+	0x00, 0x00, 0x00, 0xef, // size = 239
 	0x73, 0x74, 0x70, 0x70, // stpp
 	0x00, 0x00, 0x00, 0x00, // reserved[6]
 	0x00, 0x00,
-	0x00, 0x01,             // data reference index
+	0x00, 0x01,             // data_reference_index = 1
 	0x68, 0x74, 0x74, 0x70, // namespace =
 	0x3a, 0x2f, 0x2f, 0x77, //     http://www.smpte-ra.org/schemas/2052-1/2013/smpte-tt
 	0x77, 0x77, 0x2e, 0x73, //     http://www.w3.org/ns/ttml#parameter
@@ -217,31 +226,35 @@ static const u_char smpte_tt_stsd_atom[] = {
 	0x74, 0x74, 0x3a, 0x73,
 	0x74, 0x79, 0x6c, 0x65,
 	0x00,
-	0x00, // schema location
-	0x00, // auxiliary mime types
+	0x00, // schema_location
+	0x00, // auxiliary_mime_types
 };
 
 static const u_char fixed_stbl_atoms[] = {
-	0x00, 0x00, 0x00, 0x10, // size
+	0x00, 0x00, 0x00, 0x10, // size = 16
 	0x73, 0x74, 0x74, 0x73, // stts
-	0x00, 0x00, 0x00, 0x00, // version + flags
-	0x00, 0x00, 0x00, 0x00, // entry count
+	0x00,                   // version
+	0x00, 0x00, 0x00,       // flags
+	0x00, 0x00, 0x00, 0x00, // entry_count
 
-	0x00, 0x00, 0x00, 0x10, // size
+	0x00, 0x00, 0x00, 0x10, // size = 16
 	0x73, 0x74, 0x73, 0x63, // stsc
-	0x00, 0x00, 0x00, 0x00, // version + flags
-	0x00, 0x00, 0x00, 0x00, // entry count
+	0x00,                   // version
+	0x00, 0x00, 0x00,       // flags
+	0x00, 0x00, 0x00, 0x00, // entry_count
 
-	0x00, 0x00, 0x00, 0x14, // size
+	0x00, 0x00, 0x00, 0x14, // size = 20
 	0x73, 0x74, 0x73, 0x7a, // stsz
-	0x00, 0x00, 0x00, 0x00, // version + flags
-	0x00, 0x00, 0x00, 0x00, // sample size
-	0x00, 0x00, 0x00, 0x00, // sample count
+	0x00,                   // version
+	0x00, 0x00, 0x00,       // flags
+	0x00, 0x00, 0x00, 0x00, // sample_size
+	0x00, 0x00, 0x00, 0x00, // sample_count
 
-	0x00, 0x00, 0x00, 0x10, // size
+	0x00, 0x00, 0x00, 0x10, // size = 16
 	0x73, 0x74, 0x63, 0x6f, // stco
-	0x00, 0x00, 0x00, 0x00, // version + flags
-	0x00, 0x00, 0x00, 0x00, // entry count
+	0x00,                   // version
+	0x00, 0x00, 0x00,       // flags
+	0x00, 0x00, 0x00, 0x00, // entry_count
 };
 // clang-format on
 
@@ -296,12 +309,12 @@ mp4_init_segment_write_trex_atom(u_char* p, uint32_t track_id) {
 	size_t atom_size = ATOM_HEADER_SIZE + sizeof(trex_atom_t);
 
 	write_atom_header(p, atom_size, 't', 'r', 'e', 'x');
-	write_be32(p, 0);        // version + flags
-	write_be32(p, track_id); // track id
-	write_be32(p, 1);        // default sample description index
-	write_be32(p, 0);        // default sample duration
-	write_be32(p, 0);        // default sample size
-	write_be32(p, 0);        // default sample size
+	write_fullbox_header(p, 0, 0);
+	write_be32(p, track_id);
+	write_be32(p, 1); // default_sample_description_index
+	write_be32(p, 0); // default_sample_duration
+	write_be32(p, 0); // default_sample_size
+	write_be32(p, 0); // default_sample_flags
 	return p;
 }
 
@@ -321,18 +334,19 @@ mp4_init_segment_write_matrix(u_char* p, int16_t a, int16_t b, int16_t c, int16_
 
 static u_char*
 mp4_init_segment_write_mvhd_constants(u_char* p) {
-	write_be32(p, 0x00010000);                              // preferred rate, 1.0
-	write_be16(p, 0x0100);                                  // volume, full
+	write_be32(p, 0x10000);                                 // rate = (1.0)
+	write_be16(p, 0x100);                                   // volume = (full)
 	write_be16(p, 0);                                       // reserved
 	write_be32(p, 0);                                       // reserved
 	write_be32(p, 0);                                       // reserved
 	p = mp4_init_segment_write_matrix(p, 1, 0, 0, 1, 0, 0); // matrix
-	write_be32(p, 0);                                       // reserved (preview time)
-	write_be32(p, 0);                                       // reserved (preview duration)
-	write_be32(p, 0);                                       // reserved (poster time)
-	write_be32(p, 0);                                       // reserved (selection time)
-	write_be32(p, 0);                                       // reserved (selection duration)
-	write_be32(p, 0);                                       // reserved (current time)
+	// QuickTime legacy fields
+	write_be32(p, 0); // pre_defined (preview time)
+	write_be32(p, 0); // pre_defined (preview duration)
+	write_be32(p, 0); // pre_defined (poster time)
+	write_be32(p, 0); // pre_defined (selection time)
+	write_be32(p, 0); // pre_defined (selection duration)
+	write_be32(p, 0); // pre_defined (current time)
 	return p;
 }
 
@@ -341,13 +355,13 @@ mp4_init_segment_write_mvhd_atom(u_char* p, uint32_t timescale, uint32_t duratio
 	size_t atom_size = ATOM_HEADER_SIZE + sizeof(mvhd_atom_t);
 
 	write_atom_header(p, atom_size, 'm', 'v', 'h', 'd');
-	write_be32(p, 0);         // version + flags
-	write_be32(p, 0);         // creation time
-	write_be32(p, 0);         // modification time
-	write_be32(p, timescale); // timescale
-	write_be32(p, duration);  // duration
+	write_fullbox_header(p, 0, 0);
+	write_be32(p, 0); // creation_time
+	write_be32(p, 0); // modification_time
+	write_be32(p, timescale);
+	write_be32(p, duration);
 	p = mp4_init_segment_write_mvhd_constants(p);
-	write_be32(p, 0xffffffff); // next track id
+	write_be32(p, 0xffffffff); // next_track_ID
 	return p;
 }
 
@@ -356,13 +370,13 @@ mp4_init_segment_write_mvhd64_atom(u_char* p, uint32_t timescale, uint64_t durat
 	size_t atom_size = ATOM_HEADER_SIZE + sizeof(mvhd64_atom_t);
 
 	write_atom_header(p, atom_size, 'm', 'v', 'h', 'd');
-	write_be32(p, 0x01000000); // version + flags
-	write_be64(p, 0LL);        // creation time
-	write_be64(p, 0LL);        // modification time
-	write_be32(p, timescale);  // timescale
-	write_be64(p, duration);   // duration
+	write_fullbox_header(p, 1, 0);
+	write_be64(p, 0LL); // creation_time
+	write_be64(p, 0LL); // modification_time
+	write_be32(p, timescale);
+	write_be64(p, duration);
 	p = mp4_init_segment_write_mvhd_constants(p);
-	write_be32(p, 0xffffffff); // next track id
+	write_be32(p, 0xffffffff); // next_track_ID
 	return p;
 }
 
@@ -370,7 +384,8 @@ static u_char*
 mp4_init_segment_write_tkhd_trailer(u_char* p, uint32_t media_type, uint16_t width, uint16_t height) {
 	write_be32(p, 0);                                           // reserved
 	write_be32(p, 0);                                           // reserved
-	write_be32(p, 0);                                           // layer / alternate group
+	write_be16(p, 0);                                           // layer
+	write_be16(p, 0);                                           // alternate group
 	write_be16(p, media_type == MEDIA_TYPE_AUDIO ? 0x0100 : 0); // volume
 	write_be16(p, 0);                                           // reserved
 	p = mp4_init_segment_write_matrix(p, 1, 0, 0, 1, 0, 0);     // matrix
@@ -391,12 +406,12 @@ mp4_init_segment_write_tkhd_atom(
 	size_t atom_size = ATOM_HEADER_SIZE + sizeof(tkhd_atom_t);
 
 	write_atom_header(p, atom_size, 't', 'k', 'h', 'd');
-	write_be32(p, 0x00000003); // version + flags
-	write_be32(p, 0);          // creation time
-	write_be32(p, 0);          // modification time
-	write_be32(p, track_id);   // track id
-	write_be32(p, 0);          // reserved
-	write_be32(p, duration);   // duration
+	write_fullbox_header(p, 0, 0x3); // flags = (track-enabled, track-in-movie)
+	write_be32(p, 0);                // creation_time
+	write_be32(p, 0);                // modification_time
+	write_be32(p, track_id);
+	write_be32(p, 0);        // reserved
+	write_be32(p, duration); // duration
 	return mp4_init_segment_write_tkhd_trailer(p, media_type, width, height);
 }
 
@@ -407,12 +422,12 @@ mp4_init_segment_write_tkhd64_atom(
 	size_t atom_size = ATOM_HEADER_SIZE + sizeof(tkhd64_atom_t);
 
 	write_atom_header(p, atom_size, 't', 'k', 'h', 'd');
-	write_be32(p, 0x01000003); // version + flags
-	write_be64(p, 0LL);        // creation time
-	write_be64(p, 0LL);        // modification time
-	write_be32(p, track_id);   // track id
-	write_be32(p, 0);          // reserved
-	write_be64(p, duration);   // duration
+	write_fullbox_header(p, 1, 0x3); // flags = (track-enabled, track-in-movie)
+	write_be64(p, 0LL);              // creation_time
+	write_be64(p, 0LL);              // modification_time
+	write_be32(p, track_id);
+	write_be32(p, 0);        // reserved
+	write_be64(p, duration); // duration
 	return mp4_init_segment_write_tkhd_trailer(p, media_type, width, height);
 }
 
@@ -421,13 +436,13 @@ mp4_init_segment_write_mdhd_atom(u_char* p, uint32_t timescale, uint32_t duratio
 	size_t atom_size = ATOM_HEADER_SIZE + sizeof(mdhd_atom_t);
 
 	write_atom_header(p, atom_size, 'm', 'd', 'h', 'd');
-	write_be32(p, 0);         // version + flags
-	write_be32(p, 0);         // creation time
-	write_be32(p, 0);         // modification time
-	write_be32(p, timescale); // timescale
-	write_be32(p, duration);  // duration
-	write_be16(p, 0);         // language
-	write_be16(p, 0);         // reserved
+	write_fullbox_header(p, 0, 0);
+	write_be32(p, 0); // creation_time
+	write_be32(p, 0); // modification_time
+	write_be32(p, timescale);
+	write_be32(p, duration);
+	write_be16(p, 0); // language
+	write_be16(p, 0); // reserved
 	return p;
 }
 
@@ -436,13 +451,13 @@ mp4_init_segment_write_mdhd64_atom(u_char* p, uint32_t timescale, uint64_t durat
 	size_t atom_size = ATOM_HEADER_SIZE + sizeof(mdhd64_atom_t);
 
 	write_atom_header(p, atom_size, 'm', 'd', 'h', 'd');
-	write_be32(p, 0x01000000); // version + flags
-	write_be64(p, 0LL);        // creation time
-	write_be64(p, 0LL);        // modification time
-	write_be32(p, timescale);  // timescale
-	write_be64(p, duration);   // duration
-	write_be16(p, 0);          // language
-	write_be16(p, 0);          // reserved
+	write_fullbox_header(p, 1, 0);
+	write_be64(p, 0LL); // creation_time
+	write_be64(p, 0LL); // modification_time
+	write_be32(p, timescale);
+	write_be64(p, duration);
+	write_be16(p, 0); // language
+	write_be16(p, 0); // reserved
 	return p;
 }
 
@@ -516,7 +531,7 @@ mp4_init_segment_write_esds_atom(u_char* p, media_info_t* media_info) {
 	size_t atom_size = mp4_esds_atom_size(extra_data_len);
 
 	write_atom_header(p, atom_size, 'e', 's', 'd', 's');
-	write_be32(p, 0); // version + flags
+	write_fullbox_header(p, 0, 0);
 
 	*p++ = MP4ESDescrTag;                                                                // tag
 	*p++ = 3 + 3 * sizeof(descr_header_t) + sizeof(config_descr_t) + extra_data_len + 1; // len
@@ -630,8 +645,8 @@ mp4_init_segment_get_stsd_atom_size(media_track_t* track) {
 static u_char*
 mp4_init_segment_write_stsd_atom(u_char* p, size_t atom_size, media_track_t* track) {
 	write_atom_header(p, atom_size, 's', 't', 's', 'd');
-	write_be32(p, 0); // version + flags
-	write_be32(p, 1); // entries
+	write_fullbox_header(p, 0, 0);
+	write_be32(p, 1); // entry_count
 	switch (track->media_info.media_type) {
 	case MEDIA_TYPE_VIDEO:
 		p = mp4_init_segment_write_stsd_video_entry(p, track);
@@ -1006,8 +1021,8 @@ mp4_init_segment_write_encrypted_stsd(void* ctx, u_char* p) {
 
 	// stsd
 	write_atom_header(p, context->stsd_atom_size, 's', 't', 's', 'd');
-	write_be32(p, 0);                               // version + flags
-	write_be32(p, context->has_clear_lead ? 2 : 1); // entries
+	write_fullbox_header(p, 0, 0);
+	write_be32(p, context->has_clear_lead ? 2 : 1); // entry_count
 
 	// stsd encrypted entry
 	write_be32(p, context->encrypted_stsd_entry_size);                            // size
@@ -1025,49 +1040,52 @@ mp4_init_segment_write_encrypted_stsd(void* ctx, u_char* p) {
 
 	// sinf.schm
 	write_atom_header(p, context->schm_atom_size, 's', 'c', 'h', 'm');
-	write_be32(p, 0);                    // version + flags
-	write_be32(p, context->scheme_type); // scheme type
-	write_be32(p, 0x10000);              // scheme version
+	write_fullbox_header(p, 0, 0);
+	write_be32(p, context->scheme_type); // scheme_type
+	write_be32(p, 0x10000);              // scheme_version
 
 	// sinf.schi
 	write_atom_header(p, context->schi_atom_size, 's', 'c', 'h', 'i');
 
 	// sinf.schi.tenc
 	write_atom_header(p, context->tenc_atom_size, 't', 'e', 'n', 'c');
-	if (context->iv != NULL) {
-		write_be32(p, 0x01000000); // version + flags
-	} else {
-		write_be32(p, 0); // version + flags
-	}
+	write_fullbox_header(p, context->iv != NULL ? 1 : 0, 0);
+
+	// TODO: improve version handling
 
 	switch (context->scheme_type) {
 	case SCHEME_TYPE_CENC:
-		write_be32(p, 0x108); // default is encrypted, iv size = 8
+		// reserved(8), reserved(8), default_IsEncrypted(8) = 1, default_Per_Sample_IV_Size(8) = 8
+		write_be32(p, 0x108);
 		break;
 
 	case SCHEME_TYPE_CBCS:
 		switch (context->media_type) {
 		case MEDIA_TYPE_VIDEO:
-			write_be32(p, 0x190100); // default is encrypted, 1/9 crypt/skip ratio
+			// reserved(8), default_crypt_byte_block(4) = 1, default_skip_byte_block(4) = 9,
+			// default_IsEncrypted(8) = 1, default_Per_Sample_IV_Size(8)
+			write_be32(p, 0x190100);
 			break;
 
 		case MEDIA_TYPE_AUDIO:
-			write_be32(p, 0x000100); // default is encrypted
+			// reserved(8), default_crypt_byte_block(4), default_skip_byte_block(4),
+			// default_IsEncrypted(8) = 1, default_Per_Sample_IV_Size(8)
+			write_be32(p, 0x100);
 			break;
 		}
 		break;
 	}
 
 	if (context->default_kid != NULL) {
-		p = vod_copy(p, context->default_kid, DRM_KID_SIZE); // default key id
+		p = vod_copy(p, context->default_kid, DRM_KID_SIZE);
 	} else {
-		vod_memzero(p, DRM_KID_SIZE);
+		vod_memzero(p, DRM_KID_SIZE); // default_KID
 		p += DRM_KID_SIZE;
 	}
 
 	if (context->iv != NULL) {
-		*p++ = AES_BLOCK_SIZE;                        // default constant iv size
-		p = vod_copy(p, context->iv, AES_BLOCK_SIZE); // default constant iv
+		*p++ = AES_BLOCK_SIZE;                        // default_constant_IV_size
+		p = vod_copy(p, context->iv, AES_BLOCK_SIZE); // default_constant_IV
 	}
 
 	// clear entry
