@@ -42,17 +42,21 @@ typedef struct {
 // globals
 // clang-format off
 static u_char trun_atom[] = {
-	0x00, 0x00, 0x00, 0x10, // size
+	0x00, 0x00, 0x00, 0x10, // size = 16
 	0x74, 0x72, 0x75, 0x6e, // trun
-	0x00, 0x00, 0x00, 0x00, // version + flags
-	0x00, 0x00, 0x00, 0x01, // sample_count
+	0x00,                   // version
+	0x00, 0x00, 0x00,       // flags
+	0x00, 0x00, 0x00, 0x01, // sample_count = 1
 };
 
 static u_char sdtp_atom[] = {
-	0x00, 0x00, 0x00, 0x0d, // size
+	0x00, 0x00, 0x00, 0x0d, // size = 13
 	0x73, 0x64, 0x74, 0x70, // sdtp
-	0x00, 0x00, 0x00, 0x00, // version + flags
-	0x2a                    // sample_depends_on = 2, sample_is_depended_on = 2, sample_has_redundancy = 2
+	0x00,                   // version
+	0x00, 0x00, 0x00,       // flags
+	0x2a // is_leading(2) = 0 (unknown), sample_depends_on(2) = 2 (independent),
+	     // sample_is_depended_on(2) = 2 (disposable), sample_has_redundancy(2) = 2 (non-redundant)
+
 };
 // clang-format on
 
@@ -61,11 +65,11 @@ ttml_write_tfhd_atom(u_char* p, uint32_t default_sample_duration, u_char** defau
 	size_t atom_size = ATOM_HEADER_SIZE + sizeof(ttml_tfhd_atom_t);
 
 	write_atom_header(p, atom_size, 't', 'f', 'h', 'd');
-	write_be32(p, 0x18); // flags - default sample duration, default sample size
-	write_be32(p, 1);    // track id
+	write_fullbox_header(p, 0, 0x18); // flags = (default-sample-duration-present, default-sample-size-present)
+	write_be32(p, 1);                 // track_ID
 	write_be32(p, default_sample_duration);
-	*default_sample_size = p;
-	write_be32(p, 0);
+	*default_sample_size = p; // HACK: sample_size known at later stage
+	write_be32(p, 0);         // default_sample_size
 	return p;
 }
 
@@ -124,9 +128,8 @@ ttml_copy_payload_without_styles(u_char* p, u_char* src, uint32_t len) {
 size_t
 ttml_builder_get_max_size(media_set_t* media_set) {
 	media_track_t* cur_track;
-	size_t result;
+	size_t result = (sizeof(TTML_HEADER) - 1) + (sizeof(TTML_FOOTER) - 1);
 
-	result = (sizeof(TTML_HEADER) - 1) + (sizeof(TTML_FOOTER) - 1);
 	for (cur_track = media_set->filtered_tracks; cur_track < media_set->filtered_tracks_end;
 	     cur_track++) {
 		result += cur_track->total_frames_size + TTML_P_MAX_SIZE * cur_track->frame_count;
@@ -193,29 +196,20 @@ ttml_build_mp4(
 	uint32_t timescale,
 	vod_str_t* result
 ) {
-	size_t traf_atom_size;
-	size_t moof_atom_size;
+	size_t traf_atom_size = ATOM_HEADER_SIZE
+	                      + ATOM_HEADER_SIZE
+	                      + sizeof(ttml_tfhd_atom_t)
+	                      + sizeof(trun_atom)
+	                      + sizeof(sdtp_atom);
+	size_t moof_atom_size = ATOM_HEADER_SIZE + ATOM_HEADER_SIZE + sizeof(mfhd_atom_t) + traf_atom_size;
 	size_t mdat_atom_size;
-	size_t result_size;
-	size_t ttml_size;
+	size_t ttml_size = ttml_builder_get_max_size(media_set);
+	size_t result_size = moof_atom_size
+	                   + ATOM_HEADER_SIZE // mdat
+	                   + ttml_size;
 	u_char* default_sample_size;
 	u_char* mdat_start;
 	u_char* p;
-
-	// get the result size
-	ttml_size = ttml_builder_get_max_size(media_set);
-
-	traf_atom_size = ATOM_HEADER_SIZE
-	               + ATOM_HEADER_SIZE
-	               + sizeof(ttml_tfhd_atom_t)
-	               + sizeof(trun_atom)
-	               + sizeof(sdtp_atom);
-
-	moof_atom_size = ATOM_HEADER_SIZE + ATOM_HEADER_SIZE + sizeof(mfhd_atom_t) + traf_atom_size;
-
-	result_size = moof_atom_size
-	            + ATOM_HEADER_SIZE // mdat
-	            + ttml_size;
 
 	// allocate the buffer
 	p = vod_alloc(request_context->pool, result_size);

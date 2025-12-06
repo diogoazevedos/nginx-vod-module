@@ -71,9 +71,9 @@ mp4_cenc_passthrough_write_saiz_saio(
 
 	// moof.traf.saiz
 	write_atom_header(p, context->saiz_atom_size, 's', 'a', 'i', 'z');
-	write_be32(p, 0); // version, flags
-	*p++ = context->default_auxiliary_sample_size;
-	write_be32(p, sequence->total_frame_count);
+	write_fullbox_header(p, 0, 0);
+	*p++ = context->default_auxiliary_sample_size; // default_sample_info_size
+	write_be32(p, sequence->total_frame_count);    // sample_count
 	if (context->default_auxiliary_sample_size == 0) {
 		for (cur_clip = sequence->filtered_clips; cur_clip < sequence->filtered_clips_end; cur_clip++) {
 			cur_track = cur_clip->first_track;
@@ -83,8 +83,8 @@ mp4_cenc_passthrough_write_saiz_saio(
 
 	// moof.traf.saio
 	write_atom_header(p, context->saio_atom_size, 's', 'a', 'i', 'o');
-	write_be32(p, 0); // version, flags
-	write_be32(p, 1); // entry count
+	write_fullbox_header(p, 0, 0);
+	write_be32(p, 1); // entry_count
 	write_be32(p, auxiliary_data_offset);
 
 	return p;

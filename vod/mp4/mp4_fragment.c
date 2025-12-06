@@ -1,35 +1,34 @@
 #include "mp4_fragment.h"
 #include "mp4_defs.h"
+#include "mp4_write_stream.h"
 
 // content types
 static u_char mp4_video_content_type[] = "video/mp4";
 static u_char mp4_audio_content_type[] = "audio/mp4";
 
 u_char*
-mp4_fragment_write_mfhd_atom(u_char* p, uint32_t segment_index) {
+mp4_fragment_write_mfhd_atom(u_char* p, uint32_t sequence_number) {
 	size_t atom_size = ATOM_HEADER_SIZE + sizeof(mfhd_atom_t);
 
 	write_atom_header(p, atom_size, 'm', 'f', 'h', 'd');
-	write_be32(p, 0);
-	write_be32(p, segment_index);
+	write_fullbox_header(p, 0, 0);
+	write_be32(p, sequence_number);
 	return p;
 }
 
 u_char*
 mp4_fragment_write_tfhd_atom(u_char* p, uint32_t track_id, uint32_t sample_description_index) {
-	size_t atom_size;
-	uint32_t flags;
+	size_t atom_size = ATOM_HEADER_SIZE + sizeof(tfhd_atom_t);
+	uint32_t flags = 0x20000; // default-base-is-moof
 
-	flags = 0x020000; // default-base-is-moof
-	atom_size = ATOM_HEADER_SIZE + sizeof(tfhd_atom_t);
 	if (sample_description_index > 0) {
-		flags |= 0x02; // sample-description-index-present
+		flags |= 0x2; // sample-description-index-present
 		atom_size += sizeof(uint32_t);
 	}
 
 	write_atom_header(p, atom_size, 't', 'f', 'h', 'd');
-	write_be32(p, flags);    // flags
-	write_be32(p, track_id); // track id
+	write_fullbox_header(p, 0, flags);
+	write_be32(p, track_id);
 	if (sample_description_index > 0) {
 		write_be32(p, sample_description_index);
 	}
@@ -37,22 +36,22 @@ mp4_fragment_write_tfhd_atom(u_char* p, uint32_t track_id, uint32_t sample_descr
 }
 
 u_char*
-mp4_fragment_write_tfdt_atom(u_char* p, uint32_t earliest_pres_time) {
+mp4_fragment_write_tfdt_atom(u_char* p, uint32_t base_media_decode_time) {
 	size_t atom_size = ATOM_HEADER_SIZE + sizeof(tfdt_atom_t);
 
 	write_atom_header(p, atom_size, 't', 'f', 'd', 't');
-	write_be32(p, 0);
-	write_be32(p, earliest_pres_time);
+	write_fullbox_header(p, 0, 0);
+	write_be32(p, base_media_decode_time);
 	return p;
 }
 
 u_char*
-mp4_fragment_write_tfdt64_atom(u_char* p, uint64_t earliest_pres_time) {
+mp4_fragment_write_tfdt64_atom(u_char* p, uint64_t base_media_decode_time) {
 	size_t atom_size = ATOM_HEADER_SIZE + sizeof(tfdt64_atom_t);
 
 	write_atom_header(p, atom_size, 't', 'f', 'd', 't');
-	write_be32(p, 0x01000000); // version = 1
-	write_be64(p, earliest_pres_time);
+	write_fullbox_header(p, 1, 0);
+	write_be64(p, base_media_decode_time);
 	return p;
 }
 
@@ -79,19 +78,14 @@ mp4_fragment_write_video_trun_atom(u_char* p, media_sequence_t* sequence, uint32
 	input_frame_t* last_frame;
 	uint32_t initial_pts_delay = 0;
 	int32_t pts_delay;
-	size_t atom_size;
-
-	atom_size = ATOM_HEADER_SIZE
-	          + sizeof(trun_atom_t)
-	          + sequence->total_frame_count * sizeof(trun_video_frame_t);
+	size_t atom_size = ATOM_HEADER_SIZE
+	                 + sizeof(trun_atom_t)
+	                 + sequence->total_frame_count * sizeof(trun_video_frame_t);
 
 	write_atom_header(p, atom_size, 't', 'r', 'u', 'n');
-
-	// version = 1, flags = data offset, duration, size, key, delay
-	write_be32(p, (1 << 24) | TRUN_VIDEO_FLAGS);
-
-	write_be32(p, sequence->total_frame_count);
-	write_be32(p, first_frame_offset); // first frame offset relative to moof start offset
+	write_fullbox_header(p, 1, TRUN_VIDEO_FLAGS); // version = 1 (signed sample_composition_time_offset)
+	write_be32(p, sequence->total_frame_count); // sample_count
+	write_be32(p, first_frame_offset); // data_offset = (first frame relative to moof start offset)
 
 	for (cur_clip = sequence->filtered_clips; cur_clip < sequence->filtered_clips_end; cur_clip++) {
 		initial_pts_delay = cur_clip->first_track->media_info.u.video.initial_pts_delay;
@@ -108,15 +102,15 @@ mp4_fragment_write_video_trun_atom(u_char* p, media_sequence_t* sequence, uint32
 				last_frame = part->last_frame;
 			}
 
-			write_be32(p, cur_frame->duration);
-			write_be32(p, cur_frame->size);
+			write_be32(p, cur_frame->duration); // sample_duration
+			write_be32(p, cur_frame->size);     // sample_size
 			if (cur_frame->key_frame) {
-				write_be32(p, 0x00000000);
+				write_be32(p, 0); // sample_flags = (key frame)
 			} else {
-				write_be32(p, 0x00010000);
+				write_be32(p, 0x10000); // sample_flags = (non-key frame)
 			}
 			pts_delay = cur_frame->pts_delay - initial_pts_delay;
-			write_be32(p, pts_delay);
+			write_be32(p, pts_delay); // sample_composition_time_offset
 		}
 	}
 	return p;
@@ -128,16 +122,14 @@ mp4_fragment_write_audio_trun_atom(u_char* p, media_sequence_t* sequence, uint32
 	frame_list_part_t* part;
 	input_frame_t* cur_frame;
 	input_frame_t* last_frame;
-	size_t atom_size;
-
-	atom_size = ATOM_HEADER_SIZE
-	          + sizeof(trun_atom_t)
-	          + sequence->total_frame_count * sizeof(trun_audio_frame_t);
+	size_t atom_size = ATOM_HEADER_SIZE
+	                 + sizeof(trun_atom_t)
+	                 + sequence->total_frame_count * sizeof(trun_audio_frame_t);
 
 	write_atom_header(p, atom_size, 't', 'r', 'u', 'n');
-	write_be32(p, TRUN_AUDIO_FLAGS); // flags = data offset, duration, size
-	write_be32(p, sequence->total_frame_count);
-	write_be32(p, first_frame_offset); // first frame offset relative to moof start offset
+	write_fullbox_header(p, 0, TRUN_AUDIO_FLAGS);
+	write_be32(p, sequence->total_frame_count); // sample_count
+	write_be32(p, first_frame_offset); // data_offset = (first frame relative to moof start offset)
 
 	for (cur_clip = sequence->filtered_clips; cur_clip < sequence->filtered_clips_end; cur_clip++) {
 		part = &cur_clip->first_track->frames;
@@ -152,8 +144,8 @@ mp4_fragment_write_audio_trun_atom(u_char* p, media_sequence_t* sequence, uint32
 				last_frame = part->last_frame;
 			}
 
-			write_be32(p, cur_frame->duration);
-			write_be32(p, cur_frame->size);
+			write_be32(p, cur_frame->duration); // sample_duration
+			write_be32(p, cur_frame->size);     // sample_size
 		}
 	}
 	return p;
@@ -167,13 +159,13 @@ mp4_fragment_write_subtitle_trun_atom(
 
 	atom_size = ATOM_HEADER_SIZE + sizeof(trun_atom_t) + sizeof(trun_audio_frame_t);
 	write_atom_header(p, atom_size, 't', 'r', 'u', 'n');
-	write_be32(p, TRUN_AUDIO_FLAGS); // flags = data offset, duration, size
-	write_be32(p, 1);                // sample count = 1
-	write_be32(p, first_frame_offset);
+	write_fullbox_header(p, 0, TRUN_AUDIO_FLAGS);
+	write_be32(p, 1);                  // sample_count = 1
+	write_be32(p, first_frame_offset); // data_offset = (first frame relative to moof start offset)
 
-	write_be32(p, duration);
-	*sample_size = p;
-	write_be32(p, 0);
+	write_be32(p, duration); // sample_duration
+	*sample_size = p;        // HACK: sample_size known at later stage
+	write_be32(p, 0);        // sample_size
 
 	return p;
 }

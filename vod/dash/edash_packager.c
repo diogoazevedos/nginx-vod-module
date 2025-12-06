@@ -217,7 +217,7 @@ edash_packager_video_write_encryption_atoms(void* context, u_char* p, size_t mda
 
 	// senc
 	write_atom_header(p, senc_atom_size, 's', 'e', 'n', 'c');
-	write_be32(p, 0x2); // flags
+	write_fullbox_header(p, 0, 0x2); // flags = (use_subsample_encryption)
 	write_be32(p, state->base.sequence->total_frame_count);
 	p = vod_copy(p, state->auxiliary_data.start, senc_data_size);
 
@@ -268,7 +268,7 @@ edash_packager_audio_write_encryption_atoms(void* context, u_char* p, size_t mda
 
 	// senc
 	write_atom_header(p, senc_atom_size, 's', 'e', 'n', 'c');
-	write_be32(p, 0x0); // flags
+	write_fullbox_header(p, 0, 0);
 	write_be32(p, state->sequence->total_frame_count);
 	p = mp4_cenc_encrypt_audio_write_auxiliary_data(state, p);
 
@@ -326,17 +326,14 @@ edash_packager_passthrough_write_encryption_atoms(void* ctx, u_char* p, size_t m
 	media_clip_filtered_t* cur_clip;
 	media_sequence_t* sequence = context->sequence;
 	media_track_t* cur_track;
-	size_t senc_atom_size;
-	uint32_t flags;
+	size_t senc_atom_size = ATOM_HEADER_SIZE + sizeof(senc_atom_t) + context->auxiliary_info_size;
 
 	// saiz / saio
 	p = mp4_cenc_passthrough_write_saiz_saio(ctx, p, mdat_atom_start - context->auxiliary_info_size);
 
 	// senc
-	senc_atom_size = ATOM_HEADER_SIZE + sizeof(senc_atom_t) + context->auxiliary_info_size;
 	write_atom_header(p, senc_atom_size, 's', 'e', 'n', 'c');
-	flags = context->use_subsamples ? 0x2 : 0x0;
-	write_be32(p, flags); // flags
+	write_fullbox_header(p, 0, context->use_subsamples ? 0x2 : 0); // flags = (use_subsample_encryption | 0)
 	write_be32(p, sequence->total_frame_count);
 	for (cur_clip = sequence->filtered_clips; cur_clip < sequence->filtered_clips_end; cur_clip++) {
 		cur_track = cur_clip->first_track;
