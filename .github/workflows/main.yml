@@ -59,7 +59,7 @@ jobs:
           make -j$(nproc)
           sudo make install
       - run: sudo ldconfig
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           path: nginx-vod-module
       - run: curl -sL https://nginx.org/download/nginx-${{ matrix.nginx-version }}.tar.gz | tar -xz --strip-components 1 -C nginx
