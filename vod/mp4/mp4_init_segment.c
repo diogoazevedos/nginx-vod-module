@@ -410,8 +410,8 @@ mp4_init_segment_write_tkhd_atom(
 	write_be32(p, 0);                // creation_time
 	write_be32(p, 0);                // modification_time
 	write_be32(p, track_id);
-	write_be32(p, 0);        // reserved
-	write_be32(p, duration); // duration
+	write_be32(p, 0); // reserved
+	write_be32(p, duration);
 	return mp4_init_segment_write_tkhd_trailer(p, media_type, width, height);
 }
 
@@ -426,8 +426,8 @@ mp4_init_segment_write_tkhd64_atom(
 	write_be64(p, 0LL);              // creation_time
 	write_be64(p, 0LL);              // modification_time
 	write_be32(p, track_id);
-	write_be32(p, 0);        // reserved
-	write_be64(p, duration); // duration
+	write_be32(p, 0); // reserved
+	write_be64(p, duration);
 	return mp4_init_segment_write_tkhd_trailer(p, media_type, width, height);
 }
 
