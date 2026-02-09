@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1-labs
 
-FROM alpine:3.23.2 AS build
+FROM alpine:3.23.3 AS build
 
 ARG NGINX_VERSION=1.29.4
 
@@ -47,7 +47,7 @@ RUN /nginx-vod-module/scripts/build_basic.sh \
 		--with-cc-opt='-O0' \
 	&& make install
 
-FROM alpine:3.23.2
+FROM alpine:3.23.3
 
 LABEL maintainer="Diogo Azevedo <diogoazevedos@gmail.com>"
 
