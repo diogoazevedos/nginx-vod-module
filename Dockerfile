@@ -2,7 +2,7 @@
 
 FROM alpine:3.23.3 AS build
 
-ARG NGINX_VERSION=1.29.4
+ARG NGINX_VERSION=1.29.5
 
 RUN apk --no-cache add \
 		build-base \
