@@ -20,7 +20,7 @@ jobs:
       fail-fast: false
       matrix:
         nginx-version:
-          - 1.28.0
+          - 1.28.2
           - 1.29.2
         ffmpeg-version:
           - null
