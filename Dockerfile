@@ -2,6 +2,7 @@
 
 FROM alpine:3.23.3 AS build
 
+ARG FFMPEG_VERSION=8.0.1
 ARG NGINX_VERSION=1.29.5
 
 RUN apk --no-cache add \
@@ -9,11 +10,38 @@ RUN apk --no-cache add \
 		linux-headers \
 		zlib-dev \
 		pcre2-dev \
-		ffmpeg-dev \
+		libxml2-dev \
+		nasm \
 		fdk-aac-dev \
 		openssl-dev \
-	&& mkdir /nginx \
+	&& mkdir /ffmpeg /nginx \
+	&& wget -qO- https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.gz | tar -xz --strip-components 1 -C /ffmpeg \
 	&& wget -qO- https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz | tar -xz --strip-components 1 -C /nginx
+
+WORKDIR /ffmpeg
+
+RUN ./configure \
+		--prefix=/opt/ffmpeg \
+		--disable-programs \
+		--disable-doc \
+		--disable-static \
+		--disable-avdevice \
+		--disable-avformat \
+		--enable-shared \
+		--enable-gpl \
+		--enable-nonfree \
+		--enable-libfdk-aac \
+		--disable-everything \
+		--enable-filters \
+		--enable-decoder=h264 \
+		--enable-decoder=hevc \
+		--enable-decoder=vp8 \
+		--enable-decoder=vp9 \
+		--enable-decoder=av1 \
+		--enable-decoder=aac --enable-encoder=libfdk_aac \
+		--enable-encoder=mjpeg \
+	&& make -j$(nproc) \
+	&& make install
 
 COPY --exclude=sample . /nginx-vod-module
 
@@ -44,7 +72,8 @@ RUN /nginx-vod-module/scripts/build_basic.sh \
 		--with-debug \
 		--with-http_stub_status_module \
 		--add-module=/nginx-vod-module \
-		--with-cc-opt='-O0' \
+		--with-cc-opt='-O0 -I/opt/ffmpeg/include' \
+		--with-ld-opt='-L/opt/ffmpeg/lib -Wl,-rpath,/opt/ffmpeg/lib' \
 	&& make install
 
 FROM alpine:3.23.3
@@ -54,12 +83,13 @@ LABEL maintainer="Diogo Azevedo <diogoazevedos@gmail.com>"
 RUN apk --no-cache add \
 		zlib \
 		pcre2 \
-		ffmpeg \
+		libxml2 \
 		fdk-aac \
 		openssl \
 		ca-certificates \
 	&& mkdir /var/spool/nginx
 
+COPY --from=build /opt/ffmpeg/lib /opt/ffmpeg/lib
 COPY --from=build /opt/nginx /opt/nginx
 COPY sample/* /opt/nginx/conf/
 COPY static/* /opt/nginx/html/
