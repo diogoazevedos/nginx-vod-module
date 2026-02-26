@@ -367,9 +367,7 @@ avc_parser_pic_parameter_set_rbsp(avc_hevc_parse_ctx_t* ctx, bit_reader_state_t*
 				bit_read_stream_skip_unsigned_exp(reader); // top_left[ group ]
 				bit_read_stream_skip_unsigned_exp(reader); // bottom_right[ group ]
 			}
-		} else if (pps->slice_group_map_type == 3
-		           || pps->slice_group_map_type == 4
-		           || pps->slice_group_map_type == 5) {
+		} else if (pps->slice_group_map_type == 3 || pps->slice_group_map_type == 4 || pps->slice_group_map_type == 5) {
 			bit_read_stream_get_one(reader); // slice_group_change_direction_flag
 			pps->slice_group_change_rate = bit_read_stream_get_unsigned_exp(reader) + 1;
 		} else if (pps->slice_group_map_type == 6) {

@@ -380,8 +380,10 @@ media_set_parse_source_type(void* ctx, vod_json_value_t* value, void* dest) {
 	if (value->v.str.len == sizeof("file") - 1
 	    && vod_strncasecmp(value->v.str.data, (u_char*)"file", sizeof("file") - 1) == 0) {
 		*(media_clip_source_type_t*)dest = MEDIA_CLIP_SOURCE_FILE;
-	} else if (value->v.str.len == sizeof("http") - 1
-	           && vod_strncasecmp(value->v.str.data, (u_char*)"http", sizeof("http") - 1) == 0) {
+	} else if (
+		value->v.str.len == sizeof("http") - 1
+		&& vod_strncasecmp(value->v.str.data, (u_char*)"http", sizeof("http") - 1) == 0
+	) {
 		*(media_clip_source_type_t*)dest = MEDIA_CLIP_SOURCE_HTTP;
 	} else {
 		vod_log_error(
@@ -2509,12 +2511,14 @@ media_set_parse_json(
 				   playlist_type_event.len
 			   ) == 0) {
 			result->is_live_event = TRUE;
-		} else if (params[MEDIA_SET_PARAM_PLAYLIST_TYPE]->v.str.len != playlist_type_live.len
-		           || vod_strncasecmp(
-						  params[MEDIA_SET_PARAM_PLAYLIST_TYPE]->v.str.data,
-						  playlist_type_live.data,
-						  playlist_type_live.len
-					  ) != 0) {
+		} else if (
+			params[MEDIA_SET_PARAM_PLAYLIST_TYPE]->v.str.len != playlist_type_live.len
+			|| vod_strncasecmp(
+				   params[MEDIA_SET_PARAM_PLAYLIST_TYPE]->v.str.data,
+				   playlist_type_live.data,
+				   playlist_type_live.len
+			   ) != 0
+		) {
 			vod_log_error(
 				VOD_LOG_ERR,
 				request_context->log,
@@ -2600,8 +2604,10 @@ media_set_parse_json(
 
 		if (last_clip_end > source->clip_to) {
 			result->presentation_end = TRUE;
-		} else if (params[MEDIA_SET_PARAM_PRESENTATION_END_TIME] != NULL
-		           && params[MEDIA_SET_PARAM_PRESENTATION_END_TIME]->v.num.num <= current_time) {
+		} else if (
+			params[MEDIA_SET_PARAM_PRESENTATION_END_TIME] != NULL
+			&& params[MEDIA_SET_PARAM_PRESENTATION_END_TIME]->v.num.num <= current_time
+		) {
 			result->presentation_end = TRUE;
 		} else {
 			if (params[MEDIA_SET_PARAM_EXPIRATION_TIME] != NULL

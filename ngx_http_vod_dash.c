@@ -629,54 +629,42 @@ ngx_http_vod_dash_parse_uri_file_name(
 		flags = PARSE_FILE_NAME_EXPECT_SEGMENT_INDEX;
 	}
 	// init segment
-	else if (ngx_http_vod_match_prefix_postfix(
-				 start_pos, end_pos, &conf->dash.mpd_config.init_file_name_prefix, init_segment_file_ext
-			 )) {
+	else if (ngx_http_vod_match_prefix_postfix(start_pos, end_pos, &conf->dash.mpd_config.init_file_name_prefix, init_segment_file_ext)) {
 		start_pos += conf->dash.mpd_config.init_file_name_prefix.len;
 		end_pos -= sizeof(init_segment_file_ext) - 1;
 		*request = &dash_mp4_init_request;
 		flags = PARSE_FILE_NAME_ALLOW_CLIP_INDEX;
 	}
 	// webm fragment
-	else if (ngx_http_vod_match_prefix_postfix(
-				 start_pos, end_pos, &conf->dash.mpd_config.fragment_file_name_prefix, webm_file_ext
-			 )) {
+	else if (ngx_http_vod_match_prefix_postfix(start_pos, end_pos, &conf->dash.mpd_config.fragment_file_name_prefix, webm_file_ext)) {
 		start_pos += conf->dash.mpd_config.fragment_file_name_prefix.len;
 		end_pos -= sizeof(webm_file_ext) - 1;
 		*request = &dash_webm_fragment_request;
 		flags = PARSE_FILE_NAME_EXPECT_SEGMENT_INDEX;
 	}
 	// webm init segment
-	else if (ngx_http_vod_match_prefix_postfix(
-				 start_pos, end_pos, &conf->dash.mpd_config.init_file_name_prefix, webm_file_ext
-			 )) {
+	else if (ngx_http_vod_match_prefix_postfix(start_pos, end_pos, &conf->dash.mpd_config.init_file_name_prefix, webm_file_ext)) {
 		start_pos += conf->dash.mpd_config.init_file_name_prefix.len;
 		end_pos -= sizeof(webm_file_ext) - 1;
 		*request = &dash_webm_init_request;
 		flags = PARSE_FILE_NAME_ALLOW_CLIP_INDEX;
 	}
 	// manifest
-	else if (ngx_http_vod_match_prefix_postfix(
-				 start_pos, end_pos, &conf->dash.manifest_file_name_prefix, manifest_file_ext
-			 )) {
+	else if (ngx_http_vod_match_prefix_postfix(start_pos, end_pos, &conf->dash.manifest_file_name_prefix, manifest_file_ext)) {
 		start_pos += conf->dash.manifest_file_name_prefix.len;
 		end_pos -= sizeof(manifest_file_ext) - 1;
 		*request = &dash_manifest_request;
 		flags = PARSE_FILE_NAME_MULTI_STREAMS_PER_TYPE;
 	}
 	// smpte fragment
-	else if (ngx_http_vod_match_prefix_postfix(
-				 start_pos, end_pos, &conf->dash.mpd_config.fragment_file_name_prefix, ttml_file_ext
-			 )) {
+	else if (ngx_http_vod_match_prefix_postfix(start_pos, end_pos, &conf->dash.mpd_config.fragment_file_name_prefix, ttml_file_ext)) {
 		start_pos += conf->dash.mpd_config.fragment_file_name_prefix.len;
 		end_pos -= sizeof(ttml_file_ext) - 1;
 		*request = &dash_ttml_request;
 		flags = PARSE_FILE_NAME_EXPECT_SEGMENT_INDEX;
 	}
 	// webvtt file
-	else if (ngx_http_vod_match_prefix_postfix(
-				 start_pos, end_pos, &conf->dash.mpd_config.subtitle_file_name_prefix, vtt_file_ext
-			 )) {
+	else if (ngx_http_vod_match_prefix_postfix(start_pos, end_pos, &conf->dash.mpd_config.subtitle_file_name_prefix, vtt_file_ext)) {
 		start_pos += conf->dash.mpd_config.subtitle_file_name_prefix.len;
 		end_pos -= sizeof(vtt_file_ext) - 1;
 		*request = &dash_webvtt_file_request;

@@ -1098,9 +1098,7 @@ ngx_http_vod_hls_parse_uri_file_name(
 		flags = PARSE_FILE_NAME_EXPECT_SEGMENT_INDEX;
 	}
 	// fmp4 segment
-	else if (ngx_http_vod_match_prefix_postfix(
-				 start_pos, end_pos, &conf->hls.m3u8_config.segment_file_name_prefix, m4s_file_ext
-			 )) {
+	else if (ngx_http_vod_match_prefix_postfix(start_pos, end_pos, &conf->hls.m3u8_config.segment_file_name_prefix, m4s_file_ext)) {
 		start_pos += conf->hls.m3u8_config.segment_file_name_prefix.len;
 		end_pos -= sizeof(m4s_file_ext) - 1;
 
@@ -1121,9 +1119,7 @@ ngx_http_vod_hls_parse_uri_file_name(
 		flags = PARSE_FILE_NAME_EXPECT_SEGMENT_INDEX;
 	}
 	// vtt segment
-	else if (ngx_http_vod_match_prefix_postfix(
-				 start_pos, end_pos, &conf->hls.m3u8_config.segment_file_name_prefix, vtt_file_ext
-			 )) {
+	else if (ngx_http_vod_match_prefix_postfix(start_pos, end_pos, &conf->hls.m3u8_config.segment_file_name_prefix, vtt_file_ext)) {
 		start_pos += conf->hls.m3u8_config.segment_file_name_prefix.len;
 		end_pos -= sizeof(vtt_file_ext) - 1;
 		*request = &hls_vtt_segment_request;
@@ -1138,9 +1134,7 @@ ngx_http_vod_hls_parse_uri_file_name(
 			*request = &hls_index_request;
 			start_pos += conf->hls.m3u8_config.index_file_name_prefix.len;
 			flags = 0;
-		} else if (ngx_http_vod_starts_with(
-					   start_pos, end_pos, &conf->hls.m3u8_config.iframes_file_name_prefix
-				   )) {
+		} else if (ngx_http_vod_starts_with(start_pos, end_pos, &conf->hls.m3u8_config.iframes_file_name_prefix)) {
 			*request = &hls_iframes_request;
 			start_pos += conf->hls.m3u8_config.iframes_file_name_prefix.len;
 			flags = 0;
@@ -1156,9 +1150,7 @@ ngx_http_vod_hls_parse_uri_file_name(
 		}
 	}
 	// init segment
-	else if (ngx_http_vod_match_prefix_postfix(
-				 start_pos, end_pos, &conf->hls.m3u8_config.init_file_name_prefix, mp4_file_ext
-			 )) {
+	else if (ngx_http_vod_match_prefix_postfix(start_pos, end_pos, &conf->hls.m3u8_config.init_file_name_prefix, mp4_file_ext)) {
 		start_pos += conf->hls.m3u8_config.init_file_name_prefix.len;
 		end_pos -= sizeof(mp4_file_ext) - 1;
 		*request = &hls_mp4_init_request;
