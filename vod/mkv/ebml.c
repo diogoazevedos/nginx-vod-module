@@ -36,7 +36,7 @@ static const uint64_t ebml_max_sizes[] = {
 	8,          // float
 	0x1000000,  // string - 16MB
 	0x10000000, // binary - 256MB
-	0           // master
+	0,          // master
 };
 
 static ebml_spec_t ebml_header[] = {
@@ -45,11 +45,12 @@ static ebml_spec_t ebml_header[] = {
 	{EBML_ID_EBMLMAXIDLENGTH, EBML_UINT, offsetof(ebml_header_t, id_length), NULL},
 	{EBML_ID_DOCTYPE, EBML_STRING, offsetof(ebml_header_t, doctype), NULL},
 	{EBML_ID_DOCTYPEREADVERSION, EBML_UINT, offsetof(ebml_header_t, doctype_version), NULL},
-	{0, EBML_NONE, 0, NULL}
+	{0, EBML_NONE, 0, NULL},
 };
 
 static ebml_spec_t ebml_syntax[] = {
-	{EBML_ID_HEADER, EBML_MASTER, 0, ebml_header}, {0, EBML_NONE, 0, NULL}
+	{EBML_ID_HEADER, EBML_MASTER, 0, ebml_header},
+	{0, EBML_NONE, 0, NULL},
 };
 
 vod_status_t

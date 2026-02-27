@@ -21,5 +21,5 @@ mkv_codec_type_t mkv_codec_types[] = {
 	{vod_string("A_DTS"), VOD_CODEC_ID_DTS, 0, TRUE},
 	{vod_string("A_FLAC"), VOD_CODEC_ID_FLAC, FORMAT_FLAC, TRUE},
 
-	{vod_null_string, 0, 0, FALSE}
+	{vod_null_string, 0, 0, FALSE},
 };

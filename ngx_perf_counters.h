@@ -69,7 +69,7 @@ enum {
 #include "ngx_perf_counters_x.h"
 #undef PC
 
-	PC_COUNT
+	PC_COUNT,
 };
 
 typedef struct {

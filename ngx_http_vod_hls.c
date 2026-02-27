@@ -59,14 +59,14 @@ ngx_conf_enum_t hls_encryption_methods[] = {
 	{ngx_string("none"), HLS_ENC_NONE},
 	{ngx_string("sample-aes"), HLS_ENC_SAMPLE_AES},
 	{ngx_string("sample-aes-ctr"), HLS_ENC_SAMPLE_AES_CTR},
-	{ngx_null_string, 0}
+	{ngx_null_string, 0},
 };
 
 ngx_conf_enum_t hls_container_formats[] = {
 	{ngx_string("auto"), HLS_CONTAINER_AUTO},
 	{ngx_string("mpegts"), HLS_CONTAINER_MPEGTS},
 	{ngx_string("fmp4"), HLS_CONTAINER_FMP4},
-	{ngx_null_string, 0}
+	{ngx_null_string, 0},
 };
 
 static ngx_uint_t

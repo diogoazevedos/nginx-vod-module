@@ -10,14 +10,14 @@ enum {
 	RATE_FILTER_PARAM_RATE,
 	RATE_FILTER_PARAM_SOURCE,
 
-	RATE_FILTER_PARAM_COUNT
+	RATE_FILTER_PARAM_COUNT,
 };
 
 // constants
 static json_object_key_def_t rate_filter_params[] = {
 	{vod_string("rate"), VOD_JSON_FRAC, RATE_FILTER_PARAM_RATE},
 	{vod_string("source"), VOD_JSON_OBJECT, RATE_FILTER_PARAM_SOURCE},
-	{vod_null_string, 0, 0}
+	{vod_null_string, 0, 0},
 };
 
 // globals

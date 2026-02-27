@@ -764,7 +764,9 @@ ngx_http_vod_status(ngx_conf_t* cf, ngx_command_t* cmd, void* conf) {
 }
 
 static ngx_conf_enum_t manifest_duration_policies[] = {
-	{ngx_string("max"), MDP_MAX}, {ngx_string("min"), MDP_MIN}, {ngx_null_string, 0}
+	{ngx_string("max"), MDP_MAX},
+	{ngx_string("min"), MDP_MIN},
+	{ngx_null_string, 0},
 };
 
 ngx_command_t ngx_http_vod_commands[] = {
@@ -1299,7 +1301,7 @@ ngx_command_t ngx_http_vod_commands[] = {
 #include "ngx_http_vod_volume_map_commands.h"
 #endif // NGX_HAVE_LIB_AV_CODEC
 
-	ngx_null_command
+	ngx_null_command,
 };
 
 ngx_http_module_t ngx_http_vod_module_ctx = {
@@ -1313,5 +1315,5 @@ ngx_http_module_t ngx_http_vod_module_ctx = {
 	NULL, // merge server configuration
 
 	ngx_http_vod_create_loc_conf, // create location configuration
-	ngx_http_vod_merge_loc_conf   // merge location configuration
+	ngx_http_vod_merge_loc_conf,  // merge location configuration
 };

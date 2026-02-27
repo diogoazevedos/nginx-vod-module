@@ -186,15 +186,17 @@ static const relevant_atom_t relevant_atoms_mdia[] = {
 	{ATOM_NAME_MINF, 0, relevant_atoms_minf},
 	{ATOM_NAME_HDLR, offsetof(trak_atom_infos_t, hdlr), NULL},
 	{ATOM_NAME_MDHD, offsetof(trak_atom_infos_t, mdhd), NULL},
-	{ATOM_NAME_NULL, 0, NULL}
+	{ATOM_NAME_NULL, 0, NULL},
 };
 
 static const relevant_atom_t relevant_atoms_edts[] = {
-	{ATOM_NAME_ELST, offsetof(trak_atom_infos_t, elst), NULL}, {ATOM_NAME_NULL, 0, NULL}
+	{ATOM_NAME_ELST, offsetof(trak_atom_infos_t, elst), NULL},
+	{ATOM_NAME_NULL, 0, NULL},
 };
 
 static const relevant_atom_t relevant_atoms_udta[] = {
-	{ATOM_NAME_NAME, offsetof(trak_atom_infos_t, udta_name), NULL}, {ATOM_NAME_NULL, 0, NULL}
+	{ATOM_NAME_NAME, offsetof(trak_atom_infos_t, udta_name), NULL},
+	{ATOM_NAME_NULL, 0, NULL},
 };
 
 static const relevant_atom_t relevant_atoms_trak[] = {
@@ -203,7 +205,7 @@ static const relevant_atom_t relevant_atoms_trak[] = {
 	{ATOM_NAME_TKHD, offsetof(trak_atom_infos_t, tkhd), NULL},
 	{ATOM_NAME_SENC, offsetof(trak_atom_infos_t, senc), NULL},
 	{ATOM_NAME_UDTA, 0, relevant_atoms_udta},
-	{ATOM_NAME_NULL, 0, NULL}
+	{ATOM_NAME_NULL, 0, NULL},
 };
 
 typedef struct {
@@ -224,11 +226,12 @@ typedef struct {
 static const relevant_atom_t relevant_atoms_cmov[] = {
 	{ATOM_NAME_DCOM, offsetof(moov_atom_infos_t, dcom), NULL},
 	{ATOM_NAME_CMVD, offsetof(moov_atom_infos_t, cmvd), NULL},
-	{ATOM_NAME_NULL, 0, NULL}
+	{ATOM_NAME_NULL, 0, NULL},
 };
 
 static const relevant_atom_t relevant_atoms_moov[] = {
-	{ATOM_NAME_CMOV, 0, relevant_atoms_cmov}, {ATOM_NAME_NULL, 0, NULL}
+	{ATOM_NAME_CMOV, 0, relevant_atoms_cmov},
+	{ATOM_NAME_NULL, 0, NULL},
 };
 
 // implementation
@@ -2095,7 +2098,7 @@ mp4_parser_get_ac3_channel_layout(uint8_t acmod, uint8_t lfeon, uint16_t chan_lo
 		VOD_CH_LAYOUT_2_1,
 		VOD_CH_LAYOUT_4POINT0,
 		VOD_CH_LAYOUT_2_2,
-		VOD_CH_LAYOUT_5POINT0
+		VOD_CH_LAYOUT_5POINT0,
 	};
 
 	static uint64_t lfeon_channel_layout[] = {0, VOD_CH_LOW_FREQUENCY};
@@ -3032,7 +3035,7 @@ static const trak_atom_parser_t trak_atom_parsers[] = {
 	{mp4_parser_parse_stss_atom, offsetof(trak_atom_infos_t, stss), PARSE_FLAG_FRAMES_IS_KEY},
 	{mp4_parser_parse_saiz_atom, offsetof(trak_atom_infos_t, saiz), PARSE_FLAG_FRAMES_OFFSET},
 	{mp4_parser_parse_senc_atom, offsetof(trak_atom_infos_t, senc), PARSE_FLAG_FRAMES_OFFSET},
-	{NULL, 0, 0}
+	{NULL, 0, 0},
 };
 
 vod_status_t

@@ -20,7 +20,7 @@ enum {
 	CONCAT_PARAM_TRACKS,
 	CONCAT_PARAM_NOTIFICATIONS,
 
-	CONCAT_PARAM_COUNT
+	CONCAT_PARAM_COUNT,
 };
 
 // constants
@@ -32,7 +32,7 @@ static json_object_key_def_t concat_clip_params[] = {
 	{vod_string("offset"), VOD_JSON_INT, CONCAT_PARAM_OFFSET},
 	{vod_string("tracks"), VOD_JSON_STRING, CONCAT_PARAM_TRACKS},
 	{vod_string("notifications"), VOD_JSON_ARRAY, CONCAT_PARAM_NOTIFICATIONS},
-	{vod_null_string, 0, 0}
+	{vod_null_string, 0, 0},
 };
 
 // globals
