@@ -326,11 +326,11 @@ typedef struct {
 static vod_str_t mkv_supported_doctypes[] = {vod_string("matroska"), vod_string("webm"), vod_null_string};
 
 // XXXXX: avoid using hardcoded extra data - build according to the first frame instead
-static u_char mkv_extra_data_ac3[] = {0x50, 0x11, 0xe0};
+static u_char mkv_extra_data_ac3[] = {0x50, 0x11, 0xE0};
 
-static u_char mkv_extra_data_eac3[] = {0x07, 0x00, 0x20, 0x0f, 0x00, 0x00};
+static u_char mkv_extra_data_eac3[] = {0x07, 0x00, 0x20, 0x0F, 0x00, 0x00};
 
-static u_char mkv_extra_data_opus[] = {0x00, 0x02, 0x01, 0x38, 0x00, 0x00, 0xbb, 0x80, 0x00, 0x00, 0x00};
+static u_char mkv_extra_data_opus[] = {0x00, 0x02, 0x01, 0x38, 0x00, 0x00, 0xBB, 0x80, 0x00, 0x00, 0x00};
 
 static bool_t
 mkv_is_doctype_supported(vod_str_t* doctype) {
@@ -1515,7 +1515,7 @@ mkv_parse_laces(ebml_context_t* context, uint8_t flags, uint32_t* lace_sizes) {
 				context->cur_pos++;
 
 				lace_sizes[i] += cur;
-			} while (cur == 0xff);
+			} while (cur == 0xFF);
 
 			total += lace_sizes[i];
 		}

@@ -31,8 +31,13 @@ IndentWidth: 4
 TabWidth: 4
 UseTab: AlignWithSpaces
 
-# Braces and Blocks
+# Conventions
 InsertBraces: true
+NumericLiteralCase:
+  ExponentLetter: Lower
+  HexDigit: Upper
+  Prefix: Lower
+  Suffix: Upper
 SeparateDefinitionBlocks: Always
 
 # Empty Lines

@@ -5,7 +5,7 @@
 #include <ctype.h>
 
 // macros
-#define cap_is_style(ch) ((ch) < 0x20 || (ch) >= 0xc0)
+#define cap_is_style(ch) ((ch) < 0x20 || (ch) >= 0xC0)
 
 // constants
 #define CAP_DATA_START_OFFSET (0x80)
@@ -51,7 +51,7 @@ static vod_status_t
 cap_reader_init(request_context_t* request_context, vod_str_t* buffer, size_t max_metadata_size, void** ctx) {
 	u_char* p = buffer->data;
 
-	if (buffer->len < CAP_DATA_START_OFFSET || p[0] != 0xea || p[1] != 0x22 || p[2] > 3) {
+	if (buffer->len < CAP_DATA_START_OFFSET || p[0] != 0xEA || p[1] != 0x22 || p[2] > 3) {
 		return VOD_NOT_FOUND;
 	}
 

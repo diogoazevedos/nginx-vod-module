@@ -624,7 +624,7 @@ mp4_cenc_encrypt_video_write_buffer(void* context, u_char* buffer, uint32_t size
 			}
 
 			for (cur_shift = (state->nal_packet_size_length - 1) * 8; cur_shift >= 0; cur_shift -= 8) {
-				*output++ = (state->packet_size_left >> cur_shift) & 0xff;
+				*output++ = (state->packet_size_left >> cur_shift) & 0xFF;
 			}
 
 			nal_type = *cur_pos++;
@@ -643,14 +643,14 @@ mp4_cenc_encrypt_video_write_buffer(void* context, u_char* buffer, uint32_t size
 			state->cur_state = STATE_ENCRYPT_DATA;
 			switch (state->codec_id) {
 			case VOD_CODEC_ID_AVC:
-				nal_type &= 0x1f;
+				nal_type &= 0x1F;
 				if (nal_type < AVC_NAL_SLICE || nal_type > AVC_NAL_IDR_SLICE) {
 					state->cur_state = STATE_COPY_DATA;
 				}
 				break;
 
 			case VOD_CODEC_ID_HEVC:
-				nal_type = (nal_type >> 1) & 0x3f;
+				nal_type = (nal_type >> 1) & 0x3F;
 				if (nal_type >= HEVC_NAL_VPS_NUT) {
 					state->cur_state = STATE_COPY_DATA;
 				}

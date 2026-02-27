@@ -1758,7 +1758,7 @@ mp4_clipper_build_header(
 
 	// calculate the mdat size and chunk offset
 	mdat_atom_size = ATOM_HEADER_SIZE + parse_result->last_offset - parse_result->first_offset;
-	if (mdat_atom_size > (uint64_t)0xffffffff) {
+	if (mdat_atom_size > (uint64_t)0xFFFFFFFF) {
 		mdat_header_size = ATOM_HEADER64_SIZE;
 		mdat_atom_size += ATOM_HEADER64_SIZE - ATOM_HEADER_SIZE;
 	} else {

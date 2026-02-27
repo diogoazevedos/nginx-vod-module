@@ -296,7 +296,7 @@ static ngx_http_vod_reader_t reader_http = {
 	(ngx_http_vod_async_read_func_t)ngx_http_vod_async_http_read,
 };
 
-static const u_char wvm_file_magic[] = {0x00, 0x00, 0x01, 0xba, 0x44, 0x00, 0x04, 0x00, 0x04, 0x01};
+static const u_char wvm_file_magic[] = {0x00, 0x00, 0x01, 0xBA, 0x44, 0x00, 0x04, 0x00, 0x04, 0x01};
 
 ////// Variables
 
@@ -5075,7 +5075,7 @@ ngx_http_vod_handle_thumb_redirect(ngx_http_vod_ctx_t* ctx, media_set_t* media_s
 
 	rc = ngx_http_vod_thumb_get_url(
 		&ctx->submodule_context,
-		media_set->has_multi_sequences ? (uint32_t)(1 << media_set->sequences[0].index) : 0xffffffff,
+		media_set->has_multi_sequences ? (uint32_t)(1 << media_set->sequences[0].index) : 0xFFFFFFFF,
 		&url
 	);
 	if (rc != NGX_OK) {

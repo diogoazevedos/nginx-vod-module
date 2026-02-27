@@ -242,7 +242,7 @@ manifest_utils_build_request_params_string(
 	}
 
 	// sequence mask
-	if (sequences_mask != 0xffffffff) {
+	if (sequences_mask != 0xFFFFFFFF) {
 		result_size += vod_get_number_of_set_bits32(sequences_mask) * (sizeof("-f32") - 1);
 	}
 
@@ -277,7 +277,7 @@ manifest_utils_build_request_params_string(
 	}
 
 	// sequence mask
-	if (sequences_mask != 0xffffffff) {
+	if (sequences_mask != 0xFFFFFFFF) {
 		p = manifest_utils_write_bitmask32(p, sequences_mask, 'f');
 	}
 

@@ -432,7 +432,7 @@ dynamic_clip_apply_mapping_string_clip(
 
 		cur_source->base.type = MEDIA_CLIP_SOURCE;
 
-		vod_memset(cur_source->tracks_mask, 0xff, sizeof(cur_source->tracks_mask));
+		vod_memset(cur_source->tracks_mask, 0xFF, sizeof(cur_source->tracks_mask));
 		cur_source->sequence = clip->sequence;
 		cur_source->range = range;
 		cur_source->clip_time = clip->clip_time + offset;

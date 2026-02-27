@@ -1260,7 +1260,7 @@ hevc_parser_parse_extra_data(
 				return rc;
 			}
 
-			switch ((nal_type >> 1) & 0x3f) {
+			switch ((nal_type >> 1) & 0x3F) {
 			case HEVC_NAL_SPS_NUT:
 				rc = hevc_parser_seq_parameter_set_rbsp(ctx, &reader);
 				if (rc != VOD_OK) {
@@ -1438,7 +1438,7 @@ hevc_parser_get_slice_header_size(void* context, const u_char* buffer, uint32_t 
 
 	start_pos = reader.stream.cur_pos;
 
-	nal_unit_type = (buffer[0] >> 1) & 0x3f;
+	nal_unit_type = (buffer[0] >> 1) & 0x3F;
 
 	first_slice_segment_in_pic_flag = bit_read_stream_get_one(&reader);
 	if (nal_unit_type >= HEVC_NAL_BLA_W_LP && nal_unit_type <= HEVC_NAL_RSV_IRAP_VCL23) {
@@ -1711,7 +1711,7 @@ hevc_parser_get_slice_header_size(void* context, const u_char* buffer, uint32_t 
 
 vod_status_t
 hevc_parser_is_slice(void* context, uint8_t nal_type, bool_t* is_slice) {
-	nal_type = (nal_type >> 1) & 0x3f;
+	nal_type = (nal_type >> 1) & 0x3F;
 	*is_slice = (nal_type <= HEVC_NAL_RASL_R)
 	         || (nal_type >= HEVC_NAL_BLA_W_LP && nal_type <= HEVC_NAL_CRA_NUT);
 	return VOD_OK;

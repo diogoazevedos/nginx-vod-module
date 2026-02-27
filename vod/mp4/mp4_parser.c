@@ -2012,7 +2012,7 @@ mp4_parser_read_descriptor_length(simple_read_stream_t* stream) { // ff_mp4_read
 	int count = 4;
 	while (count--) {
 		int c = read_stream_get_byte(stream);
-		len = (len << 7) | (c & 0x7f);
+		len = (len << 7) | (c & 0x7F);
 		if (!(c & 0x80)) {
 			break;
 		}
@@ -2220,7 +2220,7 @@ mp4_parser_parse_audio_atoms(void* ctx, atom_info_t* atom_info) {
 		acmod = (atom_info->ptr[3] >> 1) & 0x7;
 		lfeon = (atom_info->ptr[3]) & 0x1;
 
-		if (atom_info->size > 5 && (atom_info->ptr[4] >> 1) & 0xf) { // num_dep_sub
+		if (atom_info->size > 5 && (atom_info->ptr[4] >> 1) & 0xF) { // num_dep_sub
 			chan_loc = (atom_info->ptr[4] & 0x1) << 8 | atom_info->ptr[5];
 		} else {
 			chan_loc = 0;
@@ -2769,7 +2769,7 @@ mp4_parser_process_moov_atom_callback(void* ctx, atom_info_t* atom_info) {
 				extra_data_required = FALSE;
 				break;
 
-			case 0xa9:
+			case 0xA9:
 				metadata_parse_context.media_info.codec_id = VOD_CODEC_ID_DTS;
 				extra_data_required = FALSE;
 				break;

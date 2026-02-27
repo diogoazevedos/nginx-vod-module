@@ -714,7 +714,7 @@ media_set_parse_source(void* ctx, vod_json_object_t* element, void** result) {
 
 	source->base.type = MEDIA_CLIP_SOURCE;
 
-	vod_memset(source->tracks_mask, 0xff, sizeof(source->tracks_mask));
+	vod_memset(source->tracks_mask, 0xFF, sizeof(source->tracks_mask));
 	source->sequence = context->base.sequence;
 	source->range = context->base.range;
 	source->clip_time = context->base.clip_time;

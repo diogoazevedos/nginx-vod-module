@@ -17,7 +17,7 @@
 // clang-format off
 static u_char header_template[] = {
 	// ID3 header
-	0x49, 0x44, 0x33,       //ID3
+	0x49, 0x44, 0x33,       // ID3
 	0x04,                   // version_major = 4
 	0x00,                   // version_minor = 0
 	0x00,                   // flags = 0
