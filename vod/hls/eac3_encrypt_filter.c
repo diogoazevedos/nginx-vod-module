@@ -60,7 +60,7 @@ eac3_encrypt_write(media_filter_context_t* context, const u_char* buffer, uint32
 			}
 
 			// get the sync frame size
-			if (state->header[0] != 0x0b || state->header[1] != 0x77) {
+			if (state->header[0] != 0x0B || state->header[1] != 0x77) {
 				vod_log_error(
 					VOD_LOG_ERR,
 					context->request_context->log,
@@ -72,7 +72,7 @@ eac3_encrypt_write(media_filter_context_t* context, const u_char* buffer, uint32
 				return VOD_BAD_DATA;
 			}
 
-			sync_frame_size = parse_be16(state->header + 2) & 0x7ff;
+			sync_frame_size = parse_be16(state->header + 2) & 0x7FF;
 			sync_frame_size = (sync_frame_size + 1) << 1;
 
 			if (sync_frame_size < sizeof(state->header) || sync_frame_size > state->frame_size_left) {

@@ -1,7 +1,7 @@
 #include "ebml.h"
 
 // macros
-#define log2_byte(value) ((log2_table[(value) >> 2] >> (((value) & 2) << 1)) & 0xf)
+#define log2_byte(value) ((log2_table[(value) >> 2] >> (((value) & 2) << 1)) & 0xF)
 
 // constants
 #define EBML_ID_HEADER (0x1A45DFA3)

@@ -98,7 +98,7 @@ ngx_http_vod_hls_get_container_format(ngx_http_vod_hls_loc_conf_t* conf, media_s
 
 #if (NGX_HAVE_OPENSSL_EVP)
 // some random salt to prevent the iv from being equal to key in case encryption_iv_seed is null
-static u_char iv_salt[] = {0xa7, 0xc6, 0x17, 0xab, 0x52, 0x2c, 0x40, 0x3c, 0xf6, 0x8a};
+static u_char iv_salt[] = {0xA7, 0xC6, 0x17, 0xAB, 0x52, 0x2C, 0x40, 0x3C, 0xF6, 0x8A};
 
 static void
 ngx_http_vod_hls_init_encryption_iv(u_char* iv, uint32_t segment_index) {

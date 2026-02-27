@@ -150,7 +150,7 @@ concat_clip_parse(void* ctx, vod_json_object_t* element, void** result) {
 			return VOD_BAD_MAPPING;
 		}
 	} else {
-		vod_memset(tracks_mask, 0xff, sizeof(tracks_mask));
+		vod_memset(tracks_mask, 0xFF, sizeof(tracks_mask));
 	}
 
 	if (context->range == NULL) {

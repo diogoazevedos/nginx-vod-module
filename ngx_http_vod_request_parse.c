@@ -206,7 +206,7 @@ ngx_http_vod_parse_uri_file_name(
 			result->tracks_mask[media_type], default_tracks_mask, sizeof(result->tracks_mask[media_type])
 		);
 	}
-	result->sequences_mask = 0xffffffff;
+	result->sequences_mask = 0xFFFFFFFF;
 	result->clip_index = INVALID_CLIP_INDEX;
 
 	// segment index
@@ -818,7 +818,7 @@ ngx_http_vod_extract_uri_params(
 	source_clip->base.id = (*clip_id)++;
 
 	source_clip->clip_to = ULLONG_MAX;
-	ngx_memset(source_clip->tracks_mask, 0xff, sizeof(source_clip->tracks_mask));
+	ngx_memset(source_clip->tracks_mask, 0xFF, sizeof(source_clip->tracks_mask));
 	source_clip->uri = *uri;
 	source_clip->sequence = sequence;
 
@@ -974,9 +974,9 @@ ngx_http_vod_parse_uri_path(
 		sequences_mask = request_params->sequences_mask;
 
 		// reset the sequences mask so that it won't be applied again on the mapping request
-		request_params->sequences_mask = 0xffffffff;
+		request_params->sequences_mask = 0xFFFFFFFF;
 	} else {
-		sequences_mask = 0xffffffff;
+		sequences_mask = 0xFFFFFFFF;
 	}
 
 	parts_mask = (1 << multi_uri.parts_count) - 1;

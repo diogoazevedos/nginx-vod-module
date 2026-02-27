@@ -43,19 +43,19 @@ typedef struct {
 // clang-format off
 static u_char trun_atom[] = {
 	0x00, 0x00, 0x00, 0x10, // size = 16
-	0x74, 0x72, 0x75, 0x6e, // trun
+	0x74, 0x72, 0x75, 0x6E, // trun
 	0x00,                   // version
 	0x00, 0x00, 0x00,       // flags
 	0x00, 0x00, 0x00, 0x01, // sample_count = 1
 };
 
 static u_char sdtp_atom[] = {
-	0x00, 0x00, 0x00, 0x0d, // size = 13
+	0x00, 0x00, 0x00, 0x0D, // size = 13
 	0x73, 0x64, 0x74, 0x70, // sdtp
 	0x00,                   // version
 	0x00, 0x00, 0x00,       // flags
-	0x2a // is_leading(2) = 0 (unknown), sample_depends_on(2) = 2 (independent),
-	     // sample_is_depended_on(2) = 2 (disposable), sample_has_redundancy(2) = 2 (non-redundant)
+	0x2A, // is_leading(2) = 0 (unknown), sample_depends_on(2) = 2 (independent),
+	      // sample_is_depended_on(2) = 2 (disposable), sample_has_redundancy(2) = 2 (non-redundant)
 
 };
 // clang-format on
