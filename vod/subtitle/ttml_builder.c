@@ -56,7 +56,6 @@ static u_char sdtp_atom[] = {
 	0x00, 0x00, 0x00,       // flags
 	0x2A, // is_leading(2) = 0 (unknown), sample_depends_on(2) = 2 (independent),
 	      // sample_is_depended_on(2) = 2 (disposable), sample_has_redundancy(2) = 2 (non-redundant)
-
 };
 // clang-format on
 

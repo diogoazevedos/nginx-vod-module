@@ -34,13 +34,13 @@ ngx_conf_enum_t dash_manifest_formats[] = {
 	{ngx_string("segmentlist"), FORMAT_SEGMENT_LIST},
 	{ngx_string("segmenttemplate"), FORMAT_SEGMENT_TEMPLATE},
 	{ngx_string("segmenttimeline"), FORMAT_SEGMENT_TIMELINE},
-	{ngx_null_string, 0}
+	{ngx_null_string, 0},
 };
 
 ngx_conf_enum_t dash_subtitle_formats[] = {
 	{ngx_string("webvtt"), SUBTITLE_FORMAT_WEBVTT},
 	{ngx_string("smpte-tt"), SUBTITLE_FORMAT_SMPTE_TT},
-	{ngx_null_string, 0}
+	{ngx_null_string, 0},
 };
 
 // content types

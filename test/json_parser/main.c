@@ -220,7 +220,7 @@ test_bad_jsons() {
 		"{\"fasd\",\"fdasf\"]",
 		"{\"fasd\",\"fdasf\",}",
 		"\"fdsafas\"  x",
-		NULL
+		NULL,
 	};
 	vod_json_value_t result;
 	char** cur_test;

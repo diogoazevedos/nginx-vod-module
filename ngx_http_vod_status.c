@@ -60,7 +60,7 @@ static ngx_http_vod_stat_def_t buffer_cache_stat_defs[] = {
 	DEFINE_STAT(reset),
 	DEFINE_STAT(entries),
 	DEFINE_STAT(data_size),
-	{ngx_null_string, 0}
+	{ngx_null_string, 0},
 };
 
 static ngx_http_vod_cache_info_t cache_infos[] = {

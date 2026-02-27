@@ -70,7 +70,7 @@ enum {
 enum {
 	READER_FILE,
 	READER_HTTP,
-	READER_COUNT
+	READER_COUNT,
 };
 
 // typedefs
@@ -248,7 +248,7 @@ ngx_module_t ngx_http_vod_module = {
 	NULL,                      // exit thread
 	ngx_http_vod_exit_process, // exit process
 	ngx_http_vod_exit_process, // exit master
-	NGX_MODULE_V1_PADDING
+	NGX_MODULE_V1_PADDING,
 };
 
 static ngx_str_t options_content_type = ngx_string("text/plain");
@@ -263,7 +263,7 @@ static media_format_t* media_formats[] = {
 	&dfxp_format,
 #endif // NGX_HAVE_LIBXML2
 	&cap_format,
-	NULL
+	NULL,
 };
 
 static ngx_http_vod_reader_t reader_file_with_fallback = {

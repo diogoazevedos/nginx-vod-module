@@ -32,6 +32,7 @@ TabWidth: 4
 UseTab: AlignWithSpaces
 
 # Conventions
+EnumTrailingComma: Insert
 InsertBraces: true
 NumericLiteralCase:
   ExponentLetter: Lower

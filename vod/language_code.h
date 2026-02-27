@@ -20,7 +20,7 @@ enum {
 #include "languages_x.h"
 #undef LANG
 
-	VOD_LANG_COUNT
+	VOD_LANG_COUNT,
 };
 
 typedef uint16_t language_id_t;
