@@ -773,10 +773,11 @@ dash_packager_write_mpd_period(u_char* p, write_period_context_t* context) {
 	dash_packager_get_clip_spec(clip_spec, media_set, context->clip_index);
 
 	// print the adaptation sets
-	for (adaptation_set = context->adaptation_sets.first,
-	    cur_duration_items = context->cur_duration_items;
-	     adaptation_set < context->adaptation_sets.last;
-	     adaptation_set++, cur_duration_items++) {
+	for (
+		adaptation_set = context->adaptation_sets.first, cur_duration_items = context->cur_duration_items;
+		adaptation_set < context->adaptation_sets.last;
+		adaptation_set++, cur_duration_items++
+	) {
 		reference_track = adaptation_set->last[-1] + filtered_clip_offset;
 
 		lang_str = &reference_track->media_info.tags.lang_str;
@@ -787,8 +788,7 @@ dash_packager_write_mpd_period(u_char* p, write_period_context_t* context) {
 		switch (adaptation_set->type) {
 		case MEDIA_TYPE_VIDEO:
 			// get the max width, height and frame rate
-			for (cur_track_ptr = adaptation_set->first; cur_track_ptr < adaptation_set->last;
-			     cur_track_ptr++) {
+			for (cur_track_ptr = adaptation_set->first; cur_track_ptr < adaptation_set->last; cur_track_ptr++) {
 				cur_track = (*cur_track_ptr) + filtered_clip_offset;
 
 				if (cur_track->media_info.u.video.width > max_width) {
@@ -942,8 +942,7 @@ dash_packager_write_mpd_period(u_char* p, write_period_context_t* context) {
 		}
 
 		// print the representations
-		for (cur_track_ptr = adaptation_set->first; cur_track_ptr < adaptation_set->last;
-		     cur_track_ptr++) {
+		for (cur_track_ptr = adaptation_set->first; cur_track_ptr < adaptation_set->last; cur_track_ptr++) {
 			cur_track = (*cur_track_ptr) + filtered_clip_offset;
 			cur_sequence = cur_track->file_info.source->sequence;
 
@@ -1350,9 +1349,11 @@ dash_packager_build_mpd(
 	for (clip_index = 0; clip_index < period_count; clip_index++) {
 		filtered_clip_offset =
 			clip_index < media_set->clip_count ? clip_index * media_set->total_track_count : 0;
-		for (adaptation_set = context.adaptation_sets.first;
-		     adaptation_set < context.adaptation_sets.last;
-		     adaptation_set++) {
+		for (
+			adaptation_set = context.adaptation_sets.first;
+			adaptation_set < context.adaptation_sets.last;
+			adaptation_set++
+		) {
 			cur_track = (*adaptation_set->first) + filtered_clip_offset;
 			result_size +=
 				cur_track->media_info.tags.lang_str.len + cur_track->media_info.tags.label.len;
@@ -1444,9 +1445,11 @@ dash_packager_build_mpd(
 	// initialize the duration items pointers to the beginning (according to the media type)
 	context.cur_duration_items = (void*)(context.base_url_temp_buffer + base_url_temp_buffer_size);
 
-	for (adaptation_set = context.adaptation_sets.first, cur_duration_items = context.cur_duration_items;
-	     adaptation_set < context.adaptation_sets.last;
-	     adaptation_set++, cur_duration_items++) {
+	for (
+		adaptation_set = context.adaptation_sets.first, cur_duration_items = context.cur_duration_items;
+		adaptation_set < context.adaptation_sets.last;
+		adaptation_set++, cur_duration_items++
+	) {
 		*cur_duration_items = context.segment_durations[adaptation_set->type].items;
 	}
 

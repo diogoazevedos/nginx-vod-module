@@ -357,13 +357,11 @@ avc_parser_pic_parameter_set_rbsp(avc_hevc_parse_ctx_t* ctx, bit_reader_state_t*
 	if (pps->num_slice_groups_minus1 > 0) {
 		pps->slice_group_map_type = bit_read_stream_get_unsigned_exp(reader);
 		if (pps->slice_group_map_type == 0) {
-			for (group = 0; group <= pps->num_slice_groups_minus1 && !reader->stream.eof_reached;
-			     group++) {
+			for (group = 0; group <= pps->num_slice_groups_minus1 && !reader->stream.eof_reached; group++) {
 				bit_read_stream_skip_unsigned_exp(reader); // run_length_minus1[group]
 			}
 		} else if (pps->slice_group_map_type == 2) {
-			for (group = 0; group < pps->num_slice_groups_minus1 && !reader->stream.eof_reached;
-			     group++) {
+			for (group = 0; group < pps->num_slice_groups_minus1 && !reader->stream.eof_reached; group++) {
 				bit_read_stream_skip_unsigned_exp(reader); // top_left[ group ]
 				bit_read_stream_skip_unsigned_exp(reader); // bottom_right[ group ]
 			}

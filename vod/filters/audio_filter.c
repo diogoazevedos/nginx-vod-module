@@ -112,8 +112,7 @@ audio_filter_walk_filters_prepare_init(
 		source = vod_container_of(clip, media_clip_source_t, base);
 
 		audio_track = NULL;
-		for (cur_track = source->track_array.first_track; cur_track < source->track_array.last_track;
-		     cur_track++) {
+		for (cur_track = source->track_array.first_track; cur_track < source->track_array.last_track; cur_track++) {
 			if (cur_track->media_info.media_type != MEDIA_TYPE_AUDIO) {
 				continue;
 			}
@@ -498,8 +497,7 @@ audio_filter_init_sources_and_graph_desc(audio_filter_init_context_t* state, med
 
 		// find the audio track
 		audio_track = NULL;
-		for (cur_track = source->track_array.first_track; cur_track < source->track_array.last_track;
-		     cur_track++) {
+		for (cur_track = source->track_array.first_track; cur_track < source->track_array.last_track; cur_track++) {
 			if (cur_track->media_info.media_type == MEDIA_TYPE_AUDIO) {
 				audio_track = cur_track;
 				break;

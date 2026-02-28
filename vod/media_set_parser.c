@@ -1859,8 +1859,10 @@ media_set_parse_sequence_key_frame_offsets(
 	}
 
 	part = sequence->unparsed_clips;
-	for (cur_pos = part->first, cur_duration = timing->durations, cur_clip_time = timing->times;;
-	     cur_pos++, cur_duration++, cur_clip_time++) {
+	for (
+		cur_pos = part->first, cur_duration = timing->durations, cur_clip_time = timing->times;;
+		cur_pos++, cur_duration++, cur_clip_time++
+	) {
 		if ((void*)cur_pos >= part->last) {
 			if (part->next == NULL) {
 				break;

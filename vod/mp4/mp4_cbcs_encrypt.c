@@ -342,8 +342,7 @@ mp4_cbcs_encrypt_video_write_buffer(void* context, u_char* buffer, uint32_t size
 			}
 
 			// get the packet size
-			for (; stream_state->length_bytes_left && cur_pos < buffer_end;
-			     stream_state->length_bytes_left--) {
+			for (; stream_state->length_bytes_left && cur_pos < buffer_end; stream_state->length_bytes_left--) {
 				stream_state->packet_size_left = (stream_state->packet_size_left << 8) | *cur_pos++;
 			}
 
@@ -407,8 +406,7 @@ mp4_cbcs_encrypt_video_write_buffer(void* context, u_char* buffer, uint32_t size
 				return rc;
 			}
 
-			for (cur_shift = (stream_state->nal_packet_size_length - 1) * 8; cur_shift >= 0;
-			     cur_shift -= 8) {
+			for (cur_shift = (stream_state->nal_packet_size_length - 1) * 8; cur_shift >= 0; cur_shift -= 8) {
 				*output++ = (stream_state->packet_size_left >> cur_shift) & 0xFF;
 			}
 

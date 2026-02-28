@@ -83,9 +83,7 @@ manifest_utils_get_tracks_mask(
 ) {
 	sequence_tracks_mask_t* sequence_tracks_mask_cur;
 
-	for (sequence_tracks_mask_cur = sequence_tracks_mask;
-	     sequence_tracks_mask_cur < sequence_tracks_mask_end;
-	     sequence_tracks_mask_cur++) {
+	for (sequence_tracks_mask_cur = sequence_tracks_mask; sequence_tracks_mask_cur < sequence_tracks_mask_end; sequence_tracks_mask_cur++) {
 		if (sequence_tracks_mask_cur->index == (int32_t)index) {
 			return sequence_tracks_mask_cur->tracks_mask;
 		}
@@ -804,9 +802,11 @@ manifest_utils_get_muxed_adaptation_set(
 			}
 		}
 
-		for (cur_track = cur_sequence->filtered_clips[0].first_track;
-		     cur_track < cur_sequence->filtered_clips[0].last_track;
-		     cur_track++) {
+		for (
+			cur_track = cur_sequence->filtered_clips[0].first_track;
+			cur_track < cur_sequence->filtered_clips[0].last_track;
+			cur_track++
+		) {
 			if (cur_track->media_info.media_type != main_media_type) {
 				continue;
 			}

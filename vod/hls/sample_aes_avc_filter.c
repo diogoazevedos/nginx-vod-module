@@ -162,8 +162,7 @@ sample_aes_avc_filter_write_nal_body(media_filter_context_t* context, const u_ch
 		return state->write(context, buffer, size);
 	}
 
-	for (end_offset = state->cur_offset + size; state->cur_offset < end_offset;
-	     state->cur_offset += cur_size, buffer += cur_size) {
+	for (end_offset = state->cur_offset + size; state->cur_offset < end_offset; state->cur_offset += cur_size, buffer += cur_size) {
 		if (state->cur_offset < state->next_encrypt_offset) {
 			// unencrypted part
 			cur_size = vod_min(state->next_encrypt_offset, end_offset) - state->cur_offset;

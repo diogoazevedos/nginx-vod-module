@@ -1759,9 +1759,11 @@ mkv_parse_frame(
 			);
 
 			// check whether all tracks are done
-			for (track_context = frame_parse_context->first_track;
-			     track_context < frame_parse_context->last_track;
-			     track_context++) {
+			for (
+				track_context = frame_parse_context->first_track;
+				track_context < frame_parse_context->last_track;
+				track_context++
+			) {
 				if (!track_context->done) {
 					return VOD_OK;
 				}

@@ -295,9 +295,11 @@ concat_clip_parse(void* ctx, vod_json_object_t* element, void** result) {
 		// initialize the ranges
 		original_clip_time = context->range->original_clip_time + start_offset;
 		part = first_part;
-		for (cur_source = sources, range_cur = range, cur_duration = first_duration;
-		     cur_source < sources_end;
-		     cur_source++, range_cur++, cur_duration++) {
+		for (
+			cur_source = sources, range_cur = range, cur_duration = first_duration;
+			cur_source < sources_end;
+			cur_source++, range_cur++, cur_duration++
+		) {
 			if ((void*)cur_duration >= part->last) {
 				part = part->next;
 				cur_duration = part->first;
@@ -489,8 +491,7 @@ concat_clip_concat(request_context_t* request_context, media_clip_t* clip) {
 	uint32_t media_type;
 	uint32_t i;
 
-	for (cur_source = clip->sources + clip->source_count - 2; cur_source >= clip->sources;
-	     cur_source--) {
+	for (cur_source = clip->sources + clip->source_count - 2; cur_source >= clip->sources; cur_source--) {
 		dest_clip = (media_clip_source_t*)cur_source[0];
 		src_clip = (media_clip_source_t*)cur_source[1];
 

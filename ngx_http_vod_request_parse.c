@@ -106,8 +106,7 @@ u_char*
 ngx_http_vod_extract_uint32_token_reverse(u_char* start_pos, u_char* end_pos, uint32_t* result) {
 	uint32_t multiplier;
 	uint32_t value = 0;
-	for (multiplier = 1; end_pos > start_pos && end_pos[-1] >= '0' && end_pos[-1] <= '9';
-	     end_pos--, multiplier *= 10) {
+	for (multiplier = 1; end_pos > start_pos && end_pos[-1] >= '0' && end_pos[-1] <= '9'; end_pos--, multiplier *= 10) {
 		value += (end_pos[-1] - '0') * multiplier;
 	}
 	*result = value;

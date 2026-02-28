@@ -129,8 +129,7 @@ ttml_builder_get_max_size(media_set_t* media_set) {
 	media_track_t* cur_track;
 	size_t result = (sizeof(TTML_HEADER) - 1) + (sizeof(TTML_FOOTER) - 1);
 
-	for (cur_track = media_set->filtered_tracks; cur_track < media_set->filtered_tracks_end;
-	     cur_track++) {
+	for (cur_track = media_set->filtered_tracks; cur_track < media_set->filtered_tracks_end; cur_track++) {
 		result += cur_track->total_frames_size + TTML_P_MAX_SIZE * cur_track->frame_count;
 	}
 
@@ -149,8 +148,7 @@ ttml_builder_write(media_set_t* media_set, u_char* p) {
 
 	p = vod_copy(p, TTML_HEADER, sizeof(TTML_HEADER) - 1);
 
-	for (cur_track = media_set->filtered_tracks; cur_track < media_set->filtered_tracks_end;
-	     cur_track++) {
+	for (cur_track = media_set->filtered_tracks; cur_track < media_set->filtered_tracks_end; cur_track++) {
 		start_time = cur_track->clip_start_time + cur_track->first_frame_time_offset;
 		part = &cur_track->frames;
 		last_frame = part->last_frame;

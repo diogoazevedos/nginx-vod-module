@@ -255,9 +255,7 @@ hevc_parser_parse_sps_scc_extension(bit_reader_state_t* reader, hevc_sps_t* sps)
 			sps_num_palette_predictor_initializer_minus1 = bit_read_stream_get_unsigned_exp(reader);
 			num_comps = (sps->chroma_format_idc == 0) ? 1 : 3;
 			for (comp = 0; comp < num_comps; comp++) {
-				for (i = 0;
-				     i <= sps_num_palette_predictor_initializer_minus1 && !reader->stream.eof_reached;
-				     i++) {
+				for (i = 0; i <= sps_num_palette_predictor_initializer_minus1 && !reader->stream.eof_reached; i++) {
 					// sps_palette_predictor_initializers[comp][i]
 					bit_read_stream_skip(reader, comp == 0 ? sps->bit_depth_luma : sps->bit_depth_chroma);
 				}
@@ -589,9 +587,11 @@ hevc_parser_seq_parameter_set_rbsp(avc_hevc_parse_ctx_t* ctx, bit_reader_state_t
 	sps->bit_depth_chroma = bit_read_stream_get_unsigned_exp(reader) + 8;
 	sps->log2_max_pic_order_cnt_lsb = bit_read_stream_get_unsigned_exp(reader) + 4;
 	sps_sub_layer_ordering_info_present_flag = bit_read_stream_get_one(reader);
-	for (i = (sps_sub_layer_ordering_info_present_flag ? 0 : sps->sps_max_sub_layers_minus1);
-	     i <= sps->sps_max_sub_layers_minus1 && !reader->stream.eof_reached;
-	     i++) {
+	for (
+		i = (sps_sub_layer_ordering_info_present_flag ? 0 : sps->sps_max_sub_layers_minus1);
+		i <= sps->sps_max_sub_layers_minus1 && !reader->stream.eof_reached;
+		i++
+	) {
 		bit_read_stream_skip_unsigned_exp(reader); // sps_max_dec_pic_buffering_minus1[i]
 		bit_read_stream_skip_unsigned_exp(reader); // sps_max_num_reorder_pics[i]
 		bit_read_stream_skip_unsigned_exp(reader); // sps_max_latency_increase_plus1[i]
@@ -988,8 +988,7 @@ hevc_parser_skip_pps_scc_extension(bit_reader_state_t* reader, hevc_pps_t* pps) 
 			}
 			num_comps = monochrome_palette_flag ? 1 : 3;
 			for (comp = 0; comp < num_comps; comp++) {
-				for (i = 0; i < pps_num_palette_predictor_initializer && !reader->stream.eof_reached;
-				     i++) {
+				for (i = 0; i < pps_num_palette_predictor_initializer && !reader->stream.eof_reached; i++) {
 					// pps_palette_predictor_initializers[comp][i]
 					bit_read_stream_skip(reader, comp == 0 ? luma_bit_depth_entry : chroma_bit_depth_entry);
 				}
@@ -1543,8 +1542,7 @@ hevc_parser_get_slice_header_size(void* context, const u_char* buffer, uint32_t 
 					num_long_term_sps = bit_read_stream_get_unsigned_exp(&reader);
 				}
 				num_long_term_pics = bit_read_stream_get_unsigned_exp(&reader);
-				for (i = 0; i < num_long_term_sps + num_long_term_pics && !reader.stream.eof_reached;
-				     i++) {
+				for (i = 0; i < num_long_term_sps + num_long_term_pics && !reader.stream.eof_reached; i++) {
 					if (i < num_long_term_sps) {
 						if (sps->num_long_term_ref_pics_sps > 1) {
 							lt_idx_sps = bit_read_stream_get(

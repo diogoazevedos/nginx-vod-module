@@ -434,8 +434,7 @@ mp4_muxer_init_state(
 
 	index = 0;
 	cur_track = media_set->filtered_tracks;
-	for (cur_stream = state->first_stream; cur_stream < state->last_stream;
-	     cur_stream++, cur_track++, index++) {
+	for (cur_stream = state->first_stream; cur_stream < state->last_stream; cur_stream++, cur_track++, index++) {
 		cur_stream->index = index;
 		cur_stream->write_callback = track_writers->write_tail;
 		cur_stream->write_context = track_writers->context;
@@ -480,8 +479,10 @@ mp4_muxer_get_earliest_pres_time(media_set_t* media_set, uint32_t index) {
 	uint64_t result = 0;
 	uint32_t clip_index;
 
-	for (clip_index = 0, track = media_set->filtered_tracks + index; clip_index < media_set->clip_count;
-	     clip_index++, track += media_set->total_track_count) {
+	for (
+		clip_index = 0, track = media_set->filtered_tracks + index; clip_index < media_set->clip_count;
+		clip_index++, track += media_set->total_track_count
+	) {
 		result = mp4_rescale_millis(track->clip_start_time, track->media_info.timescale)
 		       + track->first_frame_time_offset;
 
