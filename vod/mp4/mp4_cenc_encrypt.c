@@ -484,8 +484,7 @@ mp4_cenc_encrypt_video_calc_default_auxiliary_sample_size(mp4_cenc_encrypt_video
 	}
 
 	default_auxiliary_sample_size = *state->auxiliary_sample_sizes;
-	for (cur_pos = state->auxiliary_sample_sizes + 1; cur_pos < state->auxiliary_sample_sizes_pos;
-	     cur_pos++) {
+	for (cur_pos = state->auxiliary_sample_sizes + 1; cur_pos < state->auxiliary_sample_sizes_pos; cur_pos++) {
 		if (*cur_pos != default_auxiliary_sample_size) {
 			return 0;
 		}

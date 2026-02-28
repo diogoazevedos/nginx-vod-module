@@ -173,8 +173,7 @@ udrm_parse_response(
 	result->pssh_array.last = result->pssh_array.first + result->pssh_array.count;
 
 	part = &pssh_array->part;
-	for (cur_input_pssh = part->first, cur_output_pssh = result->pssh_array.first;;
-	     cur_input_pssh++, cur_output_pssh++) {
+	for (cur_input_pssh = part->first, cur_output_pssh = result->pssh_array.first;; cur_input_pssh++, cur_output_pssh++) {
 		if ((void*)cur_input_pssh >= part->last) {
 			if (part->next == NULL) {
 				break;

@@ -1263,8 +1263,7 @@ mp4_clipper_stco_write_atom(
 				parse_be32(stco->first_entry) - chunk_pos_diff + stco->first_frame_chunk_offset;
 			write_be32(p, chunk_offset);
 
-			for (cur_pos = stco->first_entry + sizeof(uint32_t); cur_pos < stco->last_entry;
-			     cur_pos += sizeof(uint32_t)) {
+			for (cur_pos = stco->first_entry + sizeof(uint32_t); cur_pos < stco->last_entry; cur_pos += sizeof(uint32_t)) {
 				chunk_offset = parse_be32(cur_pos) - chunk_pos_diff;
 				write_be32(p, chunk_offset);
 			}
@@ -1273,8 +1272,7 @@ mp4_clipper_stco_write_atom(
 				parse_be32(stco->first_entry) - chunk_pos_diff + stco->first_frame_chunk_offset;
 			set_be32(stco->first_entry, chunk_offset);
 
-			for (cur_pos = stco->first_entry + sizeof(uint32_t); cur_pos < stco->last_entry;
-			     cur_pos += sizeof(uint32_t)) {
+			for (cur_pos = stco->first_entry + sizeof(uint32_t); cur_pos < stco->last_entry; cur_pos += sizeof(uint32_t)) {
 				chunk_offset = parse_be32(cur_pos) - chunk_pos_diff;
 				set_be32(cur_pos, chunk_offset);
 			}
@@ -1294,8 +1292,7 @@ mp4_clipper_stco_write_atom(
 				parse_be64(stco->first_entry) - chunk_pos_diff + stco->first_frame_chunk_offset;
 			write_be64(p, chunk_offset);
 
-			for (cur_pos = stco->first_entry + sizeof(uint64_t); cur_pos < stco->last_entry;
-			     cur_pos += sizeof(uint64_t)) {
+			for (cur_pos = stco->first_entry + sizeof(uint64_t); cur_pos < stco->last_entry; cur_pos += sizeof(uint64_t)) {
 				chunk_offset = parse_be64(cur_pos) - chunk_pos_diff;
 				write_be64(p, chunk_offset);
 			}
@@ -1304,8 +1301,7 @@ mp4_clipper_stco_write_atom(
 				parse_be64(stco->first_entry) - chunk_pos_diff + stco->first_frame_chunk_offset;
 			set_be64(stco->first_entry, chunk_offset);
 
-			for (cur_pos = stco->first_entry + sizeof(uint64_t); cur_pos < stco->last_entry;
-			     cur_pos += sizeof(uint64_t)) {
+			for (cur_pos = stco->first_entry + sizeof(uint64_t); cur_pos < stco->last_entry; cur_pos += sizeof(uint64_t)) {
 				chunk_offset = parse_be64(cur_pos) - chunk_pos_diff;
 				set_be64(cur_pos, chunk_offset);
 			}

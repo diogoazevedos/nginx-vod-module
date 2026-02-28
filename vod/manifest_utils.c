@@ -83,9 +83,7 @@ manifest_utils_get_tracks_mask(
 ) {
 	sequence_tracks_mask_t* sequence_tracks_mask_cur;
 
-	for (sequence_tracks_mask_cur = sequence_tracks_mask;
-	     sequence_tracks_mask_cur < sequence_tracks_mask_end;
-	     sequence_tracks_mask_cur++) {
+	for (sequence_tracks_mask_cur = sequence_tracks_mask; sequence_tracks_mask_cur < sequence_tracks_mask_end; sequence_tracks_mask_cur++) {
 		if (sequence_tracks_mask_cur->index == (int32_t)index) {
 			return sequence_tracks_mask_cur->tracks_mask;
 		}

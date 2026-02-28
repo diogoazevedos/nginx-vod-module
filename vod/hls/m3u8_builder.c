@@ -181,8 +181,7 @@ m3u8_builder_build_tracks_spec(
 
 	// build the track ptrs array
 	tracks_end = tracks + media_set->total_track_count;
-	for (cur_track_ptr = tracks, cur_track = media_set->filtered_tracks; cur_track_ptr < tracks_end;
-	     cur_track_ptr++, cur_track++) {
+	for (cur_track_ptr = tracks, cur_track = media_set->filtered_tracks; cur_track_ptr < tracks_end; cur_track_ptr++, cur_track++) {
 		*cur_track_ptr = cur_track;
 	}
 
@@ -797,8 +796,7 @@ m3u8_builder_get_closed_captions_size(media_set_t* media_set, request_context_t*
 	            + (sizeof(m3u8_media_instream_id) - 1)
 	            + (sizeof(m3u8_media_default) - 1);
 
-	for (closed_captions = media_set->closed_captions; closed_captions < media_set->closed_captions_end;
-	     closed_captions++) {
+	for (closed_captions = media_set->closed_captions; closed_captions < media_set->closed_captions_end; closed_captions++) {
 		result += base
 		        + closed_captions->id.len
 		        + closed_captions->label.len
@@ -815,8 +813,7 @@ m3u8_builder_write_closed_captions(u_char* p, media_set_t* media_set) {
 	uint32_t index = 0;
 	bool_t is_default;
 
-	for (closed_captions = media_set->closed_captions; closed_captions < media_set->closed_captions_end;
-	     closed_captions++) {
+	for (closed_captions = media_set->closed_captions; closed_captions < media_set->closed_captions_end; closed_captions++) {
 		p = vod_sprintf(
 			p,
 			m3u8_media_base,
@@ -1294,8 +1291,7 @@ m3u8_builder_build_master_playlist(
 		* adaptation_sets.first->count;
 
 	if (base_url->len != 0) {
-		for (cur_track_ptr = adaptation_sets.first->first; cur_track_ptr < adaptation_sets.first->last;
-		     cur_track_ptr++) {
+		for (cur_track_ptr = adaptation_sets.first->first; cur_track_ptr < adaptation_sets.first->last; cur_track_ptr++) {
 			cur_track = cur_track_ptr[0];
 			if (cur_track == NULL) {
 				cur_track = cur_track_ptr[1];
@@ -1380,8 +1376,7 @@ m3u8_builder_build_master_playlist(
 	// output variants
 	if (variant_set_count > 1) {
 		last_audio_codec_track = audio_codec_tracks + variant_set_count;
-		for (cur_track_ptr = audio_codec_tracks; cur_track_ptr < last_audio_codec_track;
-		     cur_track_ptr++) {
+		for (cur_track_ptr = audio_codec_tracks; cur_track_ptr < last_audio_codec_track; cur_track_ptr++) {
 			p = m3u8_builder_write_variants(p, &adaptation_sets, conf, base_url, media_set, *cur_track_ptr);
 		}
 	} else {

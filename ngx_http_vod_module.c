@@ -1176,8 +1176,7 @@ ngx_http_vod_copy_drm_info(ngx_http_vod_ctx_t* ctx) {
 	media_sequence_t* ref_sequence = ctx->cur_sequence;
 	media_sequence_t* cur_sequence;
 
-	for (cur_sequence = ref_sequence + 1; cur_sequence < ctx->submodule_context.media_set.sequences_end;
-	     cur_sequence++) {
+	for (cur_sequence = ref_sequence + 1; cur_sequence < ctx->submodule_context.media_set.sequences_end; cur_sequence++) {
 		cur_sequence->drm_info = ref_sequence->drm_info;
 	}
 }
@@ -1412,9 +1411,7 @@ ngx_http_vod_update_source_tracks(request_context_t* request_context, media_clip
 	original_clip_time =
 		cur_source->range != NULL ? cur_source->range->original_clip_time : cur_source->clip_time;
 
-	for (cur_track = cur_source->track_array.first_track;
-	     cur_track < cur_source->track_array.last_track;
-	     cur_track++) {
+	for (cur_track = cur_source->track_array.first_track; cur_track < cur_source->track_array.last_track; cur_track++) {
 		time_shift = cur_source->time_shift[cur_track->media_info.media_type];
 		cur_track->first_frame_time_offset +=
 			rescale_time(time_shift, 1000, cur_track->media_info.timescale);
@@ -1441,9 +1438,11 @@ ngx_http_vod_get_sequence_tracks_mask(
 	ngx_str_t* cur_sequence_id;
 	int32_t index;
 
-	for (sequence_tracks_mask = request_params->sequence_tracks_mask;
-	     sequence_tracks_mask < request_params->sequence_tracks_mask_end;
-	     sequence_tracks_mask++) {
+	for (
+		sequence_tracks_mask = request_params->sequence_tracks_mask;
+		sequence_tracks_mask < request_params->sequence_tracks_mask_end;
+		sequence_tracks_mask++
+	) {
 		index = sequence_tracks_mask->index;
 		if (index >= 0) {
 			if (sequence->index != (uint32_t)index) {
@@ -2951,8 +2950,10 @@ static void
 ngx_http_vod_enable_directio(ngx_http_vod_ctx_t* ctx) {
 	media_clip_source_t* cur_source;
 
-	for (cur_source = ctx->submodule_context.media_set.sources_head; cur_source != NULL;
-	     cur_source = cur_source->next) {
+	for (
+		cur_source = ctx->submodule_context.media_set.sources_head; cur_source != NULL;
+		cur_source = cur_source->next
+	) {
 		if (cur_source->reader->enable_directio != NULL) {
 			cur_source->reader->enable_directio(cur_source->reader_context);
 		}
@@ -3536,8 +3537,10 @@ ngx_http_vod_run_generators(ngx_http_vod_ctx_t* ctx) {
 	track_mask_t tracks_mask[MEDIA_TYPE_COUNT];
 	ngx_int_t rc;
 
-	for (cur_source = ctx->submodule_context.media_set.generators_head; cur_source != NULL;
-	     cur_source = cur_source->next) {
+	for (
+		cur_source = ctx->submodule_context.media_set.generators_head; cur_source != NULL;
+		cur_source = cur_source->next
+	) {
 		ctx->cur_source = cur_source;
 
 		if (cur_source->clip_to >= UINT_MAX) {
@@ -4051,9 +4054,11 @@ ngx_http_vod_start_processing_media_file(ngx_http_vod_ctx_t* ctx) {
 
 	// initialize the uri / encryption keys
 	if (conf->drm_enabled || conf->secret_key != NULL) {
-		for (ctx->cur_sequence = ctx->submodule_context.media_set.sequences;
-		     ctx->cur_sequence < ctx->submodule_context.media_set.sequences_end;
-		     ctx->cur_sequence++) {
+		for (
+			ctx->cur_sequence = ctx->submodule_context.media_set.sequences;
+			ctx->cur_sequence < ctx->submodule_context.media_set.sequences_end;
+			ctx->cur_sequence++
+		) {
 			rc = ngx_http_vod_init_encryption_key(r, conf, ctx->cur_sequence);
 			if (rc != NGX_OK) {
 				return rc;
@@ -4086,8 +4091,10 @@ ngx_http_vod_map_uris_to_paths(ngx_http_vod_ctx_t* ctx) {
 	ngx_str_t path;
 
 	original_uri = r->uri;
-	for (cur_source = ctx->submodule_context.media_set.sources_head; cur_source != NULL;
-	     cur_source = cur_source->next) {
+	for (
+		cur_source = ctx->submodule_context.media_set.sources_head; cur_source != NULL;
+		cur_source = cur_source->next
+	) {
 		ctx->cur_source = cur_source;
 		r->uri = cur_source->stripped_uri;
 		last = ngx_http_map_uri_to_path(r, &path, &root, 0);
