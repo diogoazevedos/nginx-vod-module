@@ -59,14 +59,14 @@ ngx_conf_enum_t hls_encryption_methods[] = {
 	{ngx_string("none"), HLS_ENC_NONE},
 	{ngx_string("sample-aes"), HLS_ENC_SAMPLE_AES},
 	{ngx_string("sample-aes-ctr"), HLS_ENC_SAMPLE_AES_CTR},
-	{ngx_null_string, 0}
+	{ngx_null_string, 0},
 };
 
 ngx_conf_enum_t hls_container_formats[] = {
 	{ngx_string("auto"), HLS_CONTAINER_AUTO},
 	{ngx_string("mpegts"), HLS_CONTAINER_MPEGTS},
 	{ngx_string("fmp4"), HLS_CONTAINER_FMP4},
-	{ngx_null_string, 0}
+	{ngx_null_string, 0},
 };
 
 static ngx_uint_t
@@ -92,7 +92,7 @@ ngx_http_vod_hls_get_container_format(ngx_http_vod_hls_loc_conf_t* conf, media_s
 
 #if (NGX_HAVE_OPENSSL_EVP)
 // some random salt to prevent the iv from being equal to key in case encryption_iv_seed is null
-static u_char iv_salt[] = {0xa7, 0xc6, 0x17, 0xab, 0x52, 0x2c, 0x40, 0x3c, 0xf6, 0x8a};
+static u_char iv_salt[] = {0xA7, 0xC6, 0x17, 0xAB, 0x52, 0x2C, 0x40, 0x3C, 0xF6, 0x8A};
 
 static void
 ngx_http_vod_hls_init_encryption_iv(u_char* iv, uint32_t segment_index) {
@@ -1098,9 +1098,7 @@ ngx_http_vod_hls_parse_uri_file_name(
 		flags = PARSE_FILE_NAME_EXPECT_SEGMENT_INDEX;
 	}
 	// fmp4 segment
-	else if (ngx_http_vod_match_prefix_postfix(
-				 start_pos, end_pos, &conf->hls.m3u8_config.segment_file_name_prefix, m4s_file_ext
-			 )) {
+	else if (ngx_http_vod_match_prefix_postfix(start_pos, end_pos, &conf->hls.m3u8_config.segment_file_name_prefix, m4s_file_ext)) {
 		start_pos += conf->hls.m3u8_config.segment_file_name_prefix.len;
 		end_pos -= sizeof(m4s_file_ext) - 1;
 
@@ -1121,9 +1119,7 @@ ngx_http_vod_hls_parse_uri_file_name(
 		flags = PARSE_FILE_NAME_EXPECT_SEGMENT_INDEX;
 	}
 	// vtt segment
-	else if (ngx_http_vod_match_prefix_postfix(
-				 start_pos, end_pos, &conf->hls.m3u8_config.segment_file_name_prefix, vtt_file_ext
-			 )) {
+	else if (ngx_http_vod_match_prefix_postfix(start_pos, end_pos, &conf->hls.m3u8_config.segment_file_name_prefix, vtt_file_ext)) {
 		start_pos += conf->hls.m3u8_config.segment_file_name_prefix.len;
 		end_pos -= sizeof(vtt_file_ext) - 1;
 		*request = &hls_vtt_segment_request;
@@ -1138,9 +1134,7 @@ ngx_http_vod_hls_parse_uri_file_name(
 			*request = &hls_index_request;
 			start_pos += conf->hls.m3u8_config.index_file_name_prefix.len;
 			flags = 0;
-		} else if (ngx_http_vod_starts_with(
-					   start_pos, end_pos, &conf->hls.m3u8_config.iframes_file_name_prefix
-				   )) {
+		} else if (ngx_http_vod_starts_with(start_pos, end_pos, &conf->hls.m3u8_config.iframes_file_name_prefix)) {
 			*request = &hls_iframes_request;
 			start_pos += conf->hls.m3u8_config.iframes_file_name_prefix.len;
 			flags = 0;
@@ -1156,9 +1150,7 @@ ngx_http_vod_hls_parse_uri_file_name(
 		}
 	}
 	// init segment
-	else if (ngx_http_vod_match_prefix_postfix(
-				 start_pos, end_pos, &conf->hls.m3u8_config.init_file_name_prefix, mp4_file_ext
-			 )) {
+	else if (ngx_http_vod_match_prefix_postfix(start_pos, end_pos, &conf->hls.m3u8_config.init_file_name_prefix, mp4_file_ext)) {
 		start_pos += conf->hls.m3u8_config.init_file_name_prefix.len;
 		end_pos -= sizeof(mp4_file_ext) - 1;
 		*request = &hls_mp4_init_request;

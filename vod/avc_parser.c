@@ -145,7 +145,7 @@ avc_parser_skip_scaling_list(bit_reader_state_t* reader, int size_of_scaling_lis
 	for (j = 0; j < size_of_scaling_list; j++) {
 		if (next_scale != 0) {
 			delta_scale = bit_read_stream_get_signed_exp(reader);
-			next_scale = (last_scale + delta_scale) & 0xff;
+			next_scale = (last_scale + delta_scale) & 0xFF;
 		}
 		last_scale = (next_scale == 0) ? last_scale : next_scale;
 	}
@@ -357,19 +357,15 @@ avc_parser_pic_parameter_set_rbsp(avc_hevc_parse_ctx_t* ctx, bit_reader_state_t*
 	if (pps->num_slice_groups_minus1 > 0) {
 		pps->slice_group_map_type = bit_read_stream_get_unsigned_exp(reader);
 		if (pps->slice_group_map_type == 0) {
-			for (group = 0; group <= pps->num_slice_groups_minus1 && !reader->stream.eof_reached;
-			     group++) {
+			for (group = 0; group <= pps->num_slice_groups_minus1 && !reader->stream.eof_reached; group++) {
 				bit_read_stream_skip_unsigned_exp(reader); // run_length_minus1[group]
 			}
 		} else if (pps->slice_group_map_type == 2) {
-			for (group = 0; group < pps->num_slice_groups_minus1 && !reader->stream.eof_reached;
-			     group++) {
+			for (group = 0; group < pps->num_slice_groups_minus1 && !reader->stream.eof_reached; group++) {
 				bit_read_stream_skip_unsigned_exp(reader); // top_left[ group ]
 				bit_read_stream_skip_unsigned_exp(reader); // bottom_right[ group ]
 			}
-		} else if (pps->slice_group_map_type == 3
-		           || pps->slice_group_map_type == 4
-		           || pps->slice_group_map_type == 5) {
+		} else if (pps->slice_group_map_type == 3 || pps->slice_group_map_type == 4 || pps->slice_group_map_type == 5) {
 			bit_read_stream_get_one(reader); // slice_group_change_direction_flag
 			pps->slice_group_change_rate = bit_read_stream_get_unsigned_exp(reader) + 1;
 		} else if (pps->slice_group_map_type == 6) {
@@ -483,7 +479,7 @@ avc_parser_parse_extra_data(
 			return VOD_BAD_DATA;
 		}
 
-		for (unit_count = (*cur_pos++ & 0x1f); unit_count; unit_count--) {
+		for (unit_count = (*cur_pos++ & 0x1F); unit_count; unit_count--) {
 			if (sizeof(uint16_t) > (size_t)(extra_data_end - cur_pos)) {
 				vod_log_error(
 					VOD_LOG_ERR,
@@ -525,7 +521,7 @@ avc_parser_parse_extra_data(
 				return rc;
 			}
 
-			switch (nal_type & 0x1f) {
+			switch (nal_type & 0x1F) {
 			case AVC_NAL_SPS:
 				rc = avc_parser_seq_parameter_set_rbsp(ctx, &reader);
 				if (rc != VOD_OK) {
@@ -738,7 +734,7 @@ avc_parser_get_slice_header_size(void* context, const u_char* buffer, uint32_t s
 	start_pos = reader.stream.cur_pos;
 
 	nal_ref_idc = (buffer[0] >> 5) & 0x3;
-	nal_unit_type = buffer[0] & 0x1f;
+	nal_unit_type = buffer[0] & 0x1F;
 
 	bit_read_stream_skip_unsigned_exp(&reader); // first_mb_in_slice
 	slice_type = bit_read_stream_get_unsigned_exp(&reader);
@@ -894,7 +890,7 @@ vod_status_t
 avc_parser_is_slice(void* context, uint8_t nal_type, bool_t* is_slice) {
 	avc_hevc_parse_ctx_t* ctx = context;
 
-	switch (nal_type & 0x1f) {
+	switch (nal_type & 0x1F) {
 	case AVC_NAL_SLICE:
 	case AVC_NAL_IDR_SLICE:
 		*is_slice = TRUE;

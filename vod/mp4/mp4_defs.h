@@ -9,29 +9,29 @@
 
 // these constants can be generated with python - 'moov'[::-1].encode('hex')
 #define ATOM_NAME_FTYP (0x70797466) // file type
-#define ATOM_NAME_MOOV (0x766f6f6d) // movie header
-#define ATOM_NAME_MDAT (0x7461646d) // movie data
-#define ATOM_NAME_TRAK (0x6b617274) // track header
+#define ATOM_NAME_MOOV (0x766F6F6D) // movie header
+#define ATOM_NAME_MDAT (0x7461646D) // movie data
+#define ATOM_NAME_TRAK (0x6B617274) // track header
 #define ATOM_NAME_EDTS (0x73746465) // edit box
-#define ATOM_NAME_ELST (0x74736c65) // edit list box
-#define ATOM_NAME_MDIA (0x6169646d) // media
-#define ATOM_NAME_HDLR (0x726c6468) // handler type
-#define ATOM_NAME_MDHD (0x6468646d) // media header
-#define ATOM_NAME_MINF (0x666e696d) // media information
-#define ATOM_NAME_STBL (0x6c627473) // sample table
-#define ATOM_NAME_STCO (0x6f637473) // sample table chunk offset
-#define ATOM_NAME_CO64 (0x34366f63) // sample table chunk offset 64 bit
+#define ATOM_NAME_ELST (0x74736C65) // edit list box
+#define ATOM_NAME_MDIA (0x6169646D) // media
+#define ATOM_NAME_HDLR (0x726C6468) // handler type
+#define ATOM_NAME_MDHD (0x6468646D) // media header
+#define ATOM_NAME_MINF (0x666E696D) // media information
+#define ATOM_NAME_STBL (0x6C627473) // sample table
+#define ATOM_NAME_STCO (0x6F637473) // sample table chunk offset
+#define ATOM_NAME_CO64 (0x34366F63) // sample table chunk offset 64 bit
 #define ATOM_NAME_STSC (0x63737473) // sample table sample to chunk map
-#define ATOM_NAME_STSZ (0x7a737473) // sample table sizes
-#define ATOM_NAME_STZ2 (0x327a7473) // sample table sizes
+#define ATOM_NAME_STSZ (0x7A737473) // sample table sizes
+#define ATOM_NAME_STZ2 (0x327A7473) // sample table sizes
 #define ATOM_NAME_STTS (0x73747473) // sample table time to sample map
 #define ATOM_NAME_CTTS (0x73747463) // composition time to sample
 #define ATOM_NAME_STSS (0x73737473) // sample table sync samples
 #define ATOM_NAME_STSD (0x64737473) // sample table sample description
-#define ATOM_NAME_SAIZ (0x7a696173) // sample auxiliary information sizes
-#define ATOM_NAME_SENC (0x636e6573) // sample encryption
-#define ATOM_NAME_FRMA (0x616d7266) // original format
-#define ATOM_NAME_SINF (0x666e6973) // protection scheme information
+#define ATOM_NAME_SAIZ (0x7A696173) // sample auxiliary information sizes
+#define ATOM_NAME_SENC (0x636E6573) // sample encryption
+#define ATOM_NAME_FRMA (0x616D7266) // original format
+#define ATOM_NAME_SINF (0x666E6973) // protection scheme information
 #define ATOM_NAME_AVCC (0x43637661) // advanced video codec configuration
 #define ATOM_NAME_HVCC (0x43637668) // high efficiency video codec configuration
 #define ATOM_NAME_DVCC (0x43637664) // dolby vision codec configuration
@@ -42,26 +42,26 @@
 #define ATOM_NAME_DAC3 (0x33636164)
 #define ATOM_NAME_DEC3 (0x33636564)
 #define ATOM_NAME_WAVE (0x65766177) //
-#define ATOM_NAME_DINF (0x666e6964) // data information
-#define ATOM_NAME_TKHD (0x64686b74) // track header
-#define ATOM_NAME_MVHD (0x6468766d) // movie header
-#define ATOM_NAME_VMHD (0x64686d76) // video media header
-#define ATOM_NAME_SMHD (0x64686d73) // sound media header
-#define ATOM_NAME_CMOV (0x766f6d63) // compressed movie
-#define ATOM_NAME_DCOM (0x6d6f6364) // data compression
-#define ATOM_NAME_CMVD (0x64766d63) // compressed movie data
-#define ATOM_NAME_DOPS (0x73704f64)
+#define ATOM_NAME_DINF (0x666E6964) // data information
+#define ATOM_NAME_TKHD (0x64686B74) // track header
+#define ATOM_NAME_MVHD (0x6468766D) // movie header
+#define ATOM_NAME_VMHD (0x64686D76) // video media header
+#define ATOM_NAME_SMHD (0x64686D73) // sound media header
+#define ATOM_NAME_CMOV (0x766F6D63) // compressed movie
+#define ATOM_NAME_DCOM (0x6D6F6364) // data compression
+#define ATOM_NAME_CMVD (0x64766D63) // compressed movie data
+#define ATOM_NAME_DOPS (0x73704F64)
 #define ATOM_NAME_UDTA (0x61746475)
-#define ATOM_NAME_NAME (0x656d616e)
+#define ATOM_NAME_NAME (0x656D616E)
 
 #define ATOM_NAME_NULL (0x00000000)
 
 #define HDLR_TYPE_VIDE (0x65646976) // video track
-#define HDLR_TYPE_SOUN (0x6e756f73) // audio track
+#define HDLR_TYPE_SOUN (0x6E756F73) // audio track
 
-#define DCOM_TYPE_ZLIB (0x62696c7a)
+#define DCOM_TYPE_ZLIB (0x62696C7A)
 
-#define FTYP_TYPE_MP42 (0x3234706d)
+#define FTYP_TYPE_MP42 (0x3234706D)
 
 // h264 4cc tags
 #define FORMAT_AVC1 (0x31637661)
@@ -81,14 +81,14 @@
 #define FORMAT_AV1 (0x31307661)
 
 // audio 4cc tags
-#define FORMAT_MP4A (0x6134706d)
-#define FORMAT_AC3 (0x332d6361)
-#define FORMAT_EAC3 (0x332d6365)
-#define FORMAT_OPUS (0x7375704f)
-#define FORMAT_FLAC (0x43614c66)
+#define FORMAT_MP4A (0x6134706D)
+#define FORMAT_AC3 (0x332D6361)
+#define FORMAT_EAC3 (0x332D6365)
+#define FORMAT_OPUS (0x7375704F)
+#define FORMAT_FLAC (0x43614C66)
 
 // encryption schemes
-#define SCHEME_TYPE_CENC (0x63656e63)
+#define SCHEME_TYPE_CENC (0x63656E63)
 #define SCHEME_TYPE_CBCS (0x63626373)
 
 // MP4 constants from ffmpeg

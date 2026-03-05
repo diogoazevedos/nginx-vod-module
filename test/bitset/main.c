@@ -69,13 +69,13 @@ test_bitset() {
 	assert(mask[1] == 0);
 
 	vod_set_all_bits(mask, BITS / 2);
-	assert(mask[0] == 0xffffffffffffffff);
+	assert(mask[0] == 0xFFFFFFFFFFFFFFFF);
 	assert(mask[1] == 0);
 	assert(vod_are_all_bits_set(mask, 64) == TRUE);
 	assert(vod_are_all_bits_set(mask, BITS) == FALSE);
 	vod_set_bit(mask, 64);
 	vod_set_bit(mask, 65);
-	assert(mask[0] == 0xffffffffffffffff);
+	assert(mask[0] == 0xFFFFFFFFFFFFFFFF);
 	assert(mask[1] == 0b11);
 	assert(vod_are_all_bits_set(mask, 66) == TRUE);
 
@@ -93,9 +93,9 @@ test_bitset() {
 
 	vod_reset_all_bits(mask, BITS);
 
-	vod_memset(mask, 0xff, sizeof(uint64_t) + 1);
-	assert(mask[0] == 0xffffffffffffffff);
-	assert((mask[1] == 0xff00000000000000) != (mask[1] == 0xff));
+	vod_memset(mask, 0xFF, sizeof(uint64_t) + 1);
+	assert(mask[0] == 0xFFFFFFFFFFFFFFFF);
+	assert((mask[1] == 0xFF00000000000000) != (mask[1] == 0xFF));
 	assert(vod_get_number_of_set_bits_in_mask(mask, BITS) == 64 + 8);
 
 	vod_reset_all_bits(mask, BITS);
@@ -115,7 +115,7 @@ test_bitset() {
 	assert(vod_is_bit_set(mask, 31) == TRUE);
 
 	vod_memset(mask, 0x55, sizeof(mask));
-	vod_memset(mask2, 0xff, sizeof(mask2));
+	vod_memset(mask2, 0xFF, sizeof(mask2));
 	vod_and_bits(mask, mask, mask2, BITS);
 	assert(mask[0] = 0x5555555555555555);
 	assert(mask[1] = 0x5555555555555555);

@@ -165,7 +165,7 @@ enum {
 	VOD_CODEC_ID_SUBTITLE,
 	VOD_CODEC_ID_WEBVTT = VOD_CODEC_ID_SUBTITLE,
 
-	VOD_CODEC_ID_COUNT
+	VOD_CODEC_ID_COUNT,
 };
 
 enum {
@@ -179,7 +179,7 @@ enum {
 enum { // mp4 only
 	RTA_STSD,
 
-	RTA_COUNT
+	RTA_COUNT,
 };
 
 // types

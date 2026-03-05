@@ -62,7 +62,7 @@ enum {
 	MP4_CLIPPER_INDEX_MVHD_ATOM,
 	MP4_CLIPPER_INDEX_MDAT_HEADER,
 
-	MP4_CLIPPER_INDEX_COUNT
+	MP4_CLIPPER_INDEX_COUNT,
 };
 
 enum {
@@ -91,7 +91,7 @@ enum {
 	MP4_CLIPPER_TRAK_INDEX_STCO_HEADER,
 	MP4_CLIPPER_TRAK_INDEX_STCO_DATA,
 
-	MP4_CLIPPER_TRAK_INDEX_COUNT
+	MP4_CLIPPER_TRAK_INDEX_COUNT,
 };
 
 // typedefs
@@ -237,7 +237,7 @@ static const relevant_atom_t relevant_atoms_stbl[] = {
 	{ATOM_NAME_STZ2, offsetof(parsed_trak_t, atoms[TRAK_ATOM_STSZ]), NULL},
 	{ATOM_NAME_STCO, offsetof(parsed_trak_t, atoms[TRAK_ATOM_STCO]), NULL},
 	{ATOM_NAME_CO64, offsetof(parsed_trak_t, atoms[TRAK_ATOM_STCO]), NULL},
-	{ATOM_NAME_NULL, 0, NULL}
+	{ATOM_NAME_NULL, 0, NULL},
 };
 
 static const relevant_atom_t relevant_atoms_minf[] = {
@@ -245,20 +245,20 @@ static const relevant_atom_t relevant_atoms_minf[] = {
 	{ATOM_NAME_DINF, offsetof(parsed_trak_t, atoms[TRAK_ATOM_DINF]), NULL},
 	{ATOM_NAME_VMHD, offsetof(parsed_trak_t, atoms[TRAK_ATOM_VMHD]), NULL},
 	{ATOM_NAME_SMHD, offsetof(parsed_trak_t, atoms[TRAK_ATOM_SMHD]), NULL},
-	{ATOM_NAME_NULL, 0, NULL}
+	{ATOM_NAME_NULL, 0, NULL},
 };
 
 static const relevant_atom_t relevant_atoms_mdia[] = {
 	{ATOM_NAME_MINF, 0, relevant_atoms_minf},
 	{ATOM_NAME_HDLR, offsetof(parsed_trak_t, atoms[TRAK_ATOM_HDLR]), NULL},
 	{ATOM_NAME_MDHD, offsetof(parsed_trak_t, atoms[TRAK_ATOM_MDHD]), NULL},
-	{ATOM_NAME_NULL, 0, NULL}
+	{ATOM_NAME_NULL, 0, NULL},
 };
 
 static const relevant_atom_t relevant_atoms_trak[] = {
 	{ATOM_NAME_MDIA, 0, relevant_atoms_mdia},
 	{ATOM_NAME_TKHD, offsetof(parsed_trak_t, atoms[TRAK_ATOM_TKHD]), NULL},
-	{ATOM_NAME_NULL, 0, NULL}
+	{ATOM_NAME_NULL, 0, NULL},
 };
 
 static vod_str_t mp4_content_type = vod_string("video/mp4");
@@ -1263,8 +1263,7 @@ mp4_clipper_stco_write_atom(
 				parse_be32(stco->first_entry) - chunk_pos_diff + stco->first_frame_chunk_offset;
 			write_be32(p, chunk_offset);
 
-			for (cur_pos = stco->first_entry + sizeof(uint32_t); cur_pos < stco->last_entry;
-			     cur_pos += sizeof(uint32_t)) {
+			for (cur_pos = stco->first_entry + sizeof(uint32_t); cur_pos < stco->last_entry; cur_pos += sizeof(uint32_t)) {
 				chunk_offset = parse_be32(cur_pos) - chunk_pos_diff;
 				write_be32(p, chunk_offset);
 			}
@@ -1273,8 +1272,7 @@ mp4_clipper_stco_write_atom(
 				parse_be32(stco->first_entry) - chunk_pos_diff + stco->first_frame_chunk_offset;
 			set_be32(stco->first_entry, chunk_offset);
 
-			for (cur_pos = stco->first_entry + sizeof(uint32_t); cur_pos < stco->last_entry;
-			     cur_pos += sizeof(uint32_t)) {
+			for (cur_pos = stco->first_entry + sizeof(uint32_t); cur_pos < stco->last_entry; cur_pos += sizeof(uint32_t)) {
 				chunk_offset = parse_be32(cur_pos) - chunk_pos_diff;
 				set_be32(cur_pos, chunk_offset);
 			}
@@ -1294,8 +1292,7 @@ mp4_clipper_stco_write_atom(
 				parse_be64(stco->first_entry) - chunk_pos_diff + stco->first_frame_chunk_offset;
 			write_be64(p, chunk_offset);
 
-			for (cur_pos = stco->first_entry + sizeof(uint64_t); cur_pos < stco->last_entry;
-			     cur_pos += sizeof(uint64_t)) {
+			for (cur_pos = stco->first_entry + sizeof(uint64_t); cur_pos < stco->last_entry; cur_pos += sizeof(uint64_t)) {
 				chunk_offset = parse_be64(cur_pos) - chunk_pos_diff;
 				write_be64(p, chunk_offset);
 			}
@@ -1304,8 +1301,7 @@ mp4_clipper_stco_write_atom(
 				parse_be64(stco->first_entry) - chunk_pos_diff + stco->first_frame_chunk_offset;
 			set_be64(stco->first_entry, chunk_offset);
 
-			for (cur_pos = stco->first_entry + sizeof(uint64_t); cur_pos < stco->last_entry;
-			     cur_pos += sizeof(uint64_t)) {
+			for (cur_pos = stco->first_entry + sizeof(uint64_t); cur_pos < stco->last_entry; cur_pos += sizeof(uint64_t)) {
 				chunk_offset = parse_be64(cur_pos) - chunk_pos_diff;
 				set_be64(cur_pos, chunk_offset);
 			}
@@ -1758,7 +1754,7 @@ mp4_clipper_build_header(
 
 	// calculate the mdat size and chunk offset
 	mdat_atom_size = ATOM_HEADER_SIZE + parse_result->last_offset - parse_result->first_offset;
-	if (mdat_atom_size > (uint64_t)0xffffffff) {
+	if (mdat_atom_size > (uint64_t)0xFFFFFFFF) {
 		mdat_header_size = ATOM_HEADER64_SIZE;
 		mdat_atom_size += ATOM_HEADER64_SIZE - ATOM_HEADER_SIZE;
 	} else {

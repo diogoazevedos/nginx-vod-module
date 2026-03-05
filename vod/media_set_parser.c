@@ -42,21 +42,21 @@ enum {
 	MEDIA_SET_PARAM_CACHE,
 	MEDIA_SET_PARAM_CLOSED_CAPTIONS,
 
-	MEDIA_SET_PARAM_COUNT
+	MEDIA_SET_PARAM_COUNT,
 };
 
 enum {
 	MEDIA_CLIP_PARAM_FIRST_KEY_FRAME_OFFSET,
 	MEDIA_CLIP_PARAM_KEY_FRAME_DURATIONS,
 
-	MEDIA_CLIP_PARAM_COUNT
+	MEDIA_CLIP_PARAM_COUNT,
 };
 
 enum {
 	MEDIA_NOTIFICATION_PARAM_ID,
 	MEDIA_NOTIFICATION_PARAM_OFFSET,
 
-	MEDIA_NOTIFICATION_PARAM_COUNT
+	MEDIA_NOTIFICATION_PARAM_COUNT,
 };
 
 enum {
@@ -65,7 +65,7 @@ enum {
 	MEDIA_CLOSED_CAPTIONS_PARAM_LABEL,
 	MEDIA_CLOSED_CAPTIONS_PARAM_DEFAULT,
 
-	MEDIA_CLOSED_CAPTIONS_PARAM_COUNT
+	MEDIA_CLOSED_CAPTIONS_PARAM_COUNT,
 };
 
 typedef struct {
@@ -117,7 +117,7 @@ static json_parser_union_type_def_t media_clip_union_params[] = {
 	{vod_string("dynamic"), dynamic_clip_parse},
 	{vod_string("silence"), silence_generator_parse},
 	{vod_string("source"), media_set_parse_source},
-	{vod_null_string, NULL}
+	{vod_null_string, NULL},
 };
 
 static json_object_value_def_t media_clip_source_params[] = {
@@ -147,7 +147,7 @@ static json_object_value_def_t media_clip_source_params[] = {
      VOD_JSON_STRING,
      offsetof(media_clip_source_t, source_type),
      media_set_parse_source_type},
-	{vod_null_string, 0, 0, NULL}
+	{vod_null_string, 0, 0, NULL},
 };
 
 static json_object_value_def_t media_sequence_params[] = {
@@ -180,13 +180,13 @@ static json_object_value_def_t media_sequence_params[] = {
      offsetof(media_sequence_t, avg_bitrate),
      media_set_parse_bitrate},
 	{vod_string("roles"), VOD_JSON_ARRAY, offsetof(media_sequence_t, tags.roles), media_set_parse_string_array},
-	{vod_null_string, 0, 0, NULL}
+	{vod_null_string, 0, 0, NULL},
 };
 
 static json_object_key_def_t media_notification_params[] = {
 	{vod_string("id"), VOD_JSON_STRING, MEDIA_NOTIFICATION_PARAM_ID},
 	{vod_string("offset"), VOD_JSON_INT, MEDIA_NOTIFICATION_PARAM_OFFSET},
-	{vod_null_string, 0, 0}
+	{vod_null_string, 0, 0},
 };
 
 static json_object_key_def_t media_closed_captions_params[] = {
@@ -194,13 +194,13 @@ static json_object_key_def_t media_closed_captions_params[] = {
 	{vod_string("language"), VOD_JSON_STRING, MEDIA_CLOSED_CAPTIONS_PARAM_LANGUAGE},
 	{vod_string("label"), VOD_JSON_STRING, MEDIA_CLOSED_CAPTIONS_PARAM_LABEL},
 	{vod_string("default"), VOD_JSON_BOOL, MEDIA_CLOSED_CAPTIONS_PARAM_DEFAULT},
-	{vod_null_string, 0, 0}
+	{vod_null_string, 0, 0},
 };
 
 static json_object_key_def_t media_clip_params[] = {
 	{vod_string("firstKeyFrameOffset"), VOD_JSON_INT, MEDIA_CLIP_PARAM_FIRST_KEY_FRAME_OFFSET},
 	{vod_string("keyFrameDurations"), VOD_JSON_ARRAY, MEDIA_CLIP_PARAM_KEY_FRAME_DURATIONS},
-	{vod_null_string, 0, 0}
+	{vod_null_string, 0, 0},
 };
 
 static json_object_key_def_t media_set_params[] = {
@@ -229,7 +229,7 @@ static json_object_key_def_t media_set_params[] = {
 	{vod_string("clipTo"), VOD_JSON_INT, MEDIA_SET_PARAM_CLIP_TO},
 	{vod_string("cache"), VOD_JSON_BOOL, MEDIA_SET_PARAM_CACHE},
 	{vod_string("closedCaptions"), VOD_JSON_ARRAY, MEDIA_SET_PARAM_CLOSED_CAPTIONS},
-	{vod_null_string, 0, 0}
+	{vod_null_string, 0, 0},
 };
 
 // NOTE: must match media_clip_source_enc_scheme_t in order
@@ -248,7 +248,7 @@ static parser_init_t parser_init_funcs[] = {
 	rate_filter_parser_init,
 	concat_clip_parser_init,
 	dynamic_clip_parser_init,
-	NULL
+	NULL,
 };
 
 // globals
@@ -268,7 +268,7 @@ static hash_definition_t hash_definitions[] = {
 	HASH_TABLE(media_notification),
 	HASH_TABLE(media_clip),
 	HASH_TABLE(media_closed_captions),
-	{NULL, NULL, 0, NULL}
+	{NULL, NULL, 0, NULL},
 };
 
 static vod_status_t
@@ -380,8 +380,10 @@ media_set_parse_source_type(void* ctx, vod_json_value_t* value, void* dest) {
 	if (value->v.str.len == sizeof("file") - 1
 	    && vod_strncasecmp(value->v.str.data, (u_char*)"file", sizeof("file") - 1) == 0) {
 		*(media_clip_source_type_t*)dest = MEDIA_CLIP_SOURCE_FILE;
-	} else if (value->v.str.len == sizeof("http") - 1
-	           && vod_strncasecmp(value->v.str.data, (u_char*)"http", sizeof("http") - 1) == 0) {
+	} else if (
+		value->v.str.len == sizeof("http") - 1
+		&& vod_strncasecmp(value->v.str.data, (u_char*)"http", sizeof("http") - 1) == 0
+	) {
 		*(media_clip_source_type_t*)dest = MEDIA_CLIP_SOURCE_HTTP;
 	} else {
 		vod_log_error(
@@ -712,7 +714,7 @@ media_set_parse_source(void* ctx, vod_json_object_t* element, void** result) {
 
 	source->base.type = MEDIA_CLIP_SOURCE;
 
-	vod_memset(source->tracks_mask, 0xff, sizeof(source->tracks_mask));
+	vod_memset(source->tracks_mask, 0xFF, sizeof(source->tracks_mask));
 	source->sequence = context->base.sequence;
 	source->range = context->base.range;
 	source->clip_time = context->base.clip_time;
@@ -1857,8 +1859,10 @@ media_set_parse_sequence_key_frame_offsets(
 	}
 
 	part = sequence->unparsed_clips;
-	for (cur_pos = part->first, cur_duration = timing->durations, cur_clip_time = timing->times;;
-	     cur_pos++, cur_duration++, cur_clip_time++) {
+	for (
+		cur_pos = part->first, cur_duration = timing->durations, cur_clip_time = timing->times;;
+		cur_pos++, cur_duration++, cur_clip_time++
+	) {
 		if ((void*)cur_pos >= part->last) {
 			if (part->next == NULL) {
 				break;
@@ -2509,12 +2513,14 @@ media_set_parse_json(
 				   playlist_type_event.len
 			   ) == 0) {
 			result->is_live_event = TRUE;
-		} else if (params[MEDIA_SET_PARAM_PLAYLIST_TYPE]->v.str.len != playlist_type_live.len
-		           || vod_strncasecmp(
-						  params[MEDIA_SET_PARAM_PLAYLIST_TYPE]->v.str.data,
-						  playlist_type_live.data,
-						  playlist_type_live.len
-					  ) != 0) {
+		} else if (
+			params[MEDIA_SET_PARAM_PLAYLIST_TYPE]->v.str.len != playlist_type_live.len
+			|| vod_strncasecmp(
+				   params[MEDIA_SET_PARAM_PLAYLIST_TYPE]->v.str.data,
+				   playlist_type_live.data,
+				   playlist_type_live.len
+			   ) != 0
+		) {
 			vod_log_error(
 				VOD_LOG_ERR,
 				request_context->log,
@@ -2600,8 +2606,10 @@ media_set_parse_json(
 
 		if (last_clip_end > source->clip_to) {
 			result->presentation_end = TRUE;
-		} else if (params[MEDIA_SET_PARAM_PRESENTATION_END_TIME] != NULL
-		           && params[MEDIA_SET_PARAM_PRESENTATION_END_TIME]->v.num.num <= current_time) {
+		} else if (
+			params[MEDIA_SET_PARAM_PRESENTATION_END_TIME] != NULL
+			&& params[MEDIA_SET_PARAM_PRESENTATION_END_TIME]->v.num.num <= current_time
+		) {
 			result->presentation_end = TRUE;
 		} else {
 			if (params[MEDIA_SET_PARAM_EXPIRATION_TIME] != NULL

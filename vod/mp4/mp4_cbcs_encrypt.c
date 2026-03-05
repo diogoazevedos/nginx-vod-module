@@ -342,8 +342,7 @@ mp4_cbcs_encrypt_video_write_buffer(void* context, u_char* buffer, uint32_t size
 			}
 
 			// get the packet size
-			for (; stream_state->length_bytes_left && cur_pos < buffer_end;
-			     stream_state->length_bytes_left--) {
+			for (; stream_state->length_bytes_left && cur_pos < buffer_end; stream_state->length_bytes_left--) {
 				stream_state->packet_size_left = (stream_state->packet_size_left << 8) | *cur_pos++;
 			}
 
@@ -407,9 +406,8 @@ mp4_cbcs_encrypt_video_write_buffer(void* context, u_char* buffer, uint32_t size
 				return rc;
 			}
 
-			for (cur_shift = (stream_state->nal_packet_size_length - 1) * 8; cur_shift >= 0;
-			     cur_shift -= 8) {
-				*output++ = (stream_state->packet_size_left >> cur_shift) & 0xff;
+			for (cur_shift = (stream_state->nal_packet_size_length - 1) * 8; cur_shift >= 0; cur_shift -= 8) {
+				*output++ = (stream_state->packet_size_left >> cur_shift) & 0xFF;
 			}
 
 			nal_type = *cur_pos++;
@@ -689,7 +687,7 @@ mp4_cbcs_encrypt_audio_write_buffer(void* context, u_char* buffer, uint32_t size
 				return rc;
 			}
 
-			stream_state->clear_trailer_size = stream_state->frame_size_left & 0xf;
+			stream_state->clear_trailer_size = stream_state->frame_size_left & 0xF;
 
 			rc = mp4_cbcs_encrypt_reset_cipher(state);
 			if (rc != VOD_OK) {

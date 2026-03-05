@@ -5,8 +5,8 @@
 #include <ctype.h>
 
 // macros
-#define webvtt_is_utf16le_bom(p) (p[0] == 0xff && p[1] == 0xfe)
-#define webvtt_is_utf16be_bom(p) (p[0] == 0xfe && p[1] == 0xff)
+#define webvtt_is_utf16le_bom(p) (p[0] == 0xFF && p[1] == 0xFE)
+#define webvtt_is_utf16be_bom(p) (p[0] == 0xFE && p[1] == 0xFF)
 
 // constants
 #define WEBVTT_HEADER ("WEBVTT")

@@ -17,7 +17,7 @@ static json_object_value_def_t mix_filter_params[] = {
      VOD_JSON_ARRAY,
      offsetof(media_clip_mix_filter_t, base),
      media_set_parse_filter_sources},
-	{vod_null_string, 0, 0, NULL}
+	{vod_null_string, 0, 0, NULL},
 };
 
 // globals

@@ -22,7 +22,7 @@
 #define vod_set_bit(mask, index) ((mask)[(index) / 64] |= ((uint64_t)1 << ((index) % 64)))
 #define vod_reset_bit(mask, index) ((mask)[(index) / 64] &= ~((uint64_t)1 << ((index) % 64)))
 #define vod_set_all_bits(mask, max_bits) \
-	vod_memset((mask), 0xff, sizeof(uint64_t) * vod_array_length_for_bits(max_bits));
+	vod_memset((mask), 0xFF, sizeof(uint64_t) * vod_array_length_for_bits(max_bits));
 #define vod_reset_all_bits(mask, max_bits) \
 	vod_memzero((mask), sizeof(uint64_t) * vod_array_length_for_bits(max_bits));
 

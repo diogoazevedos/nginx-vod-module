@@ -1,6 +1,6 @@
 #include "language_code.h"
 
-#define get_iso639_3_hash_index(code) ((((code) >> 10) & 0x1f) - 1)
+#define get_iso639_3_hash_index(code) ((((code) >> 10) & 0x1F) - 1)
 
 // globals
 static const char* iso639_1_codes[] = {

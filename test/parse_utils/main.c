@@ -52,7 +52,7 @@ test_parse_guid_string() {
 		ngx_string("xx"),
 		ngx_string("0000000000000000000000000000000000"),
 		ngx_string("0000000000000000000000000000"),
-		ngx_null_string
+		ngx_null_string,
 	};
 	u_char guid[16];
 	ngx_str_t* cur_test;
