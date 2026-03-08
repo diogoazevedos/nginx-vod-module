@@ -20,7 +20,7 @@ enum {
 	CONCAT_PARAM_TRACKS,
 	CONCAT_PARAM_NOTIFICATIONS,
 
-	CONCAT_PARAM_COUNT
+	CONCAT_PARAM_COUNT,
 };
 
 // constants
@@ -32,7 +32,7 @@ static json_object_key_def_t concat_clip_params[] = {
 	{vod_string("offset"), VOD_JSON_INT, CONCAT_PARAM_OFFSET},
 	{vod_string("tracks"), VOD_JSON_STRING, CONCAT_PARAM_TRACKS},
 	{vod_string("notifications"), VOD_JSON_ARRAY, CONCAT_PARAM_NOTIFICATIONS},
-	{vod_null_string, 0, 0}
+	{vod_null_string, 0, 0},
 };
 
 // globals
@@ -150,7 +150,7 @@ concat_clip_parse(void* ctx, vod_json_object_t* element, void** result) {
 			return VOD_BAD_MAPPING;
 		}
 	} else {
-		vod_memset(tracks_mask, 0xff, sizeof(tracks_mask));
+		vod_memset(tracks_mask, 0xFF, sizeof(tracks_mask));
 	}
 
 	if (context->range == NULL) {
@@ -295,9 +295,11 @@ concat_clip_parse(void* ctx, vod_json_object_t* element, void** result) {
 		// initialize the ranges
 		original_clip_time = context->range->original_clip_time + start_offset;
 		part = first_part;
-		for (cur_source = sources, range_cur = range, cur_duration = first_duration;
-		     cur_source < sources_end;
-		     cur_source++, range_cur++, cur_duration++) {
+		for (
+			cur_source = sources, range_cur = range, cur_duration = first_duration;
+			cur_source < sources_end;
+			cur_source++, range_cur++, cur_duration++
+		) {
 			if ((void*)cur_duration >= part->last) {
 				part = part->next;
 				cur_duration = part->first;
@@ -489,8 +491,7 @@ concat_clip_concat(request_context_t* request_context, media_clip_t* clip) {
 	uint32_t media_type;
 	uint32_t i;
 
-	for (cur_source = clip->sources + clip->source_count - 2; cur_source >= clip->sources;
-	     cur_source--) {
+	for (cur_source = clip->sources + clip->source_count - 2; cur_source >= clip->sources; cur_source--) {
 		dest_clip = (media_clip_source_t*)cur_source[0];
 		src_clip = (media_clip_source_t*)cur_source[1];
 

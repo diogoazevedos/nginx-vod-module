@@ -9,14 +9,14 @@ enum {
 	DRM_INFO_PARAM_KEY_ID,
 	DRM_INFO_PARAM_PSSH,
 
-	DRM_INFO_PARAM_COUNT
+	DRM_INFO_PARAM_COUNT,
 };
 
 enum {
 	PSSH_PARAM_SYSTEM_ID,
 	PSSH_PARAM_DATA,
 
-	PSSH_PARAM_COUNT
+	PSSH_PARAM_COUNT,
 };
 
 // constants
@@ -25,13 +25,13 @@ static json_object_key_def_t drm_info_keys_def[] = {
 	{vod_string("key"), VOD_JSON_STRING, DRM_INFO_PARAM_KEY},
 	{vod_string("key_id"), VOD_JSON_STRING, DRM_INFO_PARAM_KEY_ID},
 	{vod_string("pssh"), VOD_JSON_ARRAY, DRM_INFO_PARAM_PSSH},
-	{vod_null_string, 0, 0}
+	{vod_null_string, 0, 0},
 };
 
 static json_object_key_def_t pssh_keys_def[] = {
 	{vod_string("uuid"), VOD_JSON_STRING, PSSH_PARAM_SYSTEM_ID},
 	{vod_string("data"), VOD_JSON_STRING, PSSH_PARAM_DATA},
-	{vod_null_string, 0, 0}
+	{vod_null_string, 0, 0},
 };
 
 // globals
@@ -173,8 +173,7 @@ udrm_parse_response(
 	result->pssh_array.last = result->pssh_array.first + result->pssh_array.count;
 
 	part = &pssh_array->part;
-	for (cur_input_pssh = part->first, cur_output_pssh = result->pssh_array.first;;
-	     cur_input_pssh++, cur_output_pssh++) {
+	for (cur_input_pssh = part->first, cur_output_pssh = result->pssh_array.first;; cur_input_pssh++, cur_output_pssh++) {
 		if ((void*)cur_input_pssh >= part->last) {
 			if (part->next == NULL) {
 				break;

@@ -31,12 +31,12 @@ adts_encoder_set_media_info(media_filter_context_t* context, media_info_t* media
 
 	vod_memzero(&state->header, sizeof(state->header));
 
-	adts_frame_header_set_syncword(state->header, 0xfff);
+	adts_frame_header_set_syncword(state->header, 0xFFF);
 	adts_frame_header_set_protection_absent(state->header, 1);
 	adts_frame_header_set_profile_object_type(state->header, codec_config->object_type - 1);
 	adts_frame_header_set_sample_rate_index(state->header, codec_config->sample_rate_index);
 	adts_frame_header_set_channel_configuration(state->header, codec_config->channel_config);
-	adts_frame_header_set_adts_buffer_fullness(state->header, 0x7ff);
+	adts_frame_header_set_adts_buffer_fullness(state->header, 0x7FF);
 
 	return VOD_OK;
 }

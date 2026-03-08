@@ -40,8 +40,7 @@ filter_get_clip_track_count(media_clip_t* clip, uint32_t* track_count) {
 
 	if (media_clip_is_source(clip->type)) {
 		source = vod_container_of(clip, media_clip_source_t, base);
-		for (cur_track = source->track_array.first_track; cur_track < source->track_array.last_track;
-		     cur_track++) {
+		for (cur_track = source->track_array.first_track; cur_track < source->track_array.last_track; cur_track++) {
 			track_count[cur_track->media_info.media_type]++;
 		}
 		return;
@@ -109,8 +108,7 @@ filter_init_filtered_clip_from_source(filters_init_state_t* state, media_clip_so
 
 	// copy tracks in media type order (video first then audio)
 	for (media_type = 0; media_type < MEDIA_TYPE_COUNT; media_type++) {
-		for (cur_track = source->track_array.first_track; cur_track < source->track_array.last_track;
-		     cur_track++) {
+		for (cur_track = source->track_array.first_track; cur_track < source->track_array.last_track; cur_track++) {
 			if (cur_track->media_info.media_type == media_type) {
 				filter_copy_track_to_clip(state, cur_track);
 			}
@@ -136,8 +134,7 @@ filter_scale_video_tracks(
 		// reset the sequence pointer, may have shifted in case one more sequences were removed
 		source->sequence = state->sequence;
 
-		for (cur_track = source->track_array.first_track; cur_track < source->track_array.last_track;
-		     cur_track++) {
+		for (cur_track = source->track_array.first_track; cur_track < source->track_array.last_track; cur_track++) {
 			switch (cur_track->media_info.media_type) {
 			case MEDIA_TYPE_AUDIO:
 				if (state->audio_reference_track == NULL) {
@@ -198,9 +195,11 @@ filter_validate_consistent_codecs(
 	media_track_t* first_clip_track;
 	media_track_t* cur_clip_track;
 
-	for (first_clip_track = first_clip->first_track, cur_clip_track = cur_clip->first_track;
-	     first_clip_track < first_clip->last_track;
-	     first_clip_track++, cur_clip_track++) {
+	for (
+		first_clip_track = first_clip->first_track, cur_clip_track = cur_clip->first_track;
+		first_clip_track < first_clip->last_track;
+		first_clip_track++, cur_clip_track++
+	) {
 		if (first_clip_track->media_info.codec_id != cur_clip_track->media_info.codec_id) {
 			vod_log_error(
 				VOD_LOG_ERR,

@@ -98,36 +98,38 @@ typedef struct {
 static ebml_spec_t mkv_spec_seekhead_entry[] = {
 	{MKV_ID_SEEKID, EBML_UINT, offsetof(mkv_seekhead_t, id), NULL},
 	{MKV_ID_SEEKPOSITION, EBML_UINT, offsetof(mkv_seekhead_t, position), NULL},
-	{0, EBML_NONE, 0, NULL}
+	{0, EBML_NONE, 0, NULL},
 };
 
 static ebml_spec_t mkv_spec_seekhead[] = {
-	{MKV_ID_SEEKENTRY, EBML_CUSTOM, 0, mkv_parse_seek_entry}, {0, EBML_NONE, 0, NULL}
+	{MKV_ID_SEEKENTRY, EBML_CUSTOM, 0, mkv_parse_seek_entry},
+	{0, EBML_NONE, 0, NULL},
 };
 
 static ebml_spec_t mkv_spec_segment[] = {
-	{MKV_ID_SEEKHEAD, EBML_MASTER, 0, mkv_spec_seekhead}, {0, EBML_NONE, 0, NULL}
+	{MKV_ID_SEEKHEAD, EBML_MASTER, 0, mkv_spec_seekhead},
+	{0, EBML_NONE, 0, NULL},
 };
 
 // info
 static ebml_spec_t mkv_spec_info[] = {
 	{MKV_ID_TIMECODESCALE, EBML_UINT, offsetof(mkv_info_t, timescale), NULL},
 	{MKV_ID_DURATION, EBML_FLOAT, offsetof(mkv_info_t, duration), NULL},
-	{0, EBML_NONE, 0, NULL}
+	{0, EBML_NONE, 0, NULL},
 };
 
 // track
 static ebml_spec_t mkv_spec_track_video[] = {
 	{MKV_ID_VIDEOPIXELWIDTH, EBML_UINT, offsetof(mkv_track_video_t, pixel_width), NULL},
 	{MKV_ID_VIDEOPIXELHEIGHT, EBML_UINT, offsetof(mkv_track_video_t, pixel_height), NULL},
-	{0, EBML_NONE, 0, NULL}
+	{0, EBML_NONE, 0, NULL},
 };
 
 static ebml_spec_t mkv_spec_track_audio[] = {
 	{MKV_ID_AUDIOSAMPLINGFREQ, EBML_FLOAT, offsetof(mkv_track_audio_t, sample_rate), NULL},
 	{MKV_ID_AUDIOBITDEPTH, EBML_UINT, offsetof(mkv_track_audio_t, bitdepth), NULL},
 	{MKV_ID_AUDIOCHANNELS, EBML_UINT, offsetof(mkv_track_audio_t, channels), NULL},
-	{0, EBML_NONE, 0, NULL}
+	{0, EBML_NONE, 0, NULL},
 };
 
 static ebml_spec_t mkv_spec_track_fields[] = {
@@ -141,11 +143,12 @@ static ebml_spec_t mkv_spec_track_fields[] = {
 	{MKV_ID_TRACKNAME, EBML_STRING, offsetof(mkv_track_t, name), NULL},
 	{MKV_ID_TRACKVIDEO, EBML_MASTER, offsetof(mkv_track_t, u.video), mkv_spec_track_video},
 	{MKV_ID_TRACKAUDIO, EBML_MASTER, offsetof(mkv_track_t, u.audio), mkv_spec_track_audio},
-	{0, EBML_NONE, 0, NULL}
+	{0, EBML_NONE, 0, NULL},
 };
 
 static ebml_spec_t mkv_spec_track[] = {
-	{MKV_ID_TRACKENTRY, EBML_MASTER, 0, mkv_spec_track_fields}, {0, EBML_NONE, 0, NULL}
+	{MKV_ID_TRACKENTRY, EBML_MASTER, 0, mkv_spec_track_fields},
+	{0, EBML_NONE, 0, NULL},
 };
 
 // index
@@ -153,53 +156,54 @@ static ebml_spec_t mkv_spec_index_pos[] = {
 	{MKV_ID_CUETRACK, EBML_UINT, offsetof(mkv_index_t, track), NULL},
 	{MKV_ID_CUECLUSTERPOSITION, EBML_UINT, offsetof(mkv_index_t, cluster_pos), NULL},
 	{MKV_ID_CUERELATIVEPOSITION, EBML_UINT, offsetof(mkv_index_t, relative_pos), NULL},
-	{0, EBML_NONE, 0, NULL}
+	{0, EBML_NONE, 0, NULL},
 };
 
 static ebml_spec_t mkv_spec_index_entry[] = {
 	{MKV_ID_CUETIME, EBML_UINT, offsetof(mkv_index_t, time), NULL},
 	{MKV_ID_CUETRACKPOSITION, EBML_MASTER, 0, mkv_spec_index_pos},
-	{0, EBML_NONE, 0, NULL}
+	{0, EBML_NONE, 0, NULL},
 };
 
 static ebml_spec_t mkv_spec_index[] = {
-	{MKV_ID_POINTENTRY, EBML_MASTER, 0, mkv_spec_index_entry}, {0, EBML_NONE, 0, NULL}
+	{MKV_ID_POINTENTRY, EBML_MASTER, 0, mkv_spec_index_entry},
+	{0, EBML_NONE, 0, NULL},
 };
 
 // cluster
 static ebml_spec_t mkv_spec_block_group[] = {
 	{MKV_ID_BLOCK, EBML_BINARY | EBML_TRUNCATE_SIZE, offsetof(mkv_block_group_t, block), NULL},
 	{MKV_ID_REFERENCEBLOCK, EBML_CUSTOM, 0, mkv_reference_block},
-	{0, EBML_NONE, 0, NULL}
+	{0, EBML_NONE, 0, NULL},
 };
 
 static ebml_spec_t mkv_spec_cluster_fields[] = {
 	{MKV_ID_CLUSTERTIMECODE, EBML_UINT, offsetof(mkv_cluster_t, timecode), NULL},
 	{MKV_ID_SIMPLEBLOCK, EBML_CUSTOM | EBML_TRUNCATE_SIZE, 0, mkv_simple_block},
 	{MKV_ID_BLOCKGROUP, EBML_CUSTOM | EBML_TRUNCATE_SIZE, 0, mkv_block_group},
-	{0, EBML_NONE, 0, NULL}
+	{0, EBML_NONE, 0, NULL},
 };
 
 static ebml_spec_t mkv_spec_cluster[] = {
 	{MKV_ID_CLUSTER, EBML_MASTER | EBML_TRUNCATE_SIZE, 0, mkv_spec_cluster_fields},
-	{0, EBML_NONE, 0, NULL}
+	{0, EBML_NONE, 0, NULL},
 };
 
 static ebml_spec_t mkv_spec_bitrate_estimate_block_group[] = {
 	{MKV_ID_BLOCK, EBML_CUSTOM | EBML_TRUNCATE_SIZE, 0, mkv_parse_frame_estimate_bitrate},
-	{0, EBML_NONE, 0, NULL}
+	{0, EBML_NONE, 0, NULL},
 };
 
 static ebml_spec_t mkv_spec_bitrate_estimate_cluster_fields[] = {
 	{MKV_ID_CLUSTERTIMECODE, EBML_UINT, offsetof(mkv_cluster_t, timecode), NULL},
 	{MKV_ID_SIMPLEBLOCK, EBML_CUSTOM | EBML_TRUNCATE_SIZE, 0, mkv_parse_frame_estimate_bitrate},
 	{MKV_ID_BLOCKGROUP, EBML_MASTER | EBML_TRUNCATE_SIZE, 0, mkv_spec_bitrate_estimate_block_group},
-	{0, EBML_NONE, 0, NULL}
+	{0, EBML_NONE, 0, NULL},
 };
 
 static ebml_spec_t mkv_spec_bitrate_estimate_cluster[] = {
 	{MKV_ID_CLUSTER, EBML_MASTER | EBML_TRUNCATE_SIZE, 0, mkv_spec_bitrate_estimate_cluster_fields},
-	{0, EBML_NONE, 0, NULL}
+	{0, EBML_NONE, 0, NULL},
 };
 
 // enums
@@ -326,11 +330,11 @@ typedef struct {
 static vod_str_t mkv_supported_doctypes[] = {vod_string("matroska"), vod_string("webm"), vod_null_string};
 
 // XXXXX: avoid using hardcoded extra data - build according to the first frame instead
-static u_char mkv_extra_data_ac3[] = {0x50, 0x11, 0xe0};
+static u_char mkv_extra_data_ac3[] = {0x50, 0x11, 0xE0};
 
-static u_char mkv_extra_data_eac3[] = {0x07, 0x00, 0x20, 0x0f, 0x00, 0x00};
+static u_char mkv_extra_data_eac3[] = {0x07, 0x00, 0x20, 0x0F, 0x00, 0x00};
 
-static u_char mkv_extra_data_opus[] = {0x00, 0x02, 0x01, 0x38, 0x00, 0x00, 0xbb, 0x80, 0x00, 0x00, 0x00};
+static u_char mkv_extra_data_opus[] = {0x00, 0x02, 0x01, 0x38, 0x00, 0x00, 0xBB, 0x80, 0x00, 0x00, 0x00};
 
 static bool_t
 mkv_is_doctype_supported(vod_str_t* doctype) {
@@ -1515,7 +1519,7 @@ mkv_parse_laces(ebml_context_t* context, uint8_t flags, uint32_t* lace_sizes) {
 				context->cur_pos++;
 
 				lace_sizes[i] += cur;
-			} while (cur == 0xff);
+			} while (cur == 0xFF);
 
 			total += lace_sizes[i];
 		}
@@ -1755,9 +1759,11 @@ mkv_parse_frame(
 			);
 
 			// check whether all tracks are done
-			for (track_context = frame_parse_context->first_track;
-			     track_context < frame_parse_context->last_track;
-			     track_context++) {
+			for (
+				track_context = frame_parse_context->first_track;
+				track_context < frame_parse_context->last_track;
+				track_context++
+			) {
 				if (!track_context->done) {
 					return VOD_OK;
 				}

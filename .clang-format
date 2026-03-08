@@ -1,7 +1,7 @@
 Language: C
 
 # Alignment
-AlignAfterOpenBracket: BlockIndent
+AlignAfterOpenBracket: true
 AlignEscapedNewlines: Left
 AlignOperands: AlignAfterOperator
 PointerAlignment: Left
@@ -14,8 +14,18 @@ AllowShortFunctionsOnASingleLine: Empty
 
 # Breaking and Wrapping
 AlwaysBreakBeforeMultilineStrings: true
+BreakAfterOpenBracketBracedList: true
+BreakAfterOpenBracketFunction: true
+BreakAfterOpenBracketIf: true
+BreakAfterOpenBracketLoop: true
+BreakAfterOpenBracketSwitch: true
 BreakAfterReturnType: TopLevelDefinitions
 BreakBeforeBinaryOperators: NonAssignment
+BreakBeforeCloseBracketBracedList: true
+BreakBeforeCloseBracketFunction: true
+BreakBeforeCloseBracketIf: true
+BreakBeforeCloseBracketLoop: true
+BreakBeforeCloseBracketSwitch: true
 BreakBinaryOperations: RespectPrecedence
 BreakStringLiterals: false
 ColumnLimit: 100
@@ -31,8 +41,14 @@ IndentWidth: 4
 TabWidth: 4
 UseTab: AlignWithSpaces
 
-# Braces and Blocks
+# Conventions
+EnumTrailingComma: Insert
 InsertBraces: true
+NumericLiteralCase:
+  ExponentLetter: Lower
+  HexDigit: Upper
+  Prefix: Lower
+  Suffix: Upper
 SeparateDefinitionBlocks: Always
 
 # Empty Lines

@@ -79,7 +79,7 @@ codec_config_avcc_get_nal_units(
 			return VOD_BAD_DATA;
 		}
 
-		for (unit_count = (*cur_pos++ & 0x1f); unit_count; unit_count--) {
+		for (unit_count = (*cur_pos++ & 0x1F); unit_count; unit_count--) {
 			if (cur_pos + sizeof(uint16_t) > extra_data_end) {
 				vod_log_error(
 					VOD_LOG_ERR,
@@ -126,7 +126,7 @@ codec_config_avcc_get_nal_units(
 	cur_pos = extra_data_start + sizeof(avcc_config_t);
 	for (i = 0; i < 2; i++) // once for SPS, once for PPS
 	{
-		for (unit_count = *cur_pos++ & 0x1f; unit_count; unit_count--) {
+		for (unit_count = *cur_pos++ & 0x1F; unit_count; unit_count--) {
 			unit_size = parse_be16(cur_pos);
 			cur_pos += sizeof(uint16_t);
 
@@ -658,7 +658,7 @@ codec_config_mp4a_config_parse(
 	}
 
 	config->sample_rate_index = bit_read_stream_get(&reader, 4);
-	if (config->sample_rate_index == 0x0f) {
+	if (config->sample_rate_index == 0x0F) {
 		bit_read_stream_get(&reader, 24);
 	}
 

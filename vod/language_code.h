@@ -10,9 +10,9 @@
 
 // macros
 #define iso639_3_str_to_int(x)                        \
-	((((((uint16_t)(x)[0]) - 'a' + 1) & 0x1f) << 10)  \
-	 | (((((uint16_t)(x)[1]) - 'a' + 1) & 0x1f) << 5) \
-	 | (((((uint16_t)(x)[2]) - 'a' + 1) & 0x1f)))
+	((((((uint16_t)(x)[0]) - 'a' + 1) & 0x1F) << 10)  \
+	 | (((((uint16_t)(x)[1]) - 'a' + 1) & 0x1F) << 5) \
+	 | (((((uint16_t)(x)[2]) - 'a' + 1) & 0x1F)))
 
 // typedefs
 enum {
@@ -20,7 +20,7 @@ enum {
 #include "languages_x.h"
 #undef LANG
 
-	VOD_LANG_COUNT
+	VOD_LANG_COUNT,
 };
 
 typedef uint16_t language_id_t;
