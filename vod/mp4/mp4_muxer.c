@@ -60,16 +60,14 @@ static vod_status_t mp4_muxer_start_frame(mp4_muxer_state_t* state);
 // trun write functions
 static u_char*
 mp4_muxer_write_trun_header(
-	u_char* p, uint32_t offset, uint32_t frame_count, uint32_t frame_size, uint32_t flags
+	u_char* p, uint32_t offset, uint32_t frame_count, uint32_t frame_size, uint8_t version, uint32_t flags
 ) {
-	size_t atom_size;
-
-	atom_size = ATOM_HEADER_SIZE + sizeof(trun_atom_t) + frame_size * frame_count;
+	size_t atom_size = ATOM_HEADER_SIZE + sizeof(trun_atom_t) + frame_size * frame_count;
 
 	write_atom_header(p, atom_size, 't', 'r', 'u', 'n');
-	write_be32(p, flags);       // flags
-	write_be32(p, frame_count); // frame count
-	write_be32(p, offset);      // offset from mdat start to frame raw data (excluding the tag)
+	write_fullbox_header(p, version, flags);
+	write_be32(p, frame_count); // sample_count
+	write_be32(p, offset);      // data_offset = (first frame relative to moof start offset)
 
 	return p;
 }
@@ -78,12 +76,14 @@ static u_char*
 mp4_muxer_write_video_trun_frame(u_char* p, input_frame_t* frame, uint32_t initial_pts_delay) {
 	int32_t pts_delay = frame->pts_delay - initial_pts_delay;
 
-	write_be32(p, frame->duration);
-	write_be32(p, frame->size);
+	write_be32(p, frame->duration); // sample_duration
+	write_be32(p, frame->size);     // sample_size
 	if (frame->key_frame) {
-		write_be32(p, 0x02000000); // I-frame
+		write_be32(p, 0x02000000); // sample_depends_on = 2 (key frame)
 	} else {
-		write_be32(p, 0x01010000); // not I-frame + non key sample
+		write_be32(
+			p, 0x01010000 // sample_depends_on = 1 (not key frame), sample_is_depended_on = 1 (not disposable)
+		);
 	}
 	write_be32(p, pts_delay);
 	return p;
@@ -136,7 +136,8 @@ mp4_muxer_write_video_trun_atoms(
 						base_offset + start_offset,
 						frame_count,
 						sizeof(trun_video_frame_t),
-						(1 << 24) | TRUN_VIDEO_FLAGS // version = 1
+						1,
+						TRUN_VIDEO_FLAGS
 					);
 				}
 
@@ -164,11 +165,7 @@ mp4_muxer_write_video_trun_atoms(
 	if (trun_header != NULL) {
 		// close current trun atom
 		mp4_muxer_write_trun_header(
-			trun_header,
-			base_offset + start_offset,
-			frame_count,
-			sizeof(trun_video_frame_t),
-			(1 << 24) | TRUN_VIDEO_FLAGS // version = 1
+			trun_header, base_offset + start_offset, frame_count, sizeof(trun_video_frame_t), 1, TRUN_VIDEO_FLAGS
 		);
 	}
 
@@ -209,7 +206,12 @@ mp4_muxer_write_audio_trun_atoms(
 				if (trun_header != NULL) {
 					// close current trun atom
 					mp4_muxer_write_trun_header(
-						trun_header, base_offset + start_offset, frame_count, sizeof(trun_audio_frame_t), TRUN_AUDIO_FLAGS
+						trun_header,
+						base_offset + start_offset,
+						frame_count,
+						sizeof(trun_audio_frame_t),
+						0,
+						TRUN_AUDIO_FLAGS
 					);
 				}
 
@@ -236,7 +238,7 @@ mp4_muxer_write_audio_trun_atoms(
 	if (trun_header != NULL) {
 		// close current trun atom
 		mp4_muxer_write_trun_header(
-			trun_header, base_offset + start_offset, frame_count, sizeof(trun_audio_frame_t), TRUN_AUDIO_FLAGS
+			trun_header, base_offset + start_offset, frame_count, sizeof(trun_audio_frame_t), 0, TRUN_AUDIO_FLAGS
 		);
 	}
 
