@@ -21,7 +21,7 @@ jobs:
       matrix:
         nginx-version:
           - 1.28.2
-          - 1.29.5
+          - 1.29.6
         ffmpeg-version:
           - null
           - 6.1.4
