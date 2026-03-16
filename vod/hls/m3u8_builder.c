@@ -1109,9 +1109,7 @@ m3u8_builder_write_variants(
 
 			if (audio != NULL) {
 				bitrate += audio->bitrate;
-				if (avg_bitrate != 0) {
-					avg_bitrate += audio->avg_bitrate;
-				}
+				avg_bitrate += audio->avg_bitrate;
 			}
 
 			p = vod_sprintf(
