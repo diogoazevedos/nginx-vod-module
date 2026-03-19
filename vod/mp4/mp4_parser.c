@@ -971,7 +971,7 @@ mp4_parser_parse_stts_atom(atom_info_t* atom_info, frames_parse_context_t* conte
 		for (;;) {
 			if (sample_duration != 0
 			    && end_time != ULLONG_MAX
-			    && end_time < accum_duration + ((uint64_t)UINT_MAX) * sample_duration) {
+			    && end_time < accum_duration + ((uint64_t)UINT_MAX * sample_duration)) {
 				cur_count = vod_div_ceil(end_time - accum_duration, sample_duration);
 				cur_count = vod_min(cur_count, sample_count);
 			} else {
@@ -1054,7 +1054,7 @@ mp4_parser_parse_stts_atom(atom_info_t* atom_info, frames_parse_context_t* conte
 
 			if (sample_duration != 0
 			    && clip_to != ULLONG_MAX
-			    && clip_to < accum_duration + ((uint64_t)UINT_MAX) * sample_duration) {
+			    && clip_to < accum_duration + ((uint64_t)UINT_MAX * sample_duration)) {
 				cur_count = vod_div_ceil(clip_to - accum_duration, sample_duration);
 				sample_count = vod_min(cur_count, sample_count);
 			}
@@ -1910,7 +1910,7 @@ mp4_parser_parse_stsz_atom_total_size_estimate_only(atom_info_t* atom_info, fram
 	}
 
 	if (uniform_size != 0) {
-		context->total_frames_size = ((uint64_t)entries) * uniform_size;
+		context->total_frames_size = (uint64_t)entries * uniform_size;
 		return VOD_OK;
 	}
 
@@ -1980,7 +1980,7 @@ mp4_parser_parse_stsz_atom(atom_info_t* atom_info, frames_parse_context_t* conte
 	}
 
 	if (uniform_size != 0) {
-		context->first_frame_chunk_offset = ((uint64_t)first_frame_index_in_chunk) * uniform_size;
+		context->first_frame_chunk_offset = (uint64_t)first_frame_index_in_chunk * uniform_size;
 		for (; cur_frame < last_frame; cur_frame++) {
 			cur_frame->size = uniform_size;
 		}

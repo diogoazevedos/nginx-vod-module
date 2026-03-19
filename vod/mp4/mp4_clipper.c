@@ -1071,8 +1071,8 @@ mp4_clipper_stsz_clip_data(
 		result->entries = 0;
 		result->data_size = 0;
 		result->atom_size = ATOM_HEADER_SIZE + sizeof(stsz_atom_t);
-		*first_frame_chunk_offset = ((uint64_t)first_frame_index_in_chunk) * uniform_size;
-		*last_frame_chunk_offset = ((uint64_t)last_frame_index_in_chunk) * uniform_size;
+		*first_frame_chunk_offset = (uint64_t)first_frame_index_in_chunk * uniform_size;
+		*last_frame_chunk_offset = (uint64_t)last_frame_index_in_chunk * uniform_size;
 
 		context->stbl_atom_size += result->atom_size;
 		context->alloc_size += ATOM_HEADER_SIZE + sizeof(stsz_atom_t);
