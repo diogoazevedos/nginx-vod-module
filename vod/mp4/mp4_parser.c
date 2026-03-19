@@ -1589,9 +1589,7 @@ mp4_parser_parse_stsc_atom(atom_info_t* atom_info, frames_parse_context_t* conte
 }
 
 static vod_status_t
-mp4_parser_parse_stsz_atom_key_frame_bitrate(
-	frames_parse_context_t* context, atom_info_t* stsz, atom_info_t* stss
-) {
+mp4_parser_estimate_key_frame_bitrate(frames_parse_context_t* context, atom_info_t* stsz, atom_info_t* stss) {
 	const uint8_t* stsz_data;
 	uint32_t* cur_pos;
 	uint32_t* end_pos;
@@ -1652,7 +1650,7 @@ mp4_parser_parse_stsz_atom_key_frame_bitrate(
 					VOD_LOG_ERR,
 					context->request_context->log,
 					0,
-					"mp4_parser_parse_stsz_atom_key_frame_bitrate: invalid frame index %uD (1)",
+					"mp4_parser_estimate_key_frame_bitrate: invalid frame index %uD (1)",
 					frame_index
 				);
 				return VOD_BAD_DATA;
@@ -1670,7 +1668,7 @@ mp4_parser_parse_stsz_atom_key_frame_bitrate(
 					VOD_LOG_ERR,
 					context->request_context->log,
 					0,
-					"mp4_parser_parse_stsz_atom_key_frame_bitrate: invalid frame index %uD (2)",
+					"mp4_parser_estimate_key_frame_bitrate: invalid frame index %uD (2)",
 					frame_index
 				);
 				return VOD_BAD_DATA;
@@ -1688,7 +1686,7 @@ mp4_parser_parse_stsz_atom_key_frame_bitrate(
 					VOD_LOG_ERR,
 					context->request_context->log,
 					0,
-					"mp4_parser_parse_stsz_atom_key_frame_bitrate: invalid frame index %uD (3)",
+					"mp4_parser_estimate_key_frame_bitrate: invalid frame index %uD (3)",
 					frame_index
 				);
 				return VOD_BAD_DATA;
@@ -1703,7 +1701,7 @@ mp4_parser_parse_stsz_atom_key_frame_bitrate(
 			VOD_LOG_ERR,
 			context->request_context->log,
 			0,
-			"mp4_parser_parse_stsz_atom_key_frame_bitrate: unsupported field size %uD",
+			"mp4_parser_estimate_key_frame_bitrate: unsupported field size %uD",
 			field_size
 		);
 		return VOD_BAD_DATA;
@@ -3494,7 +3492,7 @@ mp4_parser_parse_frames(
 
 			if ((parse_params->parse_type & PARSE_FLAG_KEY_FRAME_BITRATE) != 0
 			    && media_type == MEDIA_TYPE_VIDEO) {
-				rc = mp4_parser_parse_stsz_atom_key_frame_bitrate(
+				rc = mp4_parser_estimate_key_frame_bitrate(
 					&context, &cur_track->trak_atom_infos.stsz, &cur_track->trak_atom_infos.stss
 				);
 				if (rc != VOD_OK) {
