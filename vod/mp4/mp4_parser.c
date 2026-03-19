@@ -1744,10 +1744,7 @@ mp4_parser_compute_bitrate(
 
 	if (target_duration == 0) {
 		vod_log_error(
-			VOD_LOG_ERR,
-			context->request_context->log,
-			0,
-			"mp4_parser_compute_bitrate: target_duration is zero"
+			VOD_LOG_ERR, context->request_context->log, 0, "mp4_parser_compute_bitrate: target_duration is zero"
 		);
 		return VOD_BAD_DATA;
 	}
@@ -1759,10 +1756,7 @@ mp4_parser_compute_bitrate(
 
 	if (stts_entries == 0) {
 		vod_log_error(
-			VOD_LOG_ERR,
-			context->request_context->log,
-			0,
-			"mp4_parser_compute_bitrate: stts has no entries"
+			VOD_LOG_ERR, context->request_context->log, 0, "mp4_parser_compute_bitrate: stts has no entries"
 		);
 		return VOD_BAD_DATA;
 	}
@@ -1776,10 +1770,7 @@ mp4_parser_compute_bitrate(
 
 	if (stsz_entries == 0) {
 		vod_log_error(
-			VOD_LOG_ERR,
-			context->request_context->log,
-			0,
-			"mp4_parser_compute_bitrate: stsz has no entries"
+			VOD_LOG_ERR, context->request_context->log, 0, "mp4_parser_compute_bitrate: stsz has no entries"
 		);
 		return VOD_BAD_DATA;
 	}
