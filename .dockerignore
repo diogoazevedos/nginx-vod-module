@@ -1,2 +1,7 @@
-.git
-demo
+*
+!**/*.c
+!**/*.h
+!config
+!sample
+!static
+!scripts/build_basic.sh

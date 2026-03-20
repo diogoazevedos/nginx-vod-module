@@ -1,9 +1,9 @@
-# syntax=docker/dockerfile:1-labs
+# syntax=docker/dockerfile:1
 
 FROM alpine:3.23.3 AS build
 
-ARG FFMPEG_VERSION=8.0.1
-ARG NGINX_VERSION=1.29.5
+ARG FFMPEG_VERSION=8.1
+ARG NGINX_VERSION=1.29.6
 
 RUN apk --no-cache add \
 		build-base \
@@ -43,7 +43,7 @@ RUN ./configure \
 	&& make -j$(nproc) \
 	&& make install
 
-COPY --exclude=sample . /nginx-vod-module
+COPY --exclude=sample --exclude=static . /nginx-vod-module
 
 WORKDIR /nginx
 
@@ -91,8 +91,8 @@ RUN apk --no-cache add \
 
 COPY --from=build /opt/ffmpeg/lib /opt/ffmpeg/lib
 COPY --from=build /opt/nginx /opt/nginx
-COPY sample/* /opt/nginx/conf/
 COPY static/* /opt/nginx/html/
+COPY sample/* /opt/nginx/conf/
 
 EXPOSE 8000
 
