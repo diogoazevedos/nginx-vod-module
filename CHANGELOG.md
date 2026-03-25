@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.0](https://github.com/diogoazevedos/nginx-vod-module/compare/v1.6.0...v1.7.0) (2026-03-25)
+
+### Features
+
+- Improve atom write readability ([#77](https://github.com/diogoazevedos/nginx-vod-module/pull/77))
+
+### Bug Fixes
+
+- Fix bandwidth reporting in HLS/DASH ([#91](https://github.com/diogoazevedos/nginx-vod-module/pull/91))
+
 ## [1.6.0](https://github.com/diogoazevedos/nginx-vod-module/compare/v1.5.4...v1.6.0) (2025-10-29)
 
 ### Features
