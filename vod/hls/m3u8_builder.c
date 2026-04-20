@@ -177,6 +177,7 @@ m3u8_builder_build_track_spec(
 	// write the result
 	result->data = p;
 
+	*p++ = '-'; // NOTE: assume has_multi_sequences is always `TRUE` for subtitles.
 	p = manifest_utils_append_track_spec(
 		p, track->file_info.source->sequence, track, media_set->has_multi_sequences
 	);
@@ -757,6 +758,7 @@ m3u8_builder_append_index_url(
 	}
 
 	p = vod_copy(p, prefix->data, prefix->len);
+	*p++ = '-'; // NOTE: assume has_multi_sequences is always `TRUE` for subtitles.
 	p = manifest_utils_append_track_spec(p, track->file_info.source->sequence, track, write_sequence);
 	p = vod_copy(p, m3u8_url_suffix, sizeof(m3u8_url_suffix) - 1);
 

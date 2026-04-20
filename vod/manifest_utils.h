@@ -12,7 +12,7 @@
 #define ADAPTATION_SETS_FLAG_MULTI_CODEC \
 	(ADAPTATION_SETS_FLAG_MULTI_AUDIO_CODEC | ADAPTATION_SETS_FLAG_MULTI_VIDEO_CODEC)
 
-#define MANIFEST_UTILS_TRACK_SPEC_MAX_SIZE (sizeof("-f-v") - 1 + VOD_INT32_LEN * 2)
+#define MANIFEST_UTILS_TRACK_SPEC_MAX_SIZE ((sizeof("-f-v") - 1) + VOD_INT32_LEN * 2)
 
 // enums
 enum { // NOTE: must match media type in order

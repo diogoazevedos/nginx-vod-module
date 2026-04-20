@@ -322,14 +322,16 @@ manifest_utils_append_track_spec(
 ) {
 	if (write_sequence) {
 		if (sequence->id.len != 0 && sequence->id.len < VOD_INT32_LEN) {
-			p = vod_sprintf(p, "-s%V", &sequence->id);
+			p = vod_sprintf(p, "s%V", &sequence->id);
 		} else {
-			p = vod_sprintf(p, "-f%uD", sequence->index + 1);
+			p = vod_sprintf(p, "f%uD", sequence->index + 1);
 		}
 	}
 
 	if (track->media_info.media_type <= MEDIA_TYPE_AUDIO) {
-		*p++ = '-';
+		if (write_sequence) {
+			*p++ = '-';
+		}
 		*p++ = media_type_letter[track->media_info.media_type];
 		p = vod_sprintf(p, "%uD", track->index + 1);
 	}
