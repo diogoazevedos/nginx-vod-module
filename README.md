@@ -137,7 +137,7 @@ docker container run --rm -it -p 8000:8000 nginx-vod-module
 > the configurations based on your specific requirements.
 
 ```sh
-npx http-server demo -p 8080 -g --cors
+python3 -m http.server 8080 --directory demo
 ```
 
 Watch the demo content in your browser by visiting
