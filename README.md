@@ -756,7 +756,7 @@ using [nginx_mod_akamai_g2o](https://github.com/refractalize/nginx_mod_akamai_g2
 CDNs, it may be possible to configure the CDN to send a secret header to the origin and then simply
 enforce the header using an NGINX `if` statement:
 
-```lua
+```nginx
 if ($http_x_secret_origin_header != 'secret value') {
   return 403;
 }
@@ -848,7 +848,7 @@ that is used to access the DRM server, and the request URI is configured using
 
 Apple FairPlay HLS:
 
-```conf
+```nginx
 location ~ ^/hls/cbcs/(?<playback_token>[^/]+)/ {
   vod hls;
 
@@ -875,7 +875,7 @@ location ~ ^/hls/cbcs/(?<playback_token>[^/]+)/ {
 
 Common Encryption HLS:
 
-```conf
+```nginx
 location ~ ^/hls/cenc/(?<playback_token>[^/]+)/ {
   vod hls;
 
@@ -945,7 +945,7 @@ The `$vod_next_segment_uri` variable holds the relative URI of the next segment.
 
 Standard `Link` header:
 
-```conf
+```nginx
 map $vod_next_segment_uri $next_segment_link {
   ~.      '<$vod_next_segment_uri>; rel="next"';
   default '';
@@ -956,7 +956,7 @@ add_header Link $next_segment_link always;
 
 Akamai `CDN-Origin-Assist-Prefetch-Path` header:
 
-```conf
+```nginx
 add_header CDN-Origin-Assist-Prefetch-Path $vod_next_segment_uri always;
 ```
 
@@ -2119,7 +2119,7 @@ adds the following ones:
 
 #### Local configuration
 
-```conf
+```nginx
 http {
   upstream fallback {
     server fallback.example.com:80;
@@ -2172,7 +2172,7 @@ http {
 
 #### Mapped configuration
 
-```conf
+```nginx
 http {
   upstream api {
     server api.example.com:80;
@@ -2236,7 +2236,7 @@ http {
 
 #### Mapped + Remote configuration
 
-```conf
+```nginx
 http {
   upstream api {
     server api.example.com:80;
@@ -2315,7 +2315,7 @@ And use this stream URL - `http://<domain>/hls/sample.json/master.m3u8`.
 
 #### Remote configuration
 
-```conf
+```nginx
 http {
   upstream storage {
     server storage.example.com:80;
