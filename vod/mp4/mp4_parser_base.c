@@ -512,7 +512,7 @@ mp4_parser_stts_iterator(stts_iterator_state_t* iterator, uint64_t offset) {
 	accum_duration = iterator->accum_duration;
 	sample_count = iterator->sample_count;
 	sample_duration = parse_be32(cur_entry->duration);
-	next_accum_duration = accum_duration + sample_duration * sample_count;
+	next_accum_duration = accum_duration + (uint64_t)sample_duration * sample_count;
 
 	for (;;) {
 		// NOTE: need to add sample_duration - 1 to offset, if changing skip_count calculation below
@@ -536,7 +536,7 @@ mp4_parser_stts_iterator(stts_iterator_state_t* iterator, uint64_t offset) {
 
 		sample_duration = parse_be32(cur_entry->duration);
 		sample_count = parse_be32(cur_entry->count);
-		next_accum_duration = accum_duration + sample_duration * sample_count;
+		next_accum_duration = accum_duration + (uint64_t)sample_duration * sample_count;
 	}
 
 	// NOTE: the below was done to match nginx mp4, may be better to do
@@ -545,7 +545,7 @@ mp4_parser_stts_iterator(stts_iterator_state_t* iterator, uint64_t offset) {
 	iterator->cur_entry = cur_entry;
 	iterator->sample_count = sample_count - skip_count;
 	iterator->frame_index += frame_count + skip_count;
-	iterator->accum_duration = accum_duration + skip_count * sample_duration;
+	iterator->accum_duration = accum_duration + (uint64_t)skip_count * sample_duration;
 
 	return TRUE;
 }
