@@ -1134,7 +1134,7 @@ mp4_clipper_stsz_clip_data(
 
 	result->first_entry = (u_char*)data_start + context->first_frame * (field_size >> 3);
 	result->entries = context->last_frame - context->first_frame;
-	result->data_size = result->entries * (field_size >> 3);
+	result->data_size = (size_t)result->entries * (field_size >> 3);
 	result->atom_size = ATOM_HEADER_SIZE + sizeof(stsz_atom_t) + result->data_size;
 
 	context->stbl_atom_size += result->atom_size;

@@ -412,7 +412,7 @@ mp4_parser_parse_elst_atom(atom_info_t* atom_info, metadata_parse_context_t* con
 		return VOD_BAD_DATA;
 	}
 
-	if (atom_info->size < sizeof(*atom) + entries * entry_size) {
+	if (atom_info->size < sizeof(*atom) + (uint64_t)entries * entry_size) {
 		vod_log_error(
 			VOD_LOG_ERR,
 			context->request_context->log,
