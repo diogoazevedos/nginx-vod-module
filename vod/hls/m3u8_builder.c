@@ -331,13 +331,13 @@ m3u8_builder_build_iframe_playlist(
 
 #if (NGX_HAVE_OPENSSL_EVP)
 static size_t
-m3u8_builder_get_keys_size(const char* key_tag, drm_info_t* drm_info, size_t* max_pssh_size) {
+m3u8_builder_get_keys_size(drm_info_t* drm_info, size_t key_tag_len, size_t* max_pssh_size) {
 	drm_system_info_t* cur_info;
 	size_t result = 0;
 	size_t cur_pssh_size = 0;
 
 	for (cur_info = drm_info->pssh_array.first; cur_info < drm_info->pssh_array.last; cur_info++) {
-		result += (sizeof(key_tag) - 1)
+		result += key_tag_len
 		        + (sizeof(m3u8_key_sample_aes_ctr) - 1)
 		        + ((sizeof(m3u8_key_uri) - 1) + 1)       // '"'
 		        + ((sizeof(m3u8_key_keyformat) - 1) + 1) // '"'
@@ -413,21 +413,20 @@ m3u8_builder_write_keys(u_char* p, const char* key_tag, drm_info_t* drm_info, u_
 
 static size_t
 m3u8_builder_get_encryption_size(
-	const char* key_tag,
 	vod_str_t* base_url,
 	m3u8_config_t* conf,
 	drm_info_t* drm_info,
 	hls_encryption_params_t* encryption_params,
+	size_t key_tag_len,
 	size_t* max_pssh_size
 ) {
 	size_t result = 0;
 
 	if (encryption_params->type == HLS_ENC_SAMPLE_AES_CTR) {
-		return m3u8_builder_get_keys_size(key_tag, drm_info, max_pssh_size);
+		return m3u8_builder_get_keys_size(drm_info, key_tag_len, max_pssh_size);
 	}
 
-	result +=
-		(sizeof(key_tag) - 1) + (sizeof(m3u8_key_sample_aes) - 1) + (sizeof(m3u8_key_uri) - 1) + 2; // '"', '\n'
+	result += key_tag_len + (sizeof(m3u8_key_sample_aes) - 1) + (sizeof(m3u8_key_uri) - 1) + 2; // '"', '\n'
 
 	if (encryption_params->key_uri.len != 0) {
 		result += encryption_params->key_uri.len;
@@ -603,7 +602,7 @@ m3u8_builder_build_index_playlist(
 #if (NGX_HAVE_OPENSSL_EVP)
 	if (encryption_params->type != HLS_ENC_NONE && suffix != &m3u8_vtt_suffix) {
 		result_size += m3u8_builder_get_encryption_size(
-			m3u8_key, base_url, conf, media_set->sequences[0].drm_info, encryption_params, &max_pssh_size
+			base_url, conf, media_set->sequences[0].drm_info, encryption_params, sizeof(m3u8_key) - 1, &max_pssh_size
 		);
 	}
 #endif // NGX_HAVE_OPENSSL_EVP
@@ -1370,7 +1369,12 @@ m3u8_builder_build_master_playlist(
 #if (NGX_HAVE_OPENSSL_EVP)
 	if (encryption_params->type != HLS_ENC_NONE) {
 		result_size += m3u8_builder_get_encryption_size(
-			m3u8_session_key, base_url, conf, media_set->sequences[0].drm_info, encryption_params, &max_pssh_size
+			base_url,
+			conf,
+			media_set->sequences[0].drm_info,
+			encryption_params,
+			sizeof(m3u8_session_key) - 1,
+			&max_pssh_size
 		);
 	}
 #endif // NGX_HAVE_OPENSSL_EVP
