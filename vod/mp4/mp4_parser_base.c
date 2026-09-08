@@ -470,7 +470,7 @@ mp4_parser_validate_stco_data(
 		return VOD_BAD_DATA;
 	}
 
-	if (atom_info->size < sizeof(*atom) + (*entries) * (*entry_size)) {
+	if (atom_info->size < sizeof(*atom) + (uint64_t)(*entries) * (*entry_size)) {
 		vod_log_error(
 			VOD_LOG_ERR,
 			request_context->log,
