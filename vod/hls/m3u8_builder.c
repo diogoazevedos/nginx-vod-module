@@ -1282,7 +1282,7 @@ m3u8_builder_build_master_playlist(
 		}
 	}
 
-	result_size += variant_set_size * variant_set_count;
+	result_size += (size_t)variant_set_size * variant_set_count;
 
 	// iframe playlist
 	if (iframe_playlist) {
